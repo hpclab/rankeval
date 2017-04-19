@@ -462,7 +462,8 @@ PyMODINIT_FUNC PyInit__svmlight_loader(void)
   init_type_objs();
   if (PyType_Ready(&DoubleVOwnerType) < 0
    || PyType_Ready(&IntVOwnerType)    < 0)
-    return NULL;
+//    return NULL;   ####Todo: cris - check out the difference
+    return;
 
 #if PY_MAJOR_VERSION >= 3
     static struct PyModuleDef moduledef = {
