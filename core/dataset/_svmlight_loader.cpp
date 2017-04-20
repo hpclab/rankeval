@@ -254,7 +254,7 @@ void parse_line(const std::string& line,
   char c;
   double x;
   unsigned idx;
-
+  
 
   if (sscanf(qidNonsense.c_str(), "qid:%u", &idx) != 1) {
     if(sscanf(qidNonsense.c_str(), "%u%c%lf", &idx, &c, &x) == 3) {
@@ -453,8 +453,7 @@ static PyMethodDef svmlight_format_methods[] = {
 static const char svmlight_format_doc[] =
   "Loader/Writer for svmlight / libsvm datasets - C++ helper routines";
 
-//extern "C" {
-// KDR added a second underscore for python3 compatibility
+#if PY_MAJOR_VERSION >= 3
 PyMODINIT_FUNC PyInit__svmlight_loader(void)
 {
   _import_array();
@@ -462,10 +461,12 @@ PyMODINIT_FUNC PyInit__svmlight_loader(void)
   init_type_objs();
   if (PyType_Ready(&DoubleVOwnerType) < 0
    || PyType_Ready(&IntVOwnerType)    < 0)
-//    return NULL;
-    return ;
-
 #if PY_MAJOR_VERSION >= 3
+    return NULL;
+#else
+	return;
+#endif
+
     static struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
         "_svmlight_loader",     /* m_name */
@@ -478,10 +479,21 @@ PyMODINIT_FUNC PyInit__svmlight_loader(void)
         NULL,                /* m_free */
     };
     return PyModule_Create(&moduledef);
+}
 #else
+extern "C" {
+PyMODINIT_FUNC init_svmlight_loader(void)
+{
+  _import_array();
+
+  init_type_objs();
+  if (PyType_Ready(&DoubleVOwnerType) < 0
+   || PyType_Ready(&IntVOwnerType)    < 0)
+    return;
+
   Py_InitModule3("_svmlight_loader",
                  svmlight_format_methods,
                  svmlight_format_doc);
-#endif
 }
-//}
+}
+#endif
