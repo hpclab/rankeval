@@ -12,7 +12,7 @@ currdir = os.path.dirname(os.path.abspath(__file__))
 datafile = os.path.join(currdir, "data", "svmlight_classification.txt")
 invalidfile = os.path.join(currdir, "data", "svmlight_invalid.txt")
 
-qid_datafile         = os.path.join(currdir, "data", "svmlight_classification_qid.txt")
+qid_datafile = os.path.join(currdir, "data", "svmlight_classification_qid.txt")
 
 def test_load_svmlight_qid_file():
     X, y, c, q = load_svmlight_file(qid_datafile, comment=True, query_id=True)

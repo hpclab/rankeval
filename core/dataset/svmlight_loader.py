@@ -66,7 +66,9 @@ def load_svmlight_file(file_path, n_features=None, dtype=None,
     if dtype:
         data = np.array(data, dtype=dtype)
 
-    X_train = sp.csr_matrix((data, indices, indptr), shape)
+    # X_train = sp.csr_matrix((data, indices, indptr), shape)
+    X_train = np.ndarray((data, indices, indptr), shape)
+
 
     return (X_train, labels)
 
@@ -150,7 +152,9 @@ def dump_svmlight_file(X, y, f, zero_based=True):
         raise ValueError("X.shape[0] and y.shape[0] should be the same, "
                          "got: %r and %r instead." % (X.shape[0], y.shape[0]))
 
-    X = sp.csr_matrix(X, dtype=np.float64)
+    # X = sp.csr_matrix(X, dtype=np.float64)
+    X = np.ndarray(X, dtype=np.float64)
     y = np.array(y, dtype=np.float64)
+
 
     _dump_svmlight_file(f, X.data, X.indices, X.indptr, y, int(zero_based))
