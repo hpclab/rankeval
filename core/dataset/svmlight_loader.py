@@ -56,6 +56,9 @@ def load_svmlight_file(file_path, n_features=None, dtype=None,
           query_ids is a ndarray of shape(nsamples,) or shape(0,) if none were specified
     """
     data, indices, indptr, labels, comments, qids = _load_svmlight_file(file_path, buffer_mb)
+    # print type(data)
+    n_features = indices.max()
+
 
     if zero_based is False or \
        (zero_based == "auto" and np.min(indices) > 0):
@@ -66,11 +69,14 @@ def load_svmlight_file(file_path, n_features=None, dtype=None,
     else:
         shape = None    # inferred
 
+    dtype = np.float32
+
     if dtype:
         data = np.array(data, dtype=dtype)
 
+    # X_train = np.reshape(data, newshape=shape)
     # X_train = sp.csr_matrix((data, indices, indptr), shape)
-    X_train = np.ndarray((data, indices, indptr), shape)
+    X_train = data
 
     if query_id and comment:
         return (X_train, labels, comments, qids)
