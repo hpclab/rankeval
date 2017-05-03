@@ -348,7 +348,6 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
     std::ofstream fout;
     fout.open(file_path, std::ofstream::out);
 
-    int idx;
     double* data_pointer = data;
     for (int i=0; i < n_samples; i++) {
       if (PyList_Size(query_ids_array) != 0) {
@@ -360,16 +359,10 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
         fout << y[i] << " ";
       }
 
-
       for (int jj=0; jj < n_features; jj++) {
-        idx = jj;
-        if (!zero_based)
-          idx++;
-        fout << idx << ":" << data_pointer[jj] << " ";
+        fout << (zero_based ? jj : jj+1) << ":" << data_pointer[jj] << " ";
       }
       data_pointer += n_features;
-
-
       fout << std::endl;
     }
 
