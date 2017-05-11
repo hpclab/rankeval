@@ -5,18 +5,15 @@ loader for the svmlight / libsvm sparse dataset format.  """
 #          Lars Buitinck <L.J.Buitinck@uva.nl>
 # License: Simple BSD.
 
-import os.path
-
-import numpy as np
-import scipy.sparse as sp
 
 from _svmlight_loader import _load_svmlight_file
 from _svmlight_loader import _dump_svmlight_file
+import numpy as np
+import scipy as sp
 
 
-def load_svmlight_file(file_path, n_features=None, dtype=None,
-                       buffer_mb=40, zero_based="auto", query_id=False,
-                       comment=False):
+def load_svmlight_file(file_path, dtype=None,
+                       buffer_mb=40, zero_based="auto", query_id=False):
     """Load datasets in the svmlight / libsvm format into sparse CSR matrix
 
     This format is a text-based format, with one sample per line. It does
@@ -55,41 +52,18 @@ def load_svmlight_file(file_path, n_features=None, dtype=None,
           comments is a list of length n_samples
           query_ids is a ndarray of shape(nsamples,) or shape(0,) if none were specified
     """
-    data, indices, indptr, labels, comments, qids = _load_svmlight_file(file_path, buffer_mb)
-    # print type(data)
-    n_features = indices.max()
 
+    data, labels, qids = _load_svmlight_file(file_path, buffer_mb)
 
-    if zero_based is False or \
-       (zero_based == "auto" and np.min(indices) > 0):
-       indices -= 1
+    X_train = np.array(data, dtype=dtype)
 
-    if n_features is not None:
-        shape = (indptr.shape[0] - 1, n_features)
-    else:
-        shape = None    # inferred
-
-    dtype = np.float32
-
-    if dtype:
-        data = np.array(data, dtype=dtype)
-
-    # X_train = np.reshape(data, newshape=shape)
-    # X_train = sp.csr_matrix((data, indices, indptr), shape)
-    X_train = data
-
-    if query_id and comment:
-        return (X_train, labels, comments, qids)
-    elif query_id:
+    if query_id:
         return (X_train, labels, qids)
-    elif comment:
-        return (X_train, labels, comments)
     else:
         return (X_train, labels)
 
 
-def load_svmlight_files(files, n_features=None, dtype=None, buffer_mb=40,
-                        comment=False, query_id=False):
+def load_svmlight_files(files, dtype=None, buffer_mb=40, query_id=False):
     """Load dataset from multiple files in SVMlight format
 
     This function is equivalent to mapping load_svmlight_file over a list of
@@ -127,16 +101,15 @@ def load_svmlight_files(files, n_features=None, dtype=None, buffer_mb=40,
     load_svmlight_file
     """
     files = iter(files)
-    result = list(load_svmlight_file(next(files), n_features, dtype, buffer_mb, comment=comment, query_id=query_id))
-    n_features = result[0].shape[1]
+    result = list(load_svmlight_file(next(files), dtype, buffer_mb, query_id=query_id))
 
     for f in files:
-        result += load_svmlight_file(f, n_features, dtype, buffer_mb, comment=comment, query_id=query_id)
+        result += load_svmlight_file(f, dtype, buffer_mb, query_id=query_id)
 
     return result
 
 
-def dump_svmlight_file(X, y, f, comment=None, query_id=None, zero_based=True):
+def dump_svmlight_file(X, y, f, query_id=None, zero_based=True):
     """Dump the dataset in svmlight / libsvm file format.
 
     This format is a text-based format, with one sample per line. It does
@@ -172,25 +145,17 @@ def dump_svmlight_file(X, y, f, comment=None, query_id=None, zero_based=True):
     if hasattr(f, "write"):
         raise ValueError("File handler not supported. Use a file path.")
 
-    if X.shape[0] != y.shape[0]:
-        raise ValueError("X.shape[0] and y.shape[0] should be the same, "
-                         "got: %r and %r instead." % (X.shape[0], y.shape[0]))
-
-    if comment is None:
-        comment = []
-    elif X.shape[0] != len(comment):
-            raise ValueError("X.shape[0] and len(comment) should be the same, "
-                         "got: %r and %r instead." % (X.shape[0], len(comment)))
+    # if X.shape[0] != y.shape[0]:  #todo: this test of ok is we know the number of features! to divide X.shape[0] with
+    #     raise ValueError("X.shape[0] and y.shape[0] should be the same, "
+    #                      "got: %r and %r instead." % (X.shape[0], y.shape[0]))
 
     if query_id is None:
         query_id = []
-    elif X.shape[0] != len(query_id):
-            raise ValueError("X.shape[0] and len(query_id) should be the same, "
-                         "got: %r and %r instead." % (X.shape[0], len(query_id)))
+    # elif X.shape[0] != len(query_id):
+    #         raise ValueError("X.shape[0] and len(query_id) should be the same, "
+    #                      "got: %r and %r instead." % (X.shape[0], len(query_id)))
 
-    # X = sp.csr_matrix(X, dtype=np.float64)
-    X = np.ndarray(X, dtype=np.float64)
+    X = np.array(X, dtype=np.float64)
     y = np.array(y, dtype=np.float64)
-    #comment = np.array(comment, dtype=np.string_)
 
-    _dump_svmlight_file(f, X.data, query_id, X.indices, X.indptr, y, comment, int(zero_based))
+    _dump_svmlight_file(f, X, query_id, y, int(zero_based))

@@ -19,7 +19,8 @@ def loadDataset(filename):
     :param filename: the input datatset file
     :return: 
     """
-    X, y, q = load_svmlight_file(filename, comment=False, query_id=True)
+    # X, y, q = load_svmlight_file(filename, comment=False, query_id=True)
+    X, y, q = load_svmlight_file(filename, query_id=True)
     print X.shape
     print y.shape
     print q.shape
