@@ -1,2 +1,4 @@
 .idea
 rankeval/core/dataset/_svmlight_loader.so
+.DS_Store
+
