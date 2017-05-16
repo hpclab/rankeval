@@ -1,8 +1,11 @@
-.idea
-rankeval/core/dataset/_svmlight_loader.so
-.DS_Store
+# ignored dirs
 build
 dist
+doc
+.idea
+# ignored files
+*pyc
+.DS_Store
 distribute-0.6.14-py2.7.egg
 distribute-0.6.14.tar.gz
 rankeval.egg-info
