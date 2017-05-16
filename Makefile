@@ -1,11 +1,6 @@
 PYTHON ?= python
 NOSETESTS ?= nosetests
 
-build: _svmlight_loader.so
-
-_svmlight_loader.so: rankeval/core/dataset/_svmlight_loader.cpp
-	$(PYTHON) setup.py build_ext --inplace
-
 clean:
 	$(PYTHON) setup.py clean
 	rm -rf dist
@@ -40,11 +35,8 @@ doc:
 	@echo "numpydoc_show_class_members = False" >> doc/conf.py
 	
 	# customize themes
-	#@echo "html_theme = \"sphinxdoc\"" >> doc/conf.py
 	@echo "html_theme = \"sphinx_rtd_theme\"" >> doc/conf.py
-#	@echo "html_theme_path = [\"scipy-sphinx-theme/_theme\"]" >> doc/conf.py
 
 	# compile HTML files
-	#export PYTHONPATH=${PYTHONPATH}:`pwd`; 
 	make -C doc html
 
