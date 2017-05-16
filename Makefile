@@ -10,10 +10,10 @@ clean:
 test:
 	$(NOSETESTS)
 
+j
 # documentation is compiled by using shpinx
 # exclude from documentation
 DOCEXCLUDED=
-
 
 ### Handling Sphinx for generating documentation
 .PHONY: doc
@@ -39,4 +39,3 @@ doc:
 
 	# compile HTML files
 	make -C doc html
-
