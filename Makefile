@@ -10,7 +10,7 @@ clean:
 test:
 	$(NOSETESTS)
 
-j
+
 # documentation is compiled by using shpinx
 # exclude from documentation
 DOCEXCLUDED=
