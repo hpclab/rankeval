@@ -45,5 +45,6 @@ doc:
 #	@echo "html_theme_path = [\"scipy-sphinx-theme/_theme\"]" >> doc/conf.py
 
 	# compile HTML files
-	export PYTHONPATH=${PYTHONPATH}:`pwd`; make -C doc html
+	#export PYTHONPATH=${PYTHONPATH}:`pwd`; 
+	make -C doc html
 
