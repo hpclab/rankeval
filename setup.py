@@ -140,6 +140,7 @@ setup(
         'numpy >= 1.3'
     ],
     install_requires=[
+        'ez-setup >= 0.8',
         'numpy >= 1.3',
         'scipy >= 0.7.0',
         'sphinx >= 1.5.0',
