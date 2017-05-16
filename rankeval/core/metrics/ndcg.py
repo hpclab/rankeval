@@ -1,9 +1,8 @@
-import ...
 
 def ndcg(scores, labels, q_lens, cutoff = 10, no_relevant_results = 'Yahoo'):
     no_relevant_results_score = 0.0
 
-    if (no_relevant_results = 'Yahoo'):
+    if (no_relevant_results == 'Yahoo'):
         no_relevant_results_score = 0.5
 
     # aggiungere NDCG di HPCKit
