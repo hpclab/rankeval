@@ -142,6 +142,9 @@ setup(
     install_requires=[
         'numpy >= 1.3',
         'scipy >= 0.7.0',
+        'sphinx >= 1.5.0',
+        'sphinx_rtd_theme >= 0.2.0',
+        'numpydoc > 0.5.0',
     ],
     # extras_require={
     #     'test': [
