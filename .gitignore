@@ -1,7 +1,7 @@
 # ignored dirs
 build
 dist
-doc
+doc/doc
 .idea
 # ignored files
 *pyc
