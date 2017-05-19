@@ -1,0 +1,61 @@
+import os
+import unittest
+import logging
+
+from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
+
+from rankeval.core.model.proxy_quickrank import ProxyQuickRank
+
+curr_dir = os.path.dirname(os.path.abspath(__file__))
+model_file = os.path.join(curr_dir, "data", "quickrank.model.xml")
+
+
+class ProxyQuickRankTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.model = ProxyQuickRank.load(model_file)
+
+    def tearDown(self):
+        del self.model
+        self.model = None
+
+    def test_count_nodes(self):
+        n_trees, n_nodes = ProxyQuickRank._count_nodes(model_file)
+        print "Num Trees: %d\nNum Nodes: %d" % (n_trees, n_nodes),
+        assert_equal(n_nodes, 10)
+        assert_equal(n_trees, len(self.model.trees_root))
+        assert_equal(n_nodes, len(self.model.trees_nodes_value))
+
+    def test_root_nodes(self):
+        assert_array_equal(self.model.trees_root, [0,5], err_msg="Root nodes are not correct")
+
+    def test_tree_weights(self):
+        assert_array_almost_equal(self.model.trees_weight, [0.10000000149011612, 0.10000000149011612],
+                                  err_msg="Tree Weights are not correct")
+
+    def test_split_features(self):
+        assert_array_equal(self.model.trees_nodes_feature, [108, 115, -1, -1, -1, 8, -1, 106, -1, -1])
+
+    def test_tree_values(self):
+        assert_array_almost_equal(self.model.trees_nodes_value,
+            [14.895151138305664, -8.0245580673217773, 0.3412887828162291, 0.66845277963831218, 0.96317280453257792,
+             0.66666698455810547, 0.37133907932286642, 17.135160446166992, 0.54762687170967062, 0.98651670670179537],
+            err_msg="Trees split threshold value or leaf output value are not correct")
+
+    def test_left_children(self):
+        assert_array_equal(self.model.trees_left_child, [1, 2, -1, -1, -1, 6, -1, 8, -1, -1])
+
+    def test_right_children(self):
+        assert_array_equal(self.model.trees_right_child, [4, 3, -1, -1, -1, 7, -1, 9, -1, -1])
+
+    def test_model_correctness(self):
+        for idx, feature in enumerate(self.model.trees_nodes_feature):
+            if feature == -1:
+                assert_equal(self.model.trees_left_child[idx], -1, "Left child of a leaf node is not empty (-1)")
+                assert_equal(self.model.trees_right_child[idx], -1, "Right child of a leaf node is not empty (-1)")
+                assert_equal(self.model.is_leaf_node(idx), True, "Leaf node not detected as a leaf")
+
+
+if __name__ == '__main__':
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.DEBUG)
+    unittest.main()

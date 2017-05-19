@@ -1,0 +1,51 @@
+<ranker>
+	<info>
+		<type>MART</type>
+		<trees>2</trees>
+		<leaves>3</leaves>
+		<shrinkage>0.10000000149011612</shrinkage>
+		<leafsupport>1</leafsupport>
+		<discretization>0</discretization>
+		<estop>100</estop>
+	</info>
+	<ensemble>
+		<tree id="1" weight="0.10000000149011612">
+			<split>
+				<feature>108</feature>
+				<threshold>14.895151138305664</threshold>
+				<split pos="left">
+					<feature>115</feature>
+					<threshold>-8.0245580673217773</threshold>
+					<split pos="left">
+						<output>0.3412887828162291</output>
+					</split>
+					<split pos="right">
+						<output>0.66845277963831218</output>
+					</split>
+				</split>
+				<split pos="right">
+					<output>0.96317280453257792</output>
+				</split>
+			</split>
+		</tree>
+		<tree id="2" weight="0.10000000149011612">
+			<split>
+				<feature>8</feature>
+				<threshold>0.66666698455810547</threshold>
+				<split pos="left">
+					<output>0.37133907932286642</output>
+				</split>
+				<split pos="right">
+					<feature>106</feature>
+					<threshold>17.135160446166992</threshold>
+					<split pos="left">
+						<output>0.54762687170967062</output>
+					</split>
+					<split pos="right">
+						<output>0.98651670670179537</output>
+					</split>
+				</split>
+			</split>
+		</tree>
+	</ensemble>
+</ranker>

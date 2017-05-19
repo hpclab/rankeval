@@ -140,6 +140,7 @@ setup(
         'numpy >= 1.3'
     ],
     install_requires=[
+        'six >= 1.9.0',
         'ez-setup >= 0.8',
         'numpy >= 1.3',
         'scipy >= 0.7.0',
