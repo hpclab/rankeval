@@ -135,8 +135,6 @@ class ProxyQuickRank(ProxyModel):
                 n_trees += 1
             elif elem.tag == 'feature' or elem.tag == 'output':
                 n_nodes += 1
-            else:
-                continue
 
             elem.clear()    # discard the element
             root.clear()    # remove root reference to the child

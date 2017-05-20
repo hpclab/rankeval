@@ -22,12 +22,16 @@ class ProxyQuickRankTestCase(unittest.TestCase):
     def test_count_nodes(self):
         n_trees, n_nodes = ProxyQuickRank._count_nodes(model_file)
         print "Num Trees: %d\nNum Nodes: %d" % (n_trees, n_nodes),
+        assert_equal(n_trees, 2)
         assert_equal(n_nodes, 10)
         assert_equal(n_trees, len(self.model.trees_root))
         assert_equal(n_nodes, len(self.model.trees_nodes_value))
 
     def test_root_nodes(self):
-        assert_array_equal(self.model.trees_root, [0,5], err_msg="Root nodes are not correct")
+        assert_equal((self.model.trees_root > -1).all(), True, "Root nodes not set correctly")
+
+    def test_root_nodes_adv(self):
+        assert_array_equal(self.model.trees_root, [0, 5], err_msg="Root nodes are not correct")
 
     def test_tree_weights(self):
         assert_array_almost_equal(self.model.trees_weight, [0.10000000149011612, 0.10000000149011612],
@@ -48,13 +52,12 @@ class ProxyQuickRankTestCase(unittest.TestCase):
     def test_right_children(self):
         assert_array_equal(self.model.trees_right_child, [4, 3, -1, -1, -1, 7, -1, 9, -1, -1])
 
-    def test_model_correctness(self):
+    def test_leaf_correctness(self):
         for idx, feature in enumerate(self.model.trees_nodes_feature):
             if feature == -1:
                 assert_equal(self.model.trees_left_child[idx], -1, "Left child of a leaf node is not empty (-1)")
                 assert_equal(self.model.trees_right_child[idx], -1, "Right child of a leaf node is not empty (-1)")
                 assert_equal(self.model.is_leaf_node(idx), True, "Leaf node not detected as a leaf")
-
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.DEBUG)
