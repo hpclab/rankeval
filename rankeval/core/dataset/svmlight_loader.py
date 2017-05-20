@@ -9,7 +9,6 @@ loader for the svmlight / libsvm sparse dataset format.  """
 from _svmlight_loader import _load_svmlight_file
 from _svmlight_loader import _dump_svmlight_file
 import numpy as np
-import scipy as sp
 
 
 def load_svmlight_file(file_path, dtype=None,
@@ -45,11 +44,10 @@ def load_svmlight_file(file_path, dtype=None,
 
     Returns
     -------
-    (X, y, comments, query_ids)
+    (X, y, query_ids)
 
-    where X is a scipy.sparse matrix of shape (n_samples, n_features),
+    where X is a dense numpy matrix of shape (n_samples, n_features),
           y is a ndarray of shape (n_samples,).
-          comments is a list of length n_samples
           query_ids is a ndarray of shape(nsamples,) or shape(0,) if none were specified
     """
 
@@ -57,10 +55,10 @@ def load_svmlight_file(file_path, dtype=None,
 
     X_train = np.array(data, dtype=dtype)
 
-    if query_id:
-        return (X_train, labels, qids)
-    else:
-        return (X_train, labels)
+    if not query_id:
+        qids = np.ndarray(shape=(0,), dtype=np.int16)
+
+    return X_train, labels, qids
 
 
 def load_svmlight_files(files, dtype=None, buffer_mb=40, query_id=False):
