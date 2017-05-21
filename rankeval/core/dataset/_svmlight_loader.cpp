@@ -147,8 +147,8 @@ static PyObject *to_1d_array(std::vector<T> &v, int typenum)
 
 
 static PyObject *to_csr(std::vector<double> &data,
-                        std::vector<int> &qids,
-                        std::vector<double> &labels)
+                        std::vector<double> &labels,
+                        std::vector<int> &qids)
 {
   // We could do with a smart pointer to Python objects here.
   std::exception const *exc = 0;
@@ -200,8 +200,8 @@ public:
  */
 void parse_line(const std::string& line,
                 std::vector<double> &data,
-                std::vector<int> &qids,
-                std::vector<double> &labels)
+                std::vector<double> &labels,
+                std::vector<int> &qids)
 {
   if (line.length() == 0)
     throw SyntaxError("empty line");
@@ -256,9 +256,8 @@ void parse_line(const std::string& line,
 void parse_file(char const *file_path,
                 size_t buffer_size,
                 std::vector<double> &data,
-                std::vector<int> &qids,
-                std::vector<double> &labels
-                )
+                std::vector<double> &labels,
+                std::vector<int> &qids)
 {
   std::vector<char> buffer(buffer_size);
 
@@ -272,7 +271,7 @@ void parse_file(char const *file_path,
 
   std::string line;
   while (std::getline(file_stream, line))
-    parse_line(line, data, qids, labels);
+    parse_line(line, data, labels, qids);
 }
 
 
@@ -295,9 +294,9 @@ static PyObject *load_svmlight_file(PyObject *self, PyObject *args)
 
     std::vector<double> data, labels;
     std::vector<int> qids;
-    parse_file(file_path, buffer_size, data, qids, labels);
+    parse_file(file_path, buffer_size, data, labels, qids);
     //printf("Just before to_csr\n");
-    return to_csr(data, qids, labels);
+    return to_csr(data, labels, qids);
 
   } catch (SyntaxError const &e) {
     PyErr_SetString(PyExc_ValueError, e.what());
@@ -335,8 +334,8 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
                           "sO!O!O!i",
                           &file_path,
                           &PyArray_Type, &data_array,
-                          &PyList_Type,  &query_ids_array,
                           &PyArray_Type, &label_array,
+                          &PyList_Type,  &query_ids_array,
                           &zero_based))
       return 0;
 

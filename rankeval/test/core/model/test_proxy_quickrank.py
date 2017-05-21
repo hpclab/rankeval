@@ -7,7 +7,7 @@ from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_
 from rankeval.core.model.proxy_quickrank import ProxyQuickRank
 
 curr_dir = os.path.dirname(os.path.abspath(__file__))
-model_file = os.path.join(curr_dir, "data", "quickrank.model.xml")
+model_file = os.path.join(curr_dir, "..", "..", "data", "quickrank.model.xml")
 
 
 class ProxyQuickRankTestCase(unittest.TestCase):
@@ -21,7 +21,7 @@ class ProxyQuickRankTestCase(unittest.TestCase):
 
     def test_count_nodes(self):
         n_trees, n_nodes = ProxyQuickRank._count_nodes(model_file)
-        print "Num Trees: %d\nNum Nodes: %d" % (n_trees, n_nodes),
+        # print "Num Trees: %d\nNum Nodes: %d" % (n_trees, n_nodes),
         assert_equal(n_trees, 2)
         assert_equal(n_nodes, 10)
         assert_equal(n_trees, len(self.model.trees_root))
@@ -38,7 +38,7 @@ class ProxyQuickRankTestCase(unittest.TestCase):
                                   err_msg="Tree Weights are not correct")
 
     def test_split_features(self):
-        assert_array_equal(self.model.trees_nodes_feature, [108, 115, -1, -1, -1, 8, -1, 106, -1, -1])
+        assert_array_equal(self.model.trees_nodes_feature, [107, 114, -1, -1, -1, 7, -1, 105, -1, -1])
 
     def test_tree_values(self):
         assert_array_almost_equal(self.model.trees_nodes_value,

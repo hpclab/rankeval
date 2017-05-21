@@ -6,8 +6,7 @@ loader for the svmlight / libsvm sparse dataset format.  """
 # License: Simple BSD.
 
 
-from _svmlight_loader import _load_svmlight_file
-from _svmlight_loader import _dump_svmlight_file
+from rankeval.core.dataset._svmlight_loader import _load_svmlight_file, _dump_svmlight_file
 import numpy as np
 
 
@@ -51,6 +50,7 @@ def load_svmlight_file(file_path, dtype=None,
           query_ids is a ndarray of shape(nsamples,) or shape(0,) if none were specified
     """
 
+    print _load_svmlight_file(file_path, buffer_mb)
     data, labels, qids = _load_svmlight_file(file_path, buffer_mb)
 
     X_train = np.array(data, dtype=dtype)

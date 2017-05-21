@@ -75,7 +75,7 @@ class ProxyQuickRank(ProxyModel):
                 if elem.tag == 'split':
                     split_stack.pop()
                 elif elem.tag == 'feature':
-                    model.trees_nodes_feature[curr_node] = elem.text.strip()
+                    model.trees_nodes_feature[curr_node] = int(elem.text.strip()) - 1
                 elif elem.tag == 'threshold' or elem.tag == 'output':
                     model.trees_nodes_value[curr_node] = elem.text.strip()
 
