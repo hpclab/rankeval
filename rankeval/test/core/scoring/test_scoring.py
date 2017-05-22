@@ -4,13 +4,13 @@ import logging
 
 from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
 
-from rankeval.core.dataset.svmlight_loader import load_svmlight_file
+from rankeval.core.dataset.svmlight_format import load_svmlight_file
 from rankeval.core.model.proxy_quickrank import ProxyQuickRank
 from rankeval.core.scoring.Scoring import Scoring
+from rankeval.test.base import data_dir
 
-curr_dir = os.path.dirname(os.path.abspath(__file__))
-model_file = os.path.join(curr_dir, "..", "..", "data", "quickrank.model.xml")
-data_file = os.path.join(curr_dir, "..", "..", "data", "msn1.fold1.test.5k.txt")
+model_file = os.path.join(data_dir, "quickrank.model.xml")
+data_file = os.path.join(data_dir, "msn1.fold1.test.5k.txt")
 
 
 class ScoringTestCase(unittest.TestCase):
@@ -30,7 +30,7 @@ class ScoringTestCase(unittest.TestCase):
         del self.qids
         self.qids = None
 
-    def _test_basic_scoring(self):
+    def test_basic_scoring(self):
         self.y = self.scorer.score(detailed=False)
         print self.y
         assert_equal(True, False)

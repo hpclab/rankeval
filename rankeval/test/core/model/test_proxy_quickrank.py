@@ -5,9 +5,9 @@ import logging
 from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
 
 from rankeval.core.model.proxy_quickrank import ProxyQuickRank
+from rankeval.test.base import data_dir
 
-curr_dir = os.path.dirname(os.path.abspath(__file__))
-model_file = os.path.join(curr_dir, "..", "..", "data", "quickrank.model.xml")
+model_file = os.path.join(data_dir, "quickrank.model.xml")
 
 
 class ProxyQuickRankTestCase(unittest.TestCase):

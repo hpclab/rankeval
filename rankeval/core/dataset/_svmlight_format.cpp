@@ -339,7 +339,7 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
                           &zero_based))
       return 0;
 
-    int n_samples  = label_array->dimensions[0]; //todo -1
+    int n_samples  = label_array->dimensions[0]; //todo: check -1
     double *data   = (double*) data_array->data;
     double *y      = (double*) label_array->data;
     int n_features = data_array->dimensions[0] / n_samples;
@@ -425,7 +425,7 @@ PyMODINIT_FUNC PyInit__svmlight_loader(void)
 }
 #else
 extern "C" {
-PyMODINIT_FUNC init_svmlight_loader(void)
+PyMODINIT_FUNC init_svmlight_format(void)
 {
   _import_array();
 
@@ -434,7 +434,7 @@ PyMODINIT_FUNC init_svmlight_loader(void)
    || PyType_Ready(&IntVOwnerType)    < 0)
     return;
 
-  Py_InitModule3("_svmlight_loader",
+  Py_InitModule3("_svmlight_format",
                  svmlight_format_methods,
                  svmlight_format_doc);
 }

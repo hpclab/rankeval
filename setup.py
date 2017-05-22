@@ -96,8 +96,8 @@ setup(
     long_description=LONG_DESCRIPTION,
 
     ext_modules=[
-        Extension('rankeval.core.dataset._svmlight_loader',
-                  sources=[dataset_dir + '/_svmlight_loader.cpp'],
+        Extension('rankeval.core.dataset._svmlight_format',
+                  sources=[dataset_dir + '/_svmlight_format.cpp'],
                   include_dirs=[dataset_dir],
                   extra_compile_args=['-O3'])
     ],

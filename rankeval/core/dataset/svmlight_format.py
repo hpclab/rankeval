@@ -5,13 +5,12 @@ loader for the svmlight / libsvm sparse dataset format.  """
 #          Lars Buitinck <L.J.Buitinck@uva.nl>
 # License: Simple BSD.
 
-
-from rankeval.core.dataset._svmlight_loader import _load_svmlight_file, _dump_svmlight_file
+# from rankeval.core.dataset._svmlight_format import _load_svmlight_file, _dump_svmlight_file
+from ._svmlight_format import _load_svmlight_file, _dump_svmlight_file
 import numpy as np
 
 
-def load_svmlight_file(file_path, dtype=None,
-                       buffer_mb=40, zero_based="auto", query_id=False):
+def load_svmlight_file(file_path, dtype=None, buffer_mb=40, query_id=False):
     """Load datasets in the svmlight / libsvm format into sparse CSR matrix
 
     This format is a text-based format, with one sample per line. It does
@@ -31,34 +30,41 @@ def load_svmlight_file(file_path, dtype=None,
 
     Parameters
     ----------
-    f: str
+    file_path: str
         Path to a file to load.
-
-    n_features: int or None
-        The number of features to use. If None, it will be inferred. This
-        argument is useful to load several files that are subsets of a
-        bigger sliced dataset: each subset might not have example of
-        every feature, hence the inferred shape might vary from one
-        slice to another.
+    dtype : numpy type
+        The type to use to store each value of the dataset
+    buffer_mb : integer
+        Buffer size to use for low level read
+    query_id : bool
+        True if the query ids has to be loaded, false otherwise
 
     Returns
     -------
-    (X, y, query_ids)
+    (X, y, [query_ids])
 
-    where X is a dense numpy matrix of shape (n_samples, n_features),
+    where X is a dense numpy matrix of shape (n_samples, n_features) and type dtype,
           y is a ndarray of shape (n_samples,).
-          query_ids is a ndarray of shape(nsamples,) or shape(0,) if none were specified
+          query_ids is a ndarray of shape(nsamples,) if query_id is True, it is not returned otherwise
     """
-
-    print _load_svmlight_file(file_path, buffer_mb)
     data, labels, qids = _load_svmlight_file(file_path, buffer_mb)
 
-    X_train = np.array(data, dtype=dtype)
+    # reshape the numpy array into a matrix
+    n_samples = len(labels)
+    n_features = len(data) / n_samples
+    data.shape = (n_samples, n_features)
+    if dtype:
+        new_data = data.astype(dtype=dtype)
+        del data
+        data = new_data
+
+    # X_train = data.reshape((len(qids), len(data)/len(qids)))
+    # X_train = np.ndarray(data, dtype=dtype)
 
     if not query_id:
-        qids = np.ndarray(shape=(0,), dtype=np.int16)
-
-    return X_train, labels, qids
+        return data, labels
+    else:
+        return data, labels, qids
 
 
 def load_svmlight_files(files, dtype=None, buffer_mb=40, query_id=False):
@@ -156,4 +162,4 @@ def dump_svmlight_file(X, y, f, query_id=None, zero_based=True):
     X = np.array(X, dtype=np.float64)
     y = np.array(y, dtype=np.float64)
 
-    _dump_svmlight_file(f, X, query_id, y, int(zero_based))
+    _dump_svmlight_file(f, X, y, query_id, int(zero_based))

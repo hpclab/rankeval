@@ -7,7 +7,7 @@
 
 import argparse
 from memory_profiler import profile
-from .dataset.svmlight_loader import load_svmlight_file
+from .dataset.svmlight_format import load_svmlight_file
 
 parser = argparse.ArgumentParser(description='Import a dataset in light-svm format.')
 parser.add_argument('-i', '--input', type=str, help='the input file')
