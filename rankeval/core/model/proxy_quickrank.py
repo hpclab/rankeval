@@ -79,11 +79,6 @@ class ProxyQuickRank(ProxyModel):
                 elif elem.tag == 'threshold' or elem.tag == 'output':
                     model.trees_nodes_value[curr_node] = elem.text.strip()
 
-            print("%6s %16s %s" % (event, elem.tag, elem.attrib)),
-            if elem.text and len(elem.text.strip()):
-                print (", Value: %s" % elem.text),
-            print
-
             # clear the memory
             if event == 'end':
                 elem.clear()    # discard the element
