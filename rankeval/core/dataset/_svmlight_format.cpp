@@ -58,7 +58,7 @@ static void destroy_vector_owner(PyObject *self)
 
 /*
  * Since a template function can't have C linkage,
- * we instantiate the template for the types "int" and "double"
+ * we instantiate the template for the types "int" and "float"
  * in the following two functions. These are used for the tp_dealloc
  * attribute of the vector owner types further below.
  */
@@ -68,9 +68,9 @@ static void destroy_int_vector(PyObject *self)
   destroy_vector_owner<int>(self);
 }
 
-static void destroy_double_vector(PyObject *self)
+static void destroy_float_vector(PyObject *self)
 {
-  destroy_vector_owner<double>(self);
+  destroy_vector_owner<float>(self);
 }
 }
 
@@ -79,29 +79,29 @@ static void destroy_double_vector(PyObject *self)
  * Type objects for above.
  */
 static PyTypeObject IntVOwnerType    = { PyObject_HEAD_INIT(NULL) },
-                    DoubleVOwnerType = { PyObject_HEAD_INIT(NULL) };
+                    FloatVOwnerType = { PyObject_HEAD_INIT(NULL) };
 
 /*
  * Set the fields of the owner type objects.
  */
 static void init_type_objs()
 {
-  IntVOwnerType.tp_flags = DoubleVOwnerType.tp_flags = Py_TPFLAGS_DEFAULT;
-  IntVOwnerType.tp_name  = DoubleVOwnerType.tp_name  = "deallocator";
-  IntVOwnerType.tp_doc   = DoubleVOwnerType.tp_doc   = "deallocator object";
-  IntVOwnerType.tp_new   = DoubleVOwnerType.tp_new   = PyType_GenericNew;
+  IntVOwnerType.tp_flags = FloatVOwnerType.tp_flags = Py_TPFLAGS_DEFAULT;
+  IntVOwnerType.tp_name  = FloatVOwnerType.tp_name  = "deallocator";
+  IntVOwnerType.tp_doc   = FloatVOwnerType.tp_doc   = "deallocator object";
+  IntVOwnerType.tp_new   = FloatVOwnerType.tp_new   = PyType_GenericNew;
 
   IntVOwnerType.tp_basicsize     = sizeof(VectorOwner<int>);
-  DoubleVOwnerType.tp_basicsize  = sizeof(VectorOwner<double>);
+  FloatVOwnerType.tp_basicsize  = sizeof(VectorOwner<float>);
   IntVOwnerType.tp_dealloc       = destroy_int_vector;
-  DoubleVOwnerType.tp_dealloc    = destroy_double_vector;
+  FloatVOwnerType.tp_dealloc    = destroy_float_vector;
 }
 
 PyTypeObject &vector_owner_type(int typenum)
 {
   switch (typenum) {
     case NPY_INT: return IntVOwnerType;
-    case NPY_DOUBLE: return DoubleVOwnerType;
+    case NPY_FLOAT: return FloatVOwnerType;
   }
   throw std::logic_error("invalid argument to vector_owner_type");
 }
@@ -146,8 +146,8 @@ static PyObject *to_1d_array(std::vector<T> &v, int typenum)
 }
 
 
-static PyObject *to_csr(std::vector<double> &data,
-                        std::vector<double> &labels,
+static PyObject *to_csr(std::vector<float> &data,
+                        std::vector<float> &labels,
                         std::vector<int> &qids)
 {
   // We could do with a smart pointer to Python objects here.
@@ -158,9 +158,9 @@ static PyObject *to_csr(std::vector<double> &data,
            *ret_tuple = 0;
 
   try {
-    data_arr     = to_1d_array(data, NPY_DOUBLE);
+    data_arr     = to_1d_array(data, NPY_FLOAT);
     qids_arr     = to_1d_array(qids, NPY_INT);
-    labels_arr   = to_1d_array(labels, NPY_DOUBLE);
+    labels_arr   = to_1d_array(labels, NPY_FLOAT);
 
     ret_tuple = Py_BuildValue("OOO",
                               data_arr, labels_arr, qids_arr);
@@ -199,8 +199,9 @@ public:
  * Parse single line. Throws exception on failure.
  */
 void parse_line(const std::string& line,
-                std::vector<double> &data,
-                std::vector<double> &labels,
+                std::vector<float> &data,
+                std::vector<float
+                > &labels,
                 std::vector<int> &qids)
 {
   if (line.length() == 0)
@@ -216,7 +217,7 @@ void parse_line(const std::string& line,
   in.exceptions(std::ios::badbit);
 
     //printf("%s\n",line.substr(0,hashIdx).c_str());
-  double y;
+  float y;
   if (!(in >> y)) {
     throw SyntaxError("non-numeric or missing label");
   }
@@ -228,7 +229,7 @@ void parse_line(const std::string& line,
   }
 
   char c;
-  double x;
+  float x;
   unsigned idx;
 
   if (sscanf(qidNonsense.c_str(), "qid:%u", &idx) != 1) {
@@ -255,8 +256,8 @@ void parse_line(const std::string& line,
  */
 void parse_file(char const *file_path,
                 size_t buffer_size,
-                std::vector<double> &data,
-                std::vector<double> &labels,
+                std::vector<float> &data,
+                std::vector<float> &labels,
                 std::vector<int> &qids)
 {
   std::vector<char> buffer(buffer_size);
@@ -292,7 +293,7 @@ static PyObject *load_svmlight_file(PyObject *self, PyObject *args)
     buffer_mb = std::max(buffer_mb, 1);
     size_t buffer_size = buffer_mb * 1024 * 1024;
 
-    std::vector<double> data, labels;
+    std::vector<float> data, labels;
     std::vector<int> qids;
     parse_file(file_path, buffer_size, data, labels, qids);
     //printf("Just before to_csr\n");
@@ -340,14 +341,14 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
       return 0;
 
     int n_samples  = label_array->dimensions[0]; //todo: check -1
-    double *data   = (double*) data_array->data;
-    double *y      = (double*) label_array->data;
+    float *data   = (float*) data_array->data;
+    float *y      = (float*) label_array->data;
     int n_features = data_array->dimensions[0] / n_samples;
 
     std::ofstream fout;
     fout.open(file_path, std::ofstream::out);
 
-    double* data_pointer = data;
+    float* data_pointer = data;
     for (int i=0; i < n_samples; i++) {
       if (PyList_Size(query_ids_array) != 0) {
         PyObject* pIntObj = PyList_GetItem(query_ids_array, i);
@@ -402,7 +403,7 @@ PyMODINIT_FUNC PyInit__svmlight_loader(void)
   _import_array();
 
   init_type_objs();
-  if (PyType_Ready(&DoubleVOwnerType) < 0
+  if (PyType_Ready(&FloatVOwnerType) < 0
    || PyType_Ready(&IntVOwnerType)    < 0)
 #if PY_MAJOR_VERSION >= 3
     return NULL;
@@ -430,7 +431,7 @@ PyMODINIT_FUNC init_svmlight_format(void)
   _import_array();
 
   init_type_objs();
-  if (PyType_Ready(&DoubleVOwnerType) < 0
+  if (PyType_Ready(&FloatVOwnerType) < 0
    || PyType_Ready(&IntVOwnerType)    < 0)
     return;
 

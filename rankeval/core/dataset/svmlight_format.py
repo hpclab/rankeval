@@ -10,7 +10,7 @@ from ._svmlight_format import _load_svmlight_file, _dump_svmlight_file
 import numpy as np
 
 
-def load_svmlight_file(file_path, dtype=None, buffer_mb=40, query_id=False):
+def load_svmlight_file(file_path, buffer_mb=40, query_id=False):
     """Load datasets in the svmlight / libsvm format into sparse CSR matrix
 
     This format is a text-based format, with one sample per line. It does
@@ -32,8 +32,6 @@ def load_svmlight_file(file_path, dtype=None, buffer_mb=40, query_id=False):
     ----------
     file_path: str
         Path to a file to load.
-    dtype : numpy type
-        The type to use to store each value of the dataset
     buffer_mb : integer
         Buffer size to use for low level read
     query_id : bool
@@ -53,8 +51,9 @@ def load_svmlight_file(file_path, dtype=None, buffer_mb=40, query_id=False):
     n_samples = len(labels)
     n_features = len(data) / n_samples
     data.shape = (n_samples, n_features)
-    if dtype:
-        new_data = data.astype(dtype=dtype)
+    if data.dtype != np.float32:
+        print "Previous dtype: %s" % data.dtype
+        new_data = data.astype(dtype=np.float32)
         del data
         data = new_data
 
@@ -67,7 +66,7 @@ def load_svmlight_file(file_path, dtype=None, buffer_mb=40, query_id=False):
         return data, labels, qids
 
 
-def load_svmlight_files(files, dtype=None, buffer_mb=40, query_id=False):
+def load_svmlight_files(files, buffer_mb=40, query_id=False):
     """Load dataset from multiple files in SVMlight format
 
     This function is equivalent to mapping load_svmlight_file over a list of
@@ -105,10 +104,10 @@ def load_svmlight_files(files, dtype=None, buffer_mb=40, query_id=False):
     load_svmlight_file
     """
     files = iter(files)
-    result = list(load_svmlight_file(next(files), dtype, buffer_mb, query_id=query_id))
+    result = list(load_svmlight_file(next(files), buffer_mb, query_id=query_id))
 
     for f in files:
-        result += load_svmlight_file(f, dtype, buffer_mb, query_id=query_id)
+        result += load_svmlight_file(f, buffer_mb, query_id=query_id)
 
     return result
 
@@ -159,7 +158,7 @@ def dump_svmlight_file(X, y, f, query_id=None, zero_based=True):
     #         raise ValueError("X.shape[0] and len(query_id) should be the same, "
     #                      "got: %r and %r instead." % (X.shape[0], len(query_id)))
 
-    X = np.array(X, dtype=np.float64)
-    y = np.array(y, dtype=np.float64)
+    X = np.array(X, dtype=np.float32)
+    y = np.array(y, dtype=np.float32)
 
     _dump_svmlight_file(f, X, y, query_id, int(zero_based))
