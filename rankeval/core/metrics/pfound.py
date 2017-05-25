@@ -1,0 +1,1 @@
+# https://www.quora.com/How-can-search-quality-be-measured
