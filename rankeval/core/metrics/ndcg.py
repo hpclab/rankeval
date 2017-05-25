@@ -2,7 +2,15 @@ import math
 import numpy as np
 
 
-def ndcg(scores, labels, q_lens, cutoff=10, no_relevant_results='Yahoo'):
+"""
+
+        - we sort scores in descending order
+q_s_sorted = np.argsort(query_scores, axis=0)[::-1]
+top_k_scores = query_scores[q_s_sorted][:cutoff]
+"""
+
+
+def ndcg(scores, labels, qid_offsets, cutoff=10, no_relevant_results='Yahoo'):
     no_relevant_results_score = 0.0
 
     if (no_relevant_results == 'Yahoo'):

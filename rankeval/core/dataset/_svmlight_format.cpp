@@ -289,7 +289,12 @@ void parse_file(char const *file_path,
   while (std::getline(file_stream, line))
     new_qid = parse_line(line, data, labels, qids, last_qid);
     last_qid = new_qid;
-
+  /*
+  * test is the dataset has qids! if yes -> add SENTINEL
+  */
+  if (qids.size()!=0){
+    qids.push_back(labels.size());
+  }
 }
 
 
