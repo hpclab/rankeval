@@ -17,18 +17,16 @@ class ScoringTestCase(unittest.TestCase):
 
     def setUp(self):
         self.model = ProxyQuickRank.load(model_file)
-        dataset = Dataset(data_file, format="svmlight")
-        self.scorer = Scorer(self.model, dataset)
+        self.dataset = Dataset(data_file, format="svmlight")
+        self.scorer = Scorer(self.model, self.dataset)
 
     def tearDown(self):
         del self.model
         self.model = None
-        del self.X
-        self.X = None
-        del self.y
-        self.y = None
-        del self.qids
-        self.qids = None
+        del self.dataset
+        self.dataset = None
+        del self.scorer
+        self.scorer = None
 
     def test_basic_scoring_values(self):
         self.scorer.score(detailed=False)
