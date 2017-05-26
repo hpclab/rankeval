@@ -6,10 +6,11 @@
 import numpy as np
 
 from rankeval.core.model.regression_trees_ensemble import RegressionTreesEnsemble
+from rankeval.core.dataset import Dataset
 from rankeval.core.scoring._efficient_scoring import basic_scoring, detailed_scoring
 
 
-class Scoring(object):
+class Scorer(object):
     """
     Class for efficient scoring of an ensemble-based model composed of binary regression trees on a given dataset.
 
@@ -21,24 +22,24 @@ class Scoring(object):
     ----------
     model: RegressionTreesEnsemble
         The model to use for scoring
-    X: numpy array of float
-        The dense numpy matrix of shape (n_samples, n_features)
+    dataset: Dataset
+        The dataset to use for scoring
 
     Attributes
     ----------
     model : RegressionTreesEnsemble
         The model to use for scoring
-    X: numpy array of float
-        The dense numpy matrix of shape (n_samples, n_features)
+    dataset : Dataset
+        The dataset to use for scoring
     y : numpy array of float
         The predicted scores produced by the given model for each sample of the given dataset X
     partial_y : numpy 2d-array of float
         The predicted score of each tree of the model for each dataset instance
 
     """
-    def __init__(self, model, X):
+    def __init__(self, model, dataset):
         self.model = model
-        self.X = X
+        self.dataset = dataset
 
         # Save the predicted scores for each dataset instance
         self.y = None
@@ -70,10 +71,10 @@ class Scoring(object):
             return self.y
 
         if detailed:
-            self.partial_y = detailed_scoring(self.model, self.X)
+            self.partial_y = detailed_scoring(self.model, self.dataset.X)
             self.y = self.partial_y.sum(axis=1)
         else:
-            self.y = basic_scoring(self.model, self.X)
+            self.y = basic_scoring(self.model, self.dataset.X)
 
         return self.y
 

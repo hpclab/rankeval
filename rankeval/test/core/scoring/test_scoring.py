@@ -2,11 +2,11 @@ import os
 import unittest
 import logging
 
-from numpy.testing import assert_equal, assert_array_almost_equal, assert_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_almost_equal
 
-from rankeval.core.dataset.svmlight_format import load_svmlight_file
 from rankeval.core.model.proxy_quickrank import ProxyQuickRank
-from rankeval.core.scoring.Scoring import Scoring
+from rankeval.core.scoring.scorer import Scorer
+from rankeval.core.dataset import Dataset
 from rankeval.test.base import data_dir
 
 model_file = os.path.join(data_dir, "quickrank.model.xml")
@@ -17,8 +17,8 @@ class ScoringTestCase(unittest.TestCase):
 
     def setUp(self):
         self.model = ProxyQuickRank.load(model_file)
-        self.X, self.y, self.qids = load_svmlight_file(data_file, query_id=True)
-        self.scorer = Scoring(self.model, self.X)
+        dataset = Dataset(data_file, format="svmlight")
+        self.scorer = Scorer(self.model, dataset)
 
     def tearDown(self):
         del self.model
