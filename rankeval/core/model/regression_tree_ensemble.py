@@ -6,7 +6,7 @@
 import numpy as np
 
 
-class RegressionTreesEnsemble(object):
+class RegressionTreeEnsemble(object):
     """
     Class for efficient modelling of an ensemble-based model composed of binary regression trees.
 

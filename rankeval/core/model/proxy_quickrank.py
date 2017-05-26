@@ -13,8 +13,7 @@ nodes on the other hand are described by an "output" tag with the value as conte
 # Author: Salvatore Trani <salvatore.trani@isti.cnr.it>
 # License: <TO DEFINE>
 
-from rankeval.core.model.proxy_model import ProxyModel
-from rankeval.core.model.regression_trees_ensemble import RegressionTreesEnsemble
+from rankeval.core.model.regression_tree_ensemble import RegressionTreeEnsemble
 
 try:
     import xml.etree.cElementTree as etree
@@ -22,7 +21,7 @@ except ImportError:
     import xml.etree.ElementTree as etree
 
 
-class ProxyQuickRank(ProxyModel):
+class ProxyQuickRank(object):
     """
     Class providing the implementation for loading/storing a QuickRank model from/to file.
     """
@@ -39,12 +38,12 @@ class ProxyQuickRank(ProxyModel):
 
         Returns
         -------
-        model : RegressionTreesEnsemble
+        model : RegressionTreeEnsemble
             The loaded model as a RegressionTreesEnsemble object
         """
         n_trees, n_nodes = ProxyQuickRank._count_nodes(file_path)
         # create the model and allocate the needed space
-        model = RegressionTreesEnsemble(n_trees, n_nodes)
+        model = RegressionTreeEnsemble(n_trees, n_nodes)
 
         # get an iterable
         context = etree.iterparse(file_path, events=("start", "end"))
