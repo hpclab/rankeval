@@ -8,7 +8,7 @@
  * function to load the file format originally created for svmlight and now used
  * by many other libraries, including libsvm.
  *
- * The function loads the file directly in a CSR sparse matrix without memory
+ * The function loads the file directly in a dense sparse matrix without memory
  * copying.  The approach taken is to use 4 C++ vectors (data, indices, indptr
  * and labels) and to incrementally feed them with elements. Ndarrays are then
  * instantiated by PyArray_SimpleNewFromData, i.e., no memory is
@@ -146,7 +146,7 @@ static PyObject *to_1d_array(std::vector<T> &v, int typenum)
 }
 
 
-static PyObject *to_csr(std::vector<float> &data,
+static PyObject *to_dense(std::vector<float> &data,
                         std::vector<float> &labels,
                         std::vector<int> &qids)
 {
@@ -198,16 +198,18 @@ public:
 /*
  * Parse single line. Throws exception on failure.
  */
-void parse_line(const std::string& line,
+int parse_line(const std::string &line,
                 std::vector<float> &data,
                 std::vector<float> &labels,
-                std::vector<int> &qids)
+                std::vector<int> &qids,
+                int &last_qid
+                )
 {
   if (line.length() == 0)
     throw SyntaxError("empty line");
 
   if (line[0] == '#')
-    return;
+    return last_qid;
 
   // FIXME: we shouldn't be parsing line-by-line.
   // Also, we might catch more syntax errors with failbit.
@@ -230,6 +232,8 @@ void parse_line(const std::string& line,
   char c;
   float x;
   unsigned idx;
+  int idx_row=0;
+
 
   if (sscanf(qidNonsense.c_str(), "qid:%u", &idx) != 1) {
     if(sscanf(qidNonsense.c_str(), "%u%c%lf", &idx, &c, &x) == 3) {
@@ -240,7 +244,15 @@ void parse_line(const std::string& line,
     }
   }
   else {
-      qids.push_back(int(idx));
+    if (last_qid == 0){
+        last_qid = idx;
+        qids.push_back(idx_row);
+    }
+    if (int(idx) != last_qid){
+        idx_row = labels.size()-1;
+        qids.push_back(idx_row);
+        last_qid = int(idx);
+    }
   }
 
   while (in >> idx >> c >> x) {
@@ -248,6 +260,8 @@ void parse_line(const std::string& line,
       throw SyntaxError(std::string("expected ':', got '") + c + "'");
     data.push_back(x);
   }
+
+  return last_qid;
 }
 
 /*
@@ -269,14 +283,23 @@ void parse_file(char const *file_path,
   if (!file_stream)
     throw std::ios_base::failure("File doesn't exist!");
 
+  int last_qid = 0;
+  int new_qid;
   std::string line;
   while (std::getline(file_stream, line))
-    parse_line(line, data, labels, qids);
+    new_qid = parse_line(line, data, labels, qids, last_qid);
+    last_qid = new_qid;
+  /*
+  * test is the dataset has qids! if yes -> add SENTINEL
+  */
+  if (qids.size()!=0){
+    qids.push_back(labels.size());
+  }
 }
 
 
 static const char load_svmlight_file_doc[] =
-  "Load file in svmlight format and return a CSR.";
+  "Load file in svmlight format and return a dense matrix.";
 
 extern "C" {
 static PyObject *load_svmlight_file(PyObject *self, PyObject *args)
@@ -295,8 +318,7 @@ static PyObject *load_svmlight_file(PyObject *self, PyObject *args)
     std::vector<float> data, labels;
     std::vector<int> qids;
     parse_file(file_path, buffer_size, data, labels, qids);
-    //printf("Just before to_csr\n");
-    return to_csr(data, labels, qids);
+    return to_dense(data, labels, qids);
 
   } catch (SyntaxError const &e) {
     PyErr_SetString(PyExc_ValueError, e.what());
@@ -318,7 +340,7 @@ static PyObject *load_svmlight_file(PyObject *self, PyObject *args)
 
 
 static const char dump_svmlight_file_doc[] =
-  "Dump CSR matrix to a file in svmlight format.";
+  "Dump dense matrix to a file in svmlight format.";
 
 extern "C" {
 static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)

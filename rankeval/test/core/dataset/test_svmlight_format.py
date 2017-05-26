@@ -21,18 +21,19 @@ class SVMLightLoaderTestCase(unittest.TestCase):
         X, y, q = load_svmlight_file(qid_datafile, query_id=True)
 
         # test X's shape
-        assert_array_equal(X.shape, (3, 2))
-        print X
+        assert_array_equal(X.shape, (4, 3))
+        #print X
 
         # test X's non-zero values
         # tests X's zero values
         # test can change X's values
 
         # test y
-        assert_array_equal(y, [1, 2, 3])
+        assert_array_equal(y, [1, 2, 0, 3])
 
         # test q
-        assert_array_equal(q, [1, 37, 12])
+        print q
+        assert_array_equal(q, [0, 1, 3, 4])
 
     def test_load_svmlight_file_empty_qid(self):
         X, y, q = load_svmlight_file(datafile, query_id=True)
@@ -65,29 +66,29 @@ class SVMLightLoaderTestCase(unittest.TestCase):
 
     def test_load_svmlight_files_comment_qid(self):
         X_train, y_train, q_train, X_test, y_test, q_test = \
-            load_svmlight_files([datafile] * 2, dtype=np.float32, query_id=True)
+            load_svmlight_files([datafile] * 2,  query_id=True)
         assert_array_equal(X_train, X_test)
         assert_array_equal(y_train, y_test)
         assert_equal(X_train.dtype, np.float32)
         assert_equal(X_test.dtype, np.float32)
 
-        X1, y1, q1, X2, y2, q2, X3, y3, q3 = load_svmlight_files([datafile] * 3, dtype=np.float64, query_id=True)
+        X1, y1, q1, X2, y2, q2, X3, y3, q3 = load_svmlight_files([datafile] * 3, query_id=True)
         assert_equal(X1.dtype, X2.dtype)
         assert_equal(X2.dtype, X3.dtype)
-        assert_equal(X3.dtype, np.float64)
+        assert_equal(X3.dtype, np.float32)
 
     def test_load_svmlight_files(self):
-        print load_svmlight_files([datafile] * 2, dtype=np.float32)
-        X_train, y_train, X_test, y_test = load_svmlight_files([datafile] * 2, dtype=np.float32, query_id=False)
+        # print load_svmlight_files([datafile] * 2)
+        X_train, y_train, X_test, y_test = load_svmlight_files([datafile] * 2, query_id=False)
         assert_array_equal(X_train, X_test)
         assert_array_equal(y_train, y_test)
         assert_equal(X_train.dtype, np.float32)
         assert_equal(X_test.dtype, np.float32)
 
-        X1, y1, X2, y2, X3, y3 = load_svmlight_files([datafile] * 3, dtype=np.float64, query_id=False)
+        X1, y1, X2, y2, X3, y3 = load_svmlight_files([datafile] * 3, query_id=False)
         assert_equal(X1.dtype, X2.dtype)
         assert_equal(X2.dtype, X3.dtype)
-        assert_equal(X3.dtype, np.float64)
+        assert_equal(X3.dtype, np.float32)
 
     @raises(ValueError)
     def test_load_invalid_file(self):
