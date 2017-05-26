@@ -8,15 +8,15 @@ from rankeval.core.dataset.svmlight_format import load_svmlight_file, dump_svmli
 
 class Dataset(object):
 
-    def __init__(self, dataset_file, dataset_format="svmlight"):
+    def __init__(self, f, format="svmlight"):
         """
         This module implements the generic class for loading/dumping a dataset from/to file.
 
         Parameters
         ----------
-        dataset_file : path
+        f : path
             The file to the dataset file to load
-        dataset_format : str
+        format : str
             The format of the dataset file to load (actually supported is only "svmlight" format)
 
         Attributes
@@ -28,20 +28,20 @@ class Dataset(object):
         query_ids : numpy 1d array of int
             It is a ndarray of shape(nsamples,)
         """
-        if dataset_format == "svmlight":
-            self.X, self.y, self.query_ids = load_svmlight_file(dataset_file, query_id=True)
+        if format == "svmlight":
+            self.X, self.y, self.query_ids = load_svmlight_file(f, query_id=True)
         else:
-            raise TypeError("Dataset format %s is not yet supported!" % dataset_format)
+            raise TypeError("Dataset format %s is not yet supported!" % format)
 
-    def dump(self, dataset_file, dataset_format):
+    def dump(self, f, format):
         """
         This method implements the writing of a previously loaded dataset according to the given format on file
 
         Parameters
         ----------
-        dataset_file : path
+        f : path
             The file path where to store the dataset
-        dataset_format : str
+        format : str
             The format to use for dumping the dataset on file (actually supported is only "svmlight" format)
         """
         if len(self.query_ids) != self.X.shape[0]:
@@ -55,7 +55,7 @@ class Dataset(object):
         else:
             query_ids = self.query_ids
 
-        if dataset_format == "svmlight":
-            dump_svmlight_file(self.X, self.y, dataset_file, query_ids)
+        if format == "svmlight":
+            dump_svmlight_file(self.X, self.y, f, query_ids)
         else:
-            raise TypeError("Dataset format %s is not yet supported!" % dataset_format)
+            raise TypeError("Dataset format %s is not yet supported!" % format)
