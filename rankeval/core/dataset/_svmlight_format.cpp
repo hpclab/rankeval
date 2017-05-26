@@ -200,8 +200,7 @@ public:
  */
 void parse_line(const std::string& line,
                 std::vector<float> &data,
-                std::vector<float
-                > &labels,
+                std::vector<float> &labels,
                 std::vector<int> &qids)
 {
   if (line.length() == 0)

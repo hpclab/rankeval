@@ -6,6 +6,7 @@
 import numpy as np
 
 from rankeval.core.model.regression_trees_ensemble import RegressionTreesEnsemble
+from rankeval.core.scoring._efficient_scoring import basic_scoring, detailed_scoring
 
 
 class Scoring(object):
@@ -25,16 +26,25 @@ class Scoring(object):
 
     Attributes
     ----------
+    model : RegressionTreesEnsemble
+        The model to use for scoring
+    X: numpy array of float
+        The dense numpy matrix of shape (n_samples, n_features)
+    y : numpy array of float
+        The predicted scores produced by the given model for each sample of the given dataset X
+    partial_y : numpy 2d-array of float
+        The predicted score of each tree of the model for each dataset instance
 
     """
     def __init__(self, model, X):
         self.model = model
         self.X = X
-        self.basic_scoring = False
-        self.adv_scoring = False
-        self.y = np.zeros(X.shape[0])
-        # used to save the partial scores of each tree
-        self.partial_y = np.zeros(model.n_trees)
+
+        # Save the predicted scores for each dataset instance
+        self.y = None
+
+        # Save the partial scores of each tree for each dataset instance (if detailed scoring is True)
+        self.partial_y = None
 
     def score(self, detailed):
         """
@@ -47,31 +57,54 @@ class Scoring(object):
         Returns
         -------
         y : numpy array of float
-            the predicted score produced by the given model for each samples of the given dataset X
+            the predicted scores produced by the given model for each sample of the given dataset X
+
+        Attributes
+        ----------
+        self.y : array of float
+            The predicted scores of each dataset instance
         """
-        if self.basic_scoring:
+
+        # Skip the scoring if it has already been computed (return cached results)
+        if not detailed and self.y is not None or detailed and self.partial_y is not None:
             return self.y
 
-        for idx, sample_features in enumerate(self.X):
-            self.y[idx] = self._score_single_sample(sample_features)
-
-        self.basic_scoring = True
-        self.adv_scoring = detailed
+        if detailed:
+            self.partial_y = detailed_scoring(self.model, self.X)
+            self.y = self.partial_y.sum(axis=1)
+        else:
+            self.y = basic_scoring(self.model, self.X)
 
         return self.y
 
-    def _score_single_sample(self, sample_features):
-        for idx_tree in np.arange(self.model.n_trees):
-            self.partial_y[idx_tree] = self._score_single_sample_single_tree(sample_features, idx_tree)
-        return self.partial_y.sum()
+    def get_predicted_scores(self):
+        """
+        Provide an accessor to the predicted scores produced by the given model for each sample of the given dataset X
 
-    def _score_single_sample_single_tree(self, sample_features, idx_tree):
-        cur_node = self.model.trees_root[idx_tree]
-        while not self.model.is_leaf_node(cur_node):
-            feature_idx = self.model.trees_nodes_feature[cur_node]
-            feature_threshold = self.model.trees_nodes_value[cur_node]
-            if sample_features[feature_idx] < feature_threshold:
-                cur_node = self.model.trees_left_child[cur_node]
-            else:
-                cur_node = self.model.trees_right_child[cur_node]
-        return self.model.trees_nodes_value[cur_node]
+        Returns
+        -------
+        scores : numpy array of float
+            The predicted scores produced by the given model for each sample of the given dataset X
+
+        """
+        if self.y is None:
+            self.score(detailed=False)
+        return self.y
+
+    def get_partial_scores(self):
+        """
+        Provide an accessor to the partial scores produced by the given model for each sample of the given dataset X.
+        Each partial score reflects the score produced by a single tree of the ensemble model to a single dataset
+        instance. Thus, the returned numpy matrix has a shape of (n_instances, n_trees). The partial scores does not
+        take into account the tree weights, thus for producing the final score is needed to multiply each row for the
+        tree weight vector.
+
+        Returns
+        -------
+        scores : numpy 2d-array of float
+            The predicted score of each tree of the model for each dataset instance
+
+        """
+        if self.partial_y is None:
+            self.score(detailed=True)
+        return self.partial_y
