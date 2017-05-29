@@ -5,7 +5,7 @@
 
 import numpy as np
 
-from rankeval.core.model.regression_tree_ensemble import RegressionTreeEnsemble
+from rankeval.core.model.rt_ensemble import RTEnsemble
 from rankeval.core.dataset import Dataset
 from rankeval.core.scoring._efficient_scoring import basic_scoring, detailed_scoring
 
@@ -20,14 +20,14 @@ class Scorer(object):
 
     Parameters
     ----------
-    model: RegressionTreeEnsemble
+    model: RTEnsemble
         The model to use for scoring
     dataset: Dataset
         The dataset to use for scoring
 
     Attributes
     ----------
-    model : RegressionTreeEnsemble
+    model : RTEnsemble
         The model to use for scoring
     dataset : Dataset
         The dataset to use for scoring

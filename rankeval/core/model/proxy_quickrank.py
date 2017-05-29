@@ -13,7 +13,7 @@ nodes on the other hand are described by an "output" tag with the value as conte
 # Author: Salvatore Trani <salvatore.trani@isti.cnr.it>
 # License: <TO DEFINE>
 
-from rankeval.core.model.regression_tree_ensemble import RegressionTreeEnsemble
+from rankeval.core.model.rt_ensemble import RTEnsemble
 
 try:
     import xml.etree.cElementTree as etree
@@ -27,7 +27,7 @@ class ProxyQuickRank(object):
     """
 
     @staticmethod
-    def load(file_path):
+    def load(file_path, model):
         """
         Load the model from the file identified by file_path.
 
@@ -35,15 +35,12 @@ class ProxyQuickRank(object):
         ----------
         file_path : str
             The path to the filename where the model has been saved
-
-        Returns
-        -------
-        model : RegressionTreeEnsemble
-            The loaded model as a RegressionTreesEnsemble object
+        model : RTEnsemble
+            The model instance to fill
         """
         n_trees, n_nodes = ProxyQuickRank._count_nodes(file_path)
-        # create the model and allocate the needed space
-        model = RegressionTreeEnsemble(n_trees, n_nodes)
+        # Initialize the model and allocate the needed space given the shape and size of the ensemble
+        model.initialize(n_trees, n_nodes)
 
         # get an iterable
         context = etree.iterparse(file_path, events=("start", "end"))
@@ -82,10 +79,9 @@ class ProxyQuickRank(object):
             if event == 'end':
                 elem.clear()    # discard the element
                 root.clear()    # remove child reference from the root
-        return model
 
     @staticmethod
-    def save(file_path):
+    def save(file_path, model):
         """
         Save the model onto the file identified by file_path.
 
@@ -93,6 +89,8 @@ class ProxyQuickRank(object):
         ----------
         file_path : str
             The path to the filename where the model has to be saved
+        model : RTEnsemble
+            The model RTEnsemble model to save on file
 
         Returns
         -------
