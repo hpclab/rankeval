@@ -25,7 +25,7 @@ class RTEnsemble(object):
         file_path : str
             The path to the filename where the model has been saved
         format : str
-            The format of the model to load
+            The format of the model to load (currently supported is only [quickrank])
 
         Attributes
         ----------
