@@ -31,9 +31,9 @@ class Scorer(object):
         The model to use for scoring
     dataset : Dataset
         The dataset to use for scoring
-    y : numpy array of float
+    y_pred : numpy array of float
         The predicted scores produced by the given model for each sample of the given dataset X
-    partial_y : numpy 2d-array of float
+    partial_y_pred : numpy 2d-array of float
         The predicted score of each tree of the model for each dataset instance
 
     """
@@ -42,10 +42,10 @@ class Scorer(object):
         self.dataset = dataset
 
         # Save the predicted scores for each dataset instance
-        self.y = None
+        self.y_pred = None
 
         # Save the partial scores of each tree for each dataset instance (if detailed scoring is True)
-        self.partial_y = None
+        self.partial_y_pred = None
 
     def score(self, detailed):
         """
@@ -67,16 +67,16 @@ class Scorer(object):
         """
 
         # Skip the scoring if it has already been computed (return cached results)
-        if not detailed and self.y is not None or detailed and self.partial_y is not None:
-            return self.y
+        if not detailed and self.y_pred is not None or detailed and self.partial_y_pred is not None:
+            return self.y_pred
 
         if detailed:
-            self.partial_y = detailed_scoring(self.model, self.dataset.X)
-            self.y = self.partial_y.sum(axis=1)
+            self.partial_y_pred = detailed_scoring(self.model, self.dataset.X)
+            self.y_pred = self.partial_y_pred.sum(axis=1)
         else:
-            self.y = basic_scoring(self.model, self.dataset.X)
+            self.y_pred = basic_scoring(self.model, self.dataset.X)
 
-        return self.y
+        return self.y_pred
 
     def get_predicted_scores(self):
         """
@@ -88,11 +88,11 @@ class Scorer(object):
             The predicted scores produced by the given model for each sample of the given dataset X
 
         """
-        if self.y is None:
+        if self.y_pred is None:
             self.score(detailed=False)
-        return self.y
+        return self.y_pred
 
-    def get_partial_scores(self):
+    def get_partial_predicted_scores(self):
         """
         Provide an accessor to the partial scores produced by the given model for each sample of the given dataset X.
         Each partial score reflects the score produced by a single tree of the ensemble model to a single dataset
@@ -106,6 +106,6 @@ class Scorer(object):
             The predicted score of each tree of the model for each dataset instance
 
         """
-        if self.partial_y is None:
+        if self.partial_y_pred is None:
             self.score(detailed=True)
-        return self.partial_y
+        return self.partial_y_pred
