@@ -15,7 +15,7 @@ class Dataset(object):
         Parameters
         ----------
         f : path
-            The file to the dataset file to load
+            The file name of the dataset to load
         format : str
             The format of the dataset file to load (actually supported is only "svmlight" format)
 
@@ -30,10 +30,11 @@ class Dataset(object):
         """
         if format == "svmlight":
             self.X, self.y, self.query_ids = load_svmlight_file(f, query_id=True)
-            self.n_instances = len(self.y)
-            self.n_queries = len(self.query_ids) - 1
         else:
             raise TypeError("Dataset format %s is not yet supported!" % format)
+
+        self.n_instances = len(self.y)
+        self.n_queries = len(self.query_ids) - 1
 
     def dump(self, f, format):
         """
@@ -64,7 +65,7 @@ class Dataset(object):
 
     def clear_X(self):
         """
-        This method clear the space used by the dataset instance for storing X (the dataset features).
+        This method clears the space used by the dataset instance for storing X (the dataset features).
         This space is used only for scoring, thus it can be freed after.
 
         """
