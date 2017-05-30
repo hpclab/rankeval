@@ -8,11 +8,22 @@ import six
 
 class Metric(six.with_metaclass(ABCMeta)):
     """
-    
+    Metric is an abstract class which provides an interface for specific metrics.
+    It also offers 2 methods, one for iterating over the indeces for a certain query 
+    and another for iterating over the entire dataset based on those indeces. 
     """
+
     @abstractmethod
     def __init__(self, name):
-        pass
+        """
+        The constructor for any metric; it initializes that metric with the proper name.
+        
+        Parameters
+        ----------
+        name : string
+            Represents the name of that metric instance.
+        """
+        self.name = name
 
     @abstractmethod
     def eval(self, dataset, y_pred):
@@ -29,15 +40,27 @@ class Metric(six.with_metaclass(ABCMeta)):
         """
         self.detailed_scores = np.zeros(dataset.n_queries, dtype=np.float32)
 
+    @abstractmethod
+    def eval_per_query(self, y, y_pred):
+        """
+        
+        Parameters
+        ----------
+        y
+        y_pred
+
+        Returns
+        -------
+
+        """
+
     def query_indeces(self, dataset, y_pred):
         """
         
         Parameters
         ----------
         dataset : Dataset
-            fdfdsfsd
         y_pred : numpy array
-            fdfdfd
 
         Returns
         -------
