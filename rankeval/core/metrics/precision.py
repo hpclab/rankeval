@@ -25,7 +25,7 @@ class Precision(Metric):
             idx_y_pred_sorted = idx_y_pred_sorted[:self.cutoff]
 
         n_relevant_retrieved = (y[idx_y_pred_sorted] > self.threshold).sum()
-        precision =  float(n_relevant_retrieved) / len(idx_y_pred_sorted)
+        precision = float(n_relevant_retrieved) / len(idx_y_pred_sorted)
 
         return precision
 
