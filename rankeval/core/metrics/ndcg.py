@@ -22,7 +22,7 @@ class NDCG(Metric):
                   ties=self.ties, implementation=self.implementation)
 
     def eval(self, dataset, y_pred):
-        super(NDCG, self).eval(dataset)
+        super(NDCG, self).eval(dataset, y_pred)
         for query_id, query_y, query_y_pred in self.query_iterator(dataset, y_pred):
             self.detailed_scores[query_id] = self.eval_per_query(query_y, query_y_pred)
         return self.detailed_scores.mean(), self.detailed_scores

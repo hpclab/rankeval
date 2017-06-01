@@ -9,11 +9,12 @@ class Recall(Metric):
     """
 
     def __init__(self, name='Recall', cutoff=None, threshold=0):
+        super(Recall, self).__init__(name)
         self.cutoff = cutoff
         self.threshold = threshold
 
     def eval(self, dataset, y_pred):
-        super(Recall, self).eval(dataset)
+        super(Recall, self).eval(dataset, y_pred)
 
         for query_id, query_y, query_y_pred in self.query_iterator(dataset, y_pred):
             self.detailed_scores[query_id] = self.eval_per_query(query_y, query_y_pred)
