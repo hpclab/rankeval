@@ -146,6 +146,8 @@ setup(
         'numpy >= 1.3'
     ],
     install_requires=[
+        'setuptools > 35',
+        'setuptools_scm > 1.15',
         'six >= 1.9.0',
         'ez-setup >= 0.8',
         'numpy >= 1.12',
