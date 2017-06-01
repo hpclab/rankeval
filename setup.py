@@ -146,13 +146,15 @@ setup(
         'numpy >= 1.3'
     ],
     install_requires=[
+        'setuptools > 35',
+        'setuptools_scm > 1.15',
         'six >= 1.9.0',
         'ez-setup >= 0.8',
         'numpy >= 1.3',
         'scipy >= 0.7.0',
         'sphinx >= 1.5.0',
         'sphinx_rtd_theme >= 0.2.0',
-        'numpydoc > 0.5.0',
+        'numpydoc > 0.5.0'
     ],
     # extras_require={
     #     'test': [
