@@ -148,11 +148,12 @@ setup(
     install_requires=[
         'six >= 1.9.0',
         'ez-setup >= 0.8',
-        'numpy >= 1.3',
+        'numpy >= 1.12',
         'scipy >= 0.7.0',
         'sphinx >= 1.5.0',
         'sphinx_rtd_theme >= 0.2.0',
         'numpydoc > 0.5.0',
+        'pandas > 0.19.1',
     ],
     # extras_require={
     #     'test': [

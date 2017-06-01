@@ -3,6 +3,7 @@ import unittest
 import logging
 
 from numpy.testing import assert_array_almost_equal, assert_almost_equal
+from rankeval.core.model import RTEnsemble
 
 from rankeval.core.model.proxy_quickrank import ProxyQuickRank
 from rankeval.core.scoring.scorer import Scorer
@@ -16,7 +17,7 @@ data_file = os.path.join(data_dir, "msn1.fold1.test.5k.txt")
 class ScoringTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.model = ProxyQuickRank.load(model_file)
+        self.model = RTEnsemble(model_file, format="quickrank")
         self.dataset = Dataset(data_file, format="svmlight")
         self.scorer = Scorer(self.model, self.dataset)
 
@@ -41,22 +42,29 @@ class ScoringTestCase(unittest.TestCase):
 
     def test_detailed_scoring_values(self):
         self.scorer.score(detailed=True)
-        assert_array_almost_equal(self.scorer.get_partial_scores()[:3],
+        assert_array_almost_equal(self.scorer.get_partial_predicted_scores()[:3],
                                   [[0.06684528,  0.09865167],
                                    [0.03412888,  0.03713391],
                                    [0.06684528,  0.03713391]])
-        assert_array_almost_equal(self.scorer.get_partial_scores()[-3:],
+        assert_array_almost_equal(self.scorer.get_partial_predicted_scores()[-3:],
                                   [[0.09631728,  0.09865167],
                                    [0.09631728,  0.03713391],
                                    [0.03412888,  0.03713391]])
 
+    def test_basic_and_detailed_scoring(self):
+        self.scorer.score(detailed=False)
+        y_pred_basic = self.scorer.y_pred
+        self.scorer.score(detailed=True)
+        y_pred_detailed = self.scorer.y_pred
+        assert_array_almost_equal(y_pred_basic, y_pred_detailed)
+
     def test_detailed_scoring_sum(self):
         self.scorer.score(detailed=True)
-        assert_almost_equal(self.scorer.get_partial_scores().sum(), 621.9671631)
-        assert_array_almost_equal(self.scorer.get_partial_scores().sum(axis=0), [312.43994141, 309.53387451])
-        assert_array_almost_equal(self.scorer.get_partial_scores().sum(axis=1)[:3],
+        assert_almost_equal(self.scorer.get_partial_predicted_scores().sum(), 621.9671631)
+        assert_array_almost_equal(self.scorer.get_partial_predicted_scores().sum(axis=0), [312.43994141, 309.53387451])
+        assert_array_almost_equal(self.scorer.get_partial_predicted_scores().sum(axis=1)[:3],
                                   [0.16549695, 0.07126279, 0.10397919])
-        assert_array_almost_equal(self.scorer.get_partial_scores().sum(axis=1)[-3:],
+        assert_array_almost_equal(self.scorer.get_partial_predicted_scores().sum(axis=1)[-3:],
                                   [0.19496895, 0.13345119, 0.07126279])
 
 

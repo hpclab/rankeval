@@ -3,6 +3,7 @@ import unittest
 import logging
 
 from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
+from rankeval.core.model import RTEnsemble
 
 from rankeval.core.model.proxy_quickrank import ProxyQuickRank
 from rankeval.test.base import data_dir
@@ -13,7 +14,7 @@ model_file = os.path.join(data_dir, "quickrank.model.xml")
 class ProxyQuickRankTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.model = ProxyQuickRank.load(model_file)
+        self.model = RTEnsemble(model_file, format="quickrank")
 
     def tearDown(self):
         del self.model
