@@ -8,7 +8,7 @@ from rankeval.core.dataset.svmlight_format import load_svmlight_file, dump_svmli
 
 class Dataset(object):
 
-    def __init__(self, f, format="svmlight"):
+    def __init__(self, f, name=None, format="svmlight"):
         """
         This module implements the generic class for loading/dumping a dataset from/to file.
 
@@ -16,11 +16,15 @@ class Dataset(object):
         ----------
         f : path
             The file name of the dataset to load
+        name : str
+            The name to be given to the current dataset
         format : str
             The format of the dataset file to load (actually supported is only "svmlight" format)
 
         Attributes
         -------
+        f : path
+            The file name of the dataset to load
         X : numpy 2d array of float
             It is a dense numpy matrix of shape (n_samples, n_features),
         y : numpy 1d array of float
@@ -32,6 +36,10 @@ class Dataset(object):
             self.X, self.y, self.query_ids = load_svmlight_file(f, query_id=True)
         else:
             raise TypeError("Dataset format %s is not yet supported!" % format)
+
+        self.file = self.name = f
+        if name is not None:
+            self.name = name
 
         self.n_instances = len(self.y)
         self.n_queries = len(self.query_ids) - 1
@@ -71,3 +79,6 @@ class Dataset(object):
         """
         del self.X
         self.X = None
+
+    def __str__(self):
+        return self.name

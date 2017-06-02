@@ -4,6 +4,7 @@
 # License: <TO DEFINE>
 
 import numpy as np
+from rankeval.core.scoring import Scorer
 
 
 class RTEnsemble(object):
@@ -16,7 +17,7 @@ class RTEnsemble(object):
     The responsibility to correctly fill these data structures is delegated to the various proxies model.
     """
 
-    def __init__(self, file_path, format="quickrank"):
+    def __init__(self, file_path, name=None, format="quickrank"):
         """
         Load the model from the file identified by file_path using the given format.
 
@@ -24,11 +25,17 @@ class RTEnsemble(object):
         ----------
         file_path : str
             The path to the filename where the model has been saved
+        name : str
+            The name to be given to the current model
         format : str
             The format of the model to load (currently supported is only [quickrank])
 
         Attributes
         ----------
+        file : str
+            The path to the filename where the model has been saved
+        name : str
+            The name to be given to the current model
         n_trees : integer
             The number of regression trees in the ensemble.
         n_nodes : integer
@@ -62,6 +69,10 @@ class RTEnsemble(object):
         model : RegressionTreeEnsemble
             The loaded model as a RTEnsemble object
         """
+        self.file = self.name = file_path
+        if name is not None:
+            self.name = name
+
         self.n_trees = None
         self.n_nodes = None
 
@@ -71,6 +82,8 @@ class RTEnsemble(object):
         self.trees_right_child = None
         self.trees_nodes_value = None
         self.trees_nodes_feature = None
+
+        self._cache_scorer = dict()
 
         if format == "quickrank":
             from rankeval.core.model import ProxyQuickRank
@@ -132,3 +145,39 @@ class RTEnsemble(object):
             ProxyQuickRank.save(f, self)
         else:
             raise TypeError("Model format %s not yet supported!" % format)
+
+    def score(self, dataset, detailed=False):
+        """
+        Score the given model on the given dataset. Depending on the detailed parameter, the scoring will be either
+        basic (i.e., compute only the document scores) or detailed (i.e., besides computing the document scores analyze
+        also several characteristics of the model. The scorer is cached until existance of the model instance.
+
+        Parameters
+        ----------
+        dataset : Dataset
+            The dataset to be scored
+        detailed : bool
+            True if the model has to be scored in a detailed fashion, false otherwise
+
+        Returns
+        -------
+        scorer : Scorer
+            The scorer object resulting from scoring the model on the given dataset
+        """
+        if dataset.file not in self._cache_scorer:
+            self._cache_scorer[dataset.file] = Scorer(self, dataset)
+        scorer = self._cache_scorer[dataset.file]
+        # The scoring is performed only if it has not been done before...
+        scorer.score(detailed)
+        return scorer
+
+    def clear_cache(self):
+        """
+        This method is used to clear the internal cache of the model from the scoring objects.
+        Call this method at the end of the analysis of the current model (the memory otherwise will be automatically
+        be freed on object deletion)
+        """
+        self._cache_scorer.clear()
+
+    def __str__(self):
+        return self.name

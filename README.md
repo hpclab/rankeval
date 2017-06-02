@@ -7,7 +7,15 @@ copyright: HPCLab, ISTI-CNR, Pisa, Italy.
 
 ```python setup.py install```
 
+or
+
+```pip install -e .```
+
 ## Development
+
+Installation of libraries required for development (documentation generation and unittests):
+
+```pip install -e .[develop]```
 
 Local installation of compiled libraries: 
 
@@ -15,7 +23,12 @@ Local installation of compiled libraries:
 
 Execution of unit tests:
 
+```python setup.py test```
+
+or
+
 ```nosetests -v```
+
 
 ## Credits:
     - Dataset loader: https://github.com/deronnek/svmlight-loader

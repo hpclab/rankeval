@@ -5,7 +5,6 @@
 
 import numpy as np
 
-from rankeval.core.model.rt_ensemble import RTEnsemble
 from rankeval.core.dataset import Dataset
 from rankeval.core.scoring._efficient_scoring import basic_scoring, detailed_scoring
 
@@ -14,9 +13,10 @@ class Scorer(object):
     """
     Class for efficient scoring of an ensemble-based model composed of binary regression trees on a given dataset.
 
-    Notes
-    ----------
-    This class can be used for a simple or detailed scoring, depending on the mode selected at initialization time
+    This class can be used for simple or detailed scoring, depending on the mode selected at scoring time.
+    The document scores are cached as to avoid useless re-scoring. Thus, calling multiple times the `score` method
+    does not involve the scoring activity to be executed again, except for a detailed scoring following a basic scoring.
+    Indeed in this situation the scoring has to be repeated as to analyze in depth the scoring behaviour.
 
     Parameters
     ----------

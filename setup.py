@@ -11,15 +11,20 @@ sudo python ./setup.py install
 """
 
 import sys
-import ez_setup
 import os
-from setuptools import setup, find_packages, Extension
-from setuptools.command.build_ext import build_ext
 
 if sys.version_info[:2] < (2, 7) or (sys.version_info[:1] == 3 and sys.version_info[:2] < (3, 5)):
     raise Exception('This version of gensim needs Python 2.7, 3.5 or later.')
 
+# Users might not have setuptools installed on their machines, or even if they
+# do, it might not be the right version. Fixing this is easy: just download
+# ez_setup.py, and put it in the same directory as your setup.py script. Then
+# add these two lines to the very top of your setup script, before the script
+# imports anything from setuptools.
+import ez_setup
 ez_setup.use_setuptools()
+from setuptools import setup, find_packages, Extension
+from setuptools.command.build_ext import build_ext
 
 
 class custom_build_ext(build_ext):
@@ -143,25 +148,26 @@ setup(
 
     test_suite="rankeval.test",
     setup_requires=[
-        'numpy >= 1.3'
+        'numpy >= 1.12'
     ],
     install_requires=[
-        'setuptools > 35',
-        'setuptools_scm > 1.15',
-        'six >= 1.9.0',
-        'ez-setup >= 0.8',
         'numpy >= 1.12',
         'scipy >= 0.7.0',
-        'sphinx >= 1.5.0',
-        'sphinx_rtd_theme >= 0.2.0',
-        'numpydoc > 0.5.0',
-        'pandas > 0.19.1',
+        'six >= 1.9.0',
+        'pandas >= 0.19.1',
+        'xarray >= 0.9.5'
     ],
-    # extras_require={
-    #     'test': [
-    #         'unittest2'
-    #     ],
-    # },
+    tests_require=[
+        'nose >= 1.3.7',
+    ],
+
+    extras_require={
+        'develop': [
+            'sphinx >= 1.5.0',
+            'sphinx_rtd_theme >= 0.2.0',
+            'numpydoc > 0.5.0',
+        ],
+    },
 
     include_package_data=True,
 )

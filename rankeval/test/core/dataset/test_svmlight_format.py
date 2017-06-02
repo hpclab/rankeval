@@ -32,7 +32,7 @@ class SVMLightLoaderTestCase(unittest.TestCase):
         assert_array_equal(y, [1, 2, 0, 3])
 
         # test q
-        print q
+        # print q
         assert_array_equal(q, [0, 1, 3, 4])
 
     def test_load_svmlight_file_empty_qid(self):
