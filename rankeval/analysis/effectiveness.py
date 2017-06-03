@@ -64,10 +64,7 @@ def model_performance(datasets=[], models=[], metrics=[], display=False):
 
 def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=False):
     """
-    This method implements
-
-
-    This method implements the analysis of the model on a tree-wise (part of the effectiveness analysis category).
+    This method implements the analysis of the model on a tree-wise basis (part of the effectiveness analysis category).
 
     Parameters
     ----------
@@ -86,6 +83,10 @@ def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=F
 
     Returns
     -------
+    metric_scores : xarray DataArray
+        A DataArray containing the metric scores of each model using the given metrics on the given datasets.
+        The metric scores are cumulatively reported tree by tree, i.e., top 10 trees, top 20, etc., with a step-size
+        between the number of trees as highlighted by the step parameter.
 
     """
     def get_tree_steps(model_trees):
@@ -128,3 +129,57 @@ def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=F
                                coords=[datasets, models, tree_steps+1, metrics],
                                dims=['dataset', 'model', 'k', 'metric'])
     return performance
+
+
+def query_wise_performance(datasets=[], models=[], metrics=[], bins=100, display=False):
+    """
+    This method implements the analysis of the model on a query-wise basis, i.e., it compute the cumulative distribution
+    of a given performance metric. For example, the fraction of queries with a NDCG score smaller that any given
+    threshold, over the set of queries described in the dataset.
+
+    Parameters
+    ----------
+    datasets : list of Dataset
+        The datasets to use for analyzing the behaviour of the model using the given metrics and models
+    models : list of RTEnsemble
+        The models to analyze
+    metrics : list of Metric
+        The metrics to use for the analysis
+    bins : int
+        Number of equi-spaced bins for which to computer the cumulative distribution of the given metric.
+    display : bool
+        True if the method has to display interestingly insights using inline plots/tables
+        These additional information will be displayed only if working inside a ipython notebook.
+
+    Returns
+    -------
+    metric_scores : xarray DataArray
+        A DataArray containing the metric scores of each model using the given metrics on the given datasets.
+        The metric scores are cumulatively reported tree by tree, i.e., top 10 trees, top 20, etc., with a step-size
+        between the number of trees as highlighted by the step parameter.
+
+    """
+
+    data = np.empty(shape=(len(datasets), len(models), len(metrics), bins), dtype=np.float32)
+    data.fill(np.nan)
+
+    bin_values = np.linspace(start=0, stop=1, num=bins+1)
+
+    for idx_dataset, dataset in enumerate(datasets):
+        for idx_model, model in enumerate(models):
+            scorer = model.score(dataset, detailed=True)
+            for idx_metric, metric in enumerate(metrics):
+                _, metric_scores = metric.eval(dataset, scorer.y_pred)
+                # evaluate the histogram
+                values, base = np.histogram(metric_scores, bins=bin_values)
+                # evaluate the cumulative
+                cumulative = np.cumsum(values, dtype=float) / bins
+
+                data[idx_dataset][idx_model][idx_metric] = cumulative
+
+    performance = xr.DataArray(data,
+                               name='Query-Wise performance',
+                               coords=[datasets, models, metrics, bin_values[:-1] + 1.0 / bins],
+                               dims=['dataset', 'model', 'metric', 'bin'])
+    return performance
+
