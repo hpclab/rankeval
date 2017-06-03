@@ -64,6 +64,10 @@ def model_performance(datasets=[], models=[], metrics=[], display=False):
 
 def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=False):
     """
+    This method implements
+
+
+    This method implements the analysis of the model on a tree-wise (part of the effectiveness analysis category).
 
     Parameters
     ----------
