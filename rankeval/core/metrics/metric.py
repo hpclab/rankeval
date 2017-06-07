@@ -35,7 +35,8 @@ class Metric(six.with_metaclass(ABCMeta)):
     @abstractmethod
     def eval(self, dataset, y_pred):
         """
-        
+        This abstract method computes a specific metric over the predicted scores for a test dataset
+
         Parameters
         ----------
         dataset
@@ -50,7 +51,9 @@ class Metric(six.with_metaclass(ABCMeta)):
     @abstractmethod
     def eval_per_query(self, y, y_pred):
         """
-        
+
+        This abstract methods helps to evaluate the predicted scores for a specific query within the dataset.
+
         Parameters
         ----------
         y
@@ -63,14 +66,17 @@ class Metric(six.with_metaclass(ABCMeta)):
 
     def query_indeces(self, dataset, y_pred):
         """
-        
+        This method implements and iterator of the query_ids in the dataset.
+
         Parameters
         ----------
         dataset : Dataset
-        y_pred : numpy array
+        y_pred : numpy.array
 
         Returns
         -------
+        numpy.ndarray
+            The row index of instances belonging to the same query.
 
         """
         assert len(y_pred) == len(dataset.y)
@@ -80,11 +86,21 @@ class Metric(six.with_metaclass(ABCMeta)):
 
     def query_iterator(self, dataset, y_pred):
         """
-        
-        :param self: 
-        :param dataset: 
-        :param y_pred: 
-        :return: 
+        This method iterates over dataset document scores and predicted scores in blocks of instances
+        which belong to the same query.
+        Parameters
+        ----------
+        dataset :  Datatset
+        y_pred  : numpy.array
+
+        Returns
+        -------
+        int:
+            The query id.
+        numpy.array:
+            The document scores of the instances in the labeled dataset (instance labels) belonging to the same query id.
+        numpy.array:
+            The predicted scores for the instances in the dataset belonging to the same query id.
         """
         for query_id, query_line_indeces in enumerate(self.query_indeces(dataset, y_pred)):
             yield query_id, dataset.y[query_line_indeces], y_pred[query_line_indeces]

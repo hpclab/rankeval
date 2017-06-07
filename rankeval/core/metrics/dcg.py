@@ -11,15 +11,31 @@ from rankeval.core.metrics.metric import Metric
 
 class DCG(Metric):
     """
-    This class implements DCG with several parameters
-    
-    
-    Implementation:
+    This class implements DCG with several parameters.
+
+    Available implementations:
     [1] Burges - "exp"
     [0] Jarvelin - "flat" 
     """
 
     def __init__(self, name='DCG', cutoff=None, no_relevant_results=0.0, ties=True, implementation="flat"):
+        """
+        This is the constructor of DCG, an object of type Metric, with the name DCG.
+        The constructor also allows setting custom values
+            - cutoff: the top k results to be considered at per query level
+            - no_relevant_results: is a float values indicating how to treat the cases where then are no relevant results
+            - ties: indicates how we should consider the ties
+            - implementation: indicates whether to consider the flat or the exponential DCG formula
+
+        Parameters
+        ----------
+        name : string
+        cutoff: int
+        no_relevant_results: float
+        ties: bool
+        implementation: string
+            it can range between {"flat", "exp"}
+        """
         super(DCG, self).__init__(name)
         self.cutoff = cutoff
         self.no_relevant_results = no_relevant_results
@@ -29,17 +45,16 @@ class DCG(Metric):
 
     def eval(self, dataset, y_pred):
         """
-        
-        The method computer DCG by taking as input the dataset and the predicted document scores
+        The method computes DCG by taking as input the dataset and the predicted document scores
         (obtained with the scoring methods). It returns the averaged DCG score over the entire dataset and the 
         detailed DCG scores per query.
         
         Parameters
         ----------
         dataset : Dataset
-            Represents the Dataset object on which we want to apply the evaluation metric.
+            Represents the Dataset object on which we want to apply DCG.
         y_pred : numpy 1d array of float
-            Represent the predicted document scores for each sample/instance in the dataset.
+            Represents the predicted document scores for each instance in the dataset.
 
         Returns
         -------
@@ -57,7 +72,6 @@ class DCG(Metric):
 
     def eval_per_query(self, y, y_pred):
         """
-        
         This method helps compute the DCG score per query. It is called by the eval function which averages and 
         aggregates the scores for each query.
         
@@ -90,6 +104,6 @@ class DCG(Metric):
     def __str__(self):
         s = self.name
         if self.cutoff is not None:
-            s += "@%d" % self.cutoff
-        # TODO
+            s += "@{}".format(self.cutoff)
+        # s += "[no-rel:{}, ties:{}, impl={}]".format(self.no_relevant_results, self.ties, self.implementation)
         return s
