@@ -1,7 +1,13 @@
+# Copyright (c) 2017, All Contributors (see CONTRIBUTORS file)
+# Authors: Salvatore Trani <salvatore.trani@isti.cnr.it>
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 """Class for efficient modelling of an ensemble-based model of binary regression trees."""
 
 # Author: Salvatore Trani <salvatore.trani@isti.cnr.it>
-# License: <TO DEFINE>
 
 import numpy as np
 from rankeval.core.scoring import Scorer

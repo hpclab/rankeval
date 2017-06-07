@@ -1,8 +1,8 @@
 History
 -------
 
-This project was started in 2017 as a demo proposition at the 40th International 
-ACM SIGIR Conference on Research and Development in Information Retrieval.
+This project was started in 2017 as a demo presented at the 40th International 
+ACM SIGIR Conference on Research and Development in Information Retrieval in Tokyo (Japan).
 
 People
 ------

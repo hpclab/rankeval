@@ -16,13 +16,7 @@ import os
 if sys.version_info[:2] < (2, 7) or (sys.version_info[:1] == 3 and sys.version_info[:2] < (3, 5)):
     raise Exception('This version of gensim needs Python 2.7, 3.5 or later.')
 
-# Users might not have setuptools installed on their machines, or even if they
-# do, it might not be the right version. Fixing this is easy: just download
-# ez_setup.py, and put it in the same directory as your setup.py script. Then
-# add these two lines to the very top of your setup script, before the script
-# imports anything from setuptools.
-import ez_setup
-ez_setup.use_setuptools()
+# import ez_setup
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
@@ -90,8 +84,8 @@ When `citing RankEval in academic papers, please use this BibTeX entry::
     TODO: ADD HERE!
   }
 ----------------
-RankEval is open source software released under the `GNU LGPLv2.1 license <http://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html>`_.
-Copyright (c) 20017-now HPC-ISTI CNR
+RankEval is open source software released under the `MPL 2.0 license <http://mozilla.org/MPL/2.0/>`_.
+Copyright (c) 2017-now HPC-ISTI CNR
 """
 
 setup(
@@ -114,6 +108,7 @@ setup(
     ],
 
     cmdclass=cmdclass,
+    license='MPL 2.0',
     packages=find_packages(),
 
     author="HPC lab, ISTI-CNR",
@@ -151,7 +146,8 @@ setup(
         'numpy >= 1.12'
     ],
     install_requires=[
-        'numpy >= 1.12',
+        # Use 1.13: https://github.com/quantopian/zipline/issues/1808
+        'numpy >= 1.13.0rc2',
         'scipy >= 0.7.0',
         'six >= 1.9.0',
         'pandas >= 0.19.1',
