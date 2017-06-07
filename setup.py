@@ -128,7 +128,7 @@ setup(
         'Environment :: Console',
         'Framework :: Jupyter',
         'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)',
+        'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.5',

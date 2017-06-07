@@ -25,7 +25,7 @@ Execution of unit tests:
 
 ```python setup.py test```
 
-or
+or (if you have nose already installed):
 
 ```nosetests -v```
 

@@ -6,7 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 """
-The :mod:`rankeval.analysis` implements the functionalities for analysing the
+The :mod:`rankeval.analysis` module implements the functionalities for analysing the
 behaviour of several ranking models with respect to several metrics and
 datasets. It proposes a comprehensive set of analysis for tuning, evaluating
 and comparing Gradient Boosted Regression Tree models devoted to learning a
