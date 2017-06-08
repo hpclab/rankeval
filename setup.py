@@ -14,7 +14,7 @@ import sys
 import os
 
 if sys.version_info[:2] < (2, 7) or (sys.version_info[:1] == 3 and sys.version_info[:2] < (3, 5)):
-    raise Exception('This version of gensim needs Python 2.7, 3.5 or later.')
+    raise Exception('This version of rankeval needs Python 2.7, 3.5 or later.')
 
 # import ez_setup
 from setuptools import setup, find_packages, Extension
@@ -48,41 +48,58 @@ LONG_DESCRIPTION = u"""
 ==============================================
 RankEval -- Analysis and evaluation of Learning to Rank models
 ==============================================
-RankEval is a Python library for the #analysis# and #evaluation# of Learning to Rank models based on ensembles of regression trees.
-Target audience is the *machine learning* (ML) and *information retrieval* (IR) communities.
+RankEval is a Python library for the #analysis# and #evaluation# of Learning 
+to Rank models based on ensembles of regression trees.
+Target audience is the *machine learning* (ML) and *information retrieval* 
+(IR) communities.
 
 Features
 ---------
-* The tool is **memory-dependent** w.r.t. the corpus size (input dataset needs to fit in RAM),
+* The tool is **memory-dependent** w.r.t. the corpus size (input dataset needs
+to fit in RAM),
 * **Intuitive interfaces**
-  * easy to load your own input corpus/model (supported the model format of the most popular learning tools such as QuickRank, RankLib, XGBoost, Scikit-Learn, etc.
+  * easy to load your own input corpus/model (supported the model format of 
+    the most popular learning tools such as QuickRank, RankLib, XGBoost, Scikit-Learn, etc.
   * easy to extend with other analysis and evaluations
 * Efficient multicore implementations of the evaluation phase
-* Extensive `documentation and Jupyter Notebook support for the presentation of the detailed analysis.
+* Extensive `documentation and Jupyter Notebook support for the presentation of the 
+  detailed analysis.
 
 Installation
 ------------
-This software depends on `NumPy and Scipy <http://www.scipy.org/Download>`_, two Python packages for scientific computing.
+This software depends on `NumPy and Scipy <http://www.scipy.org/Download>`_, two 
+Python packages for scientific computing.
 You must have them installed prior to installing `rankeval`.
 The simple way to install `rankeval` is::
     pip install -U rankeval
-Or, if you have instead downloaded and unzipped the `source tar.gz <http://pypi.python.org/pypi/rankeval>`_ package,
+Or, if you have instead downloaded and unzipped the `source tar.gz 
+<http://pypi.python.org/pypi/rankeval>`_ package,
 you'd run:
     python setup.py test
     python setup.py install
 This version has been tested under Python 2.7 and 3.5.
 
-How come RankEval is so fast and memory efficient? Isn't it pure Python, and isn't Python slow and greedy?
+How come RankEval is so fast and memory efficient? Isn't it pure Python, and 
+isn't Python slow and greedy?
 --------------------------------------------------------------------------------------------------------
-Many scientific algorithms can be expressed in terms of large matrix operations. RankEval taps into these low-level BLAS libraries, by means of its dependency on NumPy. So while gensim-the-top-level-code is pure Python, it actually executes highly optimized Fortran/C under the hood, including multithreading (if your BLAS is so configured).
-Memory-wise, gensim makes heavy use of Python's built-in generators and iterators for streamed data processing. Memory efficiency was one of gensim's `design goals <http://radimrehurek.com/gensim/about.html>`_, and is a central feature of gensim, rather than something bolted on as an afterthought.
+Many scientific algorithms can be expressed in terms of large matrix 
+operations. RankEval taps into these low-level BLAS libraries, by means of its
+dependency on NumPy. So while most of the rankeval code is pure Python, it 
+actually executes highly optimized C under the hood, including multithreading 
+(for document scoring, by using OpenMP facilities).
 
 Citing RankEval
 -------------
 When `citing RankEval in academic papers, please use this BibTeX entry::
-  @inproceedings{
-    TODO: ADD HERE!
-  }
+    @inproceedings{rankeval-sigir17,
+        author = {Claudio Lucchese and Cristina Ioana Muntean and Franco Maria Nardini and
+            Raffaele Perego and Salvatore Trani},
+        title = {RankEval: An Evaluation and Analysis Framework for Learning-to-Rank Solutions},
+        booktitle = {SIGIR 2017: Proceedings of the 40th International {ACM} {SIGIR} 
+            Conference on Research and Development in Information Retrieval},
+        year = {2017},
+        location = {Tokyo, Japan}
+    }
 ----------------
 RankEval is open source software released under the `MPL 2.0 license <http://mozilla.org/MPL/2.0/>`_.
 Copyright (c) 2017-now HPC-ISTI CNR
@@ -98,6 +115,7 @@ setup(
     ext_modules=[
         Extension('rankeval.core.dataset._svmlight_format',
                   sources=[dataset_dir + '/_svmlight_format.cpp'],
+                  language='c++',
                   include_dirs=[dataset_dir],
                   extra_compile_args=['-O3']),
         Extension('rankeval.core.scoring._efficient_scoring',
