@@ -139,6 +139,56 @@ def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=F
     return performance
 
 
+def tree_wise_average_contribution(datasets=[], models=[], metrics=[], display=False):
+    """
+    This method provides the average contribution given by each tree of each model to the scoring of the datasets.
+
+    Parameters
+    ----------
+    datasets : list of Dataset
+        The datasets to use for analyzing the behaviour of the model using the given metrics and models
+    models : list of RTEnsemble
+        The models to analyze
+    metrics : list of Metric
+        The metrics to use for the analysis
+    display : bool
+        True if the method has to display interestingly insights using inline plots/tables
+        These additional information will be displayed only if working inside a ipython notebook.
+
+    Returns
+    -------
+    average_contribution : xarray DataArray
+        A DataArray containing the average contribution given by each tree of
+        each model to the scoring of the given datasets. The average
+        contribution are reported tree by tree.
+    """
+
+    max_num_trees = 0
+    for model in models:
+        if model.n_trees > max_num_trees:
+            max_num_trees = model.n_trees
+
+    data = np.empty(shape=(len(datasets), len(models), max_num_trees), dtype=np.float32)
+    data.fill(np.nan)
+
+    for idx_dataset, dataset in enumerate(datasets):
+        for idx_model, model in enumerate(models):
+            scorer = model.score(dataset, detailed=True)
+
+            # the document scores are accumulated along for the various top-k (in order to avoid useless re-scoring)
+            y_contributes = np.empty(max_num_trees, dtype=np.float32)
+            y_contributes.fill(np.nan)
+            y_contributes[:model.n_trees] = scorer.partial_y_pred.sum(axis=0)
+
+            data[idx_dataset][idx_model] = y_contributes
+
+    performance = xr.DataArray(data,
+                               name='Tree-Wise average contribution',
+                               coords=[datasets, models, np.arange(max_num_trees)],
+                               dims=['dataset', 'model', 'trees'])
+    return performance
+
+
 def query_wise_performance(datasets=[], models=[], metrics=[], bins=100, display=False):
     """
     This method implements the analysis of the model on a query-wise basis, i.e., it compute the cumulative distribution
