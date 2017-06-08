@@ -98,6 +98,7 @@ def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=F
     """
     def get_tree_steps(model_trees):
         trees = range(step-1, model_trees, step)
+        # Add last tree to the steps
         if trees[-1] != model_trees-1:
             trees.append(model_trees-1)
         return np.array(trees)
@@ -119,7 +120,7 @@ def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=F
             # the document scores are accumulated along for the various top-k (in order to avoid useless re-scoring)
             y_pred = np.zeros(dataset.n_instances)
 
-            for idx_top_k, top_k in enumerate(np.arange(start=step-1, stop=model.n_trees, step=step)):
+            for idx_top_k, top_k in enumerate(get_tree_steps(model.n_trees)):
 
                 # compute the document scores using only top-k trees of the model on the given dataset
                 for idx_tree in np.arange(start=idx_top_k*step, stop=top_k+1):
@@ -189,3 +190,14 @@ def query_wise_performance(datasets=[], models=[], metrics=[], bins=100, display
                                coords=[datasets, models, metrics, bin_values[:-1] + 1.0 / bins],
                                dims=['dataset', 'model', 'metric', 'bin'])
     return performance
+
+
+def query_class_performance(datasets=[], models=[], metrics=[], bins=100, display=False):
+    pass
+
+
+def document_graded_relevance(datasets=[], models=[], bins=100, display=False):
+    pass
+
+def rank_confusion_matrix(datasets=[], models=[], metrics=[], bins=100, display=False):
+    pass
