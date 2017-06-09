@@ -5,7 +5,10 @@ copyright: HPCLab, ISTI-CNR, Pisa, Italy.
 
 ## Installation
 
-```python setup.py install```
+The library works with OpenMP so you need a compiler supporting it. Below an example of installation with
+GCC and G++.
+
+```CC=gcc-6 CXX=g++-6 python setup.py install```
 
 or
 

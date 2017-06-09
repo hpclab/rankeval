@@ -30,6 +30,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+
 /*
  * A Python object responsible for memory management of our vectors.
  */
@@ -106,6 +108,19 @@ PyTypeObject &vector_owner_type(int typenum)
   throw std::logic_error("invalid argument to vector_owner_type");
 }
 
+/*
+ * Parsing.
+ */
+
+class SyntaxError : public std::runtime_error {
+public:
+  SyntaxError(std::string const &msg)
+   : std::runtime_error(msg + " in SVMlight/libSVM file")
+  {
+  }
+};
+
+
 
 /*
  * Convert a C++ vector to a 1d-ndarray WITHOUT memory copying.
@@ -115,7 +130,7 @@ PyTypeObject &vector_owner_type(int typenum)
 template <typename T>
 static PyObject *to_1d_array(std::vector<T> &v, int typenum)
 {
-  npy_intp dims[1] = {v.size()};
+  npy_intp dims[1] = {(npy_intp) v.size()};
 
   // A C++ vector's elements are guaranteed to be in a contiguous array.
   PyObject *arr = PyArray_SimpleNewFromData(1, dims, typenum, &v[0]);
@@ -184,18 +199,6 @@ static PyObject *to_dense(std::vector<float> &data,
 
 
 /*
- * Parsing.
- */
-
-class SyntaxError : public std::runtime_error {
-public:
-  SyntaxError(std::string const &msg)
-   : std::runtime_error(msg + " in SVMlight/libSVM file")
-  {
-  }
-};
-
-/*
  * Parse single line. Throws exception on failure.
  */
 int parse_line(const std::string &line,
@@ -230,7 +233,7 @@ int parse_line(const std::string &line,
   }
 
   char c;
-  float x;
+  double x;
   unsigned idx;
   int idx_row=0;
 
@@ -286,9 +289,11 @@ void parse_file(char const *file_path,
   int last_qid = 0;
   int new_qid;
   std::string line;
-  while (std::getline(file_stream, line))
+  while (std::getline(file_stream, line)) {
     new_qid = parse_line(line, data, labels, qids, last_qid);
     last_qid = new_qid;
+  }
+
   /*
   * test is the dataset has qids! if yes -> add SENTINEL
   */
@@ -304,6 +309,7 @@ static const char load_svmlight_file_doc[] =
 extern "C" {
 static PyObject *load_svmlight_file(PyObject *self, PyObject *args)
 {
+
   try {
     // Read function arguments.
     char const *file_path;
