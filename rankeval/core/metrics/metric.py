@@ -64,26 +64,6 @@ class Metric(six.with_metaclass(ABCMeta)):
 
         """
 
-    def query_indeces(self, dataset, y_pred):
-        """
-        This method implements and iterator of the query_ids in the dataset.
-
-        Parameters
-        ----------
-        dataset : Dataset
-        y_pred : numpy.array
-
-        Returns
-        -------
-        numpy.ndarray
-            The row index of instances belonging to the same query.
-
-        """
-        assert len(y_pred) == len(dataset.y)
-        for i in np.arange(len(dataset.query_ids)-1):
-            yield np.arange(dataset.query_ids[i], dataset.query_ids[i+1])
-
-
     def query_iterator(self, dataset, y_pred):
         """
         This method iterates over dataset document scores and predicted scores in blocks of instances
@@ -102,5 +82,5 @@ class Metric(six.with_metaclass(ABCMeta)):
         numpy.array:
             The predicted scores for the instances in the dataset belonging to the same query id.
         """
-        for query_id, query_line_indeces in enumerate(self.query_indeces(dataset, y_pred)):
-            yield query_id, dataset.y[query_line_indeces], y_pred[query_line_indeces]
+        for query_id, (start_offset, end_offset) in enumerate(dataset.query_offset_iterator()):
+            yield query_id, dataset.y[start_offset:end_offset], y_pred[start_offset:end_offset]

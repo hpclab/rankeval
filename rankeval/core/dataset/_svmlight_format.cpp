@@ -30,6 +30,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <iostream>
+#include <stdio.h>
 /*
  * A Python object responsible for memory management of our vectors.
  */
@@ -217,7 +219,7 @@ int parse_line(const std::string &line,
   std::istringstream in(line.substr(0, hashIdx));
   in.exceptions(std::ios::badbit);
 
-    //printf("%s\n",line.substr(0,hashIdx).c_str());
+  printf("%s\n", line.substr(0,hashIdx).c_str());
   float y;
   if (!(in >> y)) {
     throw SyntaxError("non-numeric or missing label");
@@ -261,6 +263,8 @@ int parse_line(const std::string &line,
     data.push_back(x);
   }
 
+  std::cout << last_qid << " ~ " << data.size() << " ~ " << y << std::endl;
+
   return last_qid;
 }
 
@@ -286,13 +290,15 @@ void parse_file(char const *file_path,
   int last_qid = 0;
   int new_qid;
   std::string line;
-  while (std::getline(file_stream, line))
+  while (std::getline(file_stream, line)) {
+    std::cout << line << std::endl;
     new_qid = parse_line(line, data, labels, qids, last_qid);
     last_qid = new_qid;
+  }
   /*
-  * test is the dataset has qids! if yes -> add SENTINEL
+  * test is the dataset has not qids. if yes -> add SENTINEL
   */
-  if (qids.size()!=0){
+  if (qids.size() != 0) {
     qids.push_back(labels.size());
   }
 }
