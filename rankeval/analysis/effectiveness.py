@@ -139,7 +139,7 @@ def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=F
     return performance
 
 
-def tree_wise_average_contribution(datasets=[], models=[], metrics=[], display=False):
+def tree_wise_average_contribution(datasets=[], models=[], display=False):
     """
     This method provides the average contribution given by each tree of each model to the scoring of the datasets.
 
@@ -149,8 +149,6 @@ def tree_wise_average_contribution(datasets=[], models=[], metrics=[], display=F
         The datasets to use for analyzing the behaviour of the model using the given metrics and models
     models : list of RTEnsemble
         The models to analyze
-    metrics : list of Metric
-        The metrics to use for the analysis
     display : bool
         True if the method has to display interestingly insights using inline plots/tables
         These additional information will be displayed only if working inside a ipython notebook.
@@ -189,7 +187,7 @@ def tree_wise_average_contribution(datasets=[], models=[], metrics=[], display=F
     return performance
 
 
-def query_wise_performance(datasets=[], models=[], metrics=[], bins=100, display=False):
+def query_wise_performance(datasets=[], models=[], metrics=[], bins=None, start=None, end=None, display=False):
     """
     This method implements the analysis of the model on a query-wise basis, i.e., it compute the cumulative distribution
     of a given performance metric. For example, the fraction of queries with a NDCG score smaller that any given
@@ -203,8 +201,15 @@ def query_wise_performance(datasets=[], models=[], metrics=[], bins=100, display
         The models to analyze
     metrics : list of Metric
         The metrics to use for the analysis
-    bins : int
+    bins : int or None
         Number of equi-spaced bins for which to computer the cumulative distribution of the given metric.
+        if bin is None, it will use the maximum number of queries across all the datasets as bins value.
+    start : int or None
+        The start point of the range for which we will compute the cumulative distribution of the given metric.
+        if start is None, it will use the minimum metric score as starting point for the range.
+    end : int or None
+        The end point of the range for which we will compute the cumulative distribution of the given metric
+        if end is None, it will use the maximum metric score as starting point for the range.
     display : bool
         True if the method has to display interestingly insights using inline plots/tables
         These additional information will be displayed only if working inside a ipython notebook.
@@ -215,19 +220,36 @@ def query_wise_performance(datasets=[], models=[], metrics=[], bins=100, display
         A DataArray containing the metric scores of each model using the given metrics on the given datasets.
         The metric scores are cumulatively reported tree by tree, i.e., top 10 trees, top 20, etc., with a step-size
         between the number of trees as highlighted by the step parameter.
-
     """
+    glob_metric_scores = np.empty(shape=(len(datasets), len(models), len(metrics)), dtype=object)
+    glob_metric_scores.fill(np.nan)
 
-    data = np.empty(shape=(len(datasets), len(models), len(metrics), bins), dtype=np.float32)
-    data.fill(np.nan)
-
-    bin_values = np.linspace(start=0, stop=1, num=bins+1)
-
+    min_metric_score = max_metric_score = np.nan
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
             scorer = model.score(dataset, detailed=True)
             for idx_metric, metric in enumerate(metrics):
                 _, metric_scores = metric.eval(dataset, scorer.y_pred)
+                glob_metric_scores[idx_dataset][idx_model][idx_metric] = metric_scores
+                min_metric_score = np.nanmin([min_metric_score, metric_scores.min()])
+                max_metric_score = np.nanmax([max_metric_score, metric_scores.max()])
+
+    if start is None:
+        start = min_metric_score
+    if end is None:
+        end = max_metric_score
+    if bins is None:
+        bins = np.max([dataset.n_queries for dataset in datasets])
+
+    bin_values = np.linspace(start=start, stop=end, num=bins+1)
+
+    data = np.empty(shape=(len(datasets), len(models), len(metrics), bins), dtype=np.float32)
+    data.fill(np.nan)
+
+    for idx_dataset, dataset in enumerate(datasets):
+        for idx_model, model in enumerate(models):
+            for idx_metric, metric in enumerate(metrics):
+                metric_scores = glob_metric_scores[idx_dataset][idx_model][idx_metric]
                 # evaluate the histogram
                 values, base = np.histogram(metric_scores, bins=bin_values)
                 # evaluate the cumulative
@@ -246,8 +268,86 @@ def query_class_performance(datasets=[], models=[], metrics=[], bins=100, displa
     pass
 
 
-def document_graded_relevance(datasets=[], models=[], bins=100, display=False):
-    pass
+def document_graded_relevance(datasets=[], models=[], bins=100, start=None, end=None, display=False):
+    """
+    This method implements the analysis of the model on a per-label basis,
+    i.e., it allows the evaluation of the cumulative predicted score
+    distribution. For example, for each relevance label available in each
+    dataset, it provides the fraction of documents with a predicted score
+    smaller than a given score (the latter are binned among start and end).
+    By plotting this fractions it is possible to obtains a curve for each
+    relevance label. The bigger the distance amongst curves the larger the
+    model's discriminative power.
+
+    Parameters
+    ----------
+    datasets : list of Dataset
+        The datasets to use for analyzing the behaviour of the model using the given models
+    models : list of RTEnsemble
+        The models to analyze
+    bins : int or None
+        Number of equi-spaced bins for which to computer the cumulative distribution of the predicted scores.
+        if bin is None, it will use the maximum number of queries across all the datasets as bins value.
+    start : int or None
+        The start point of the range for which we will compute the cumulative distribution of the predicted scores.
+        if start is None, it will use the minimum metric score as starting point for the range.
+    end : int or None
+        The end point of the range for which we will compute the cumulative distribution of the predicted scores
+        if end is None, it will use the maximum metric score as starting point for the range.
+    display : bool
+        True if the method has to display interestingly insights using inline plots/tables
+        These additional information will be displayed only if working inside a ipython notebook.
+
+    Returns
+    -------
+    graded_relevance : xarray DataArray
+        A DataArray containing the fraction of documents with a predicted score
+        smaller than a given score, for each model and each dataset.
+    """
+
+    glob_doc_scores = np.empty(shape=(len(datasets), len(models)), dtype=object)
+    glob_doc_scores.fill(np.nan)
+
+    min_doc_score = max_doc_score = np.nan
+    for idx_dataset, dataset in enumerate(datasets):
+        for idx_model, model in enumerate(models):
+            scorer = model.score(dataset, detailed=True)
+            glob_doc_scores[idx_dataset][idx_model] = scorer.y_pred
+            min_doc_score = np.nanmin([min_doc_score, scorer.y_pred.min()])
+            max_doc_score = np.nanmax([max_doc_score, scorer.y_pred.max()])
+
+    if start is None:
+        start = min_doc_score
+    if end is None:
+        end = max_doc_score
+
+    bin_values = np.linspace(start=start, stop=end, num=bins+1)
+
+    rel_labels = np.sort(np.unique([dataset.y for dataset in datasets]))
+
+    data = np.empty(shape=(len(datasets), len(models), len(rel_labels), bins), dtype=np.float32)
+    data.fill(np.nan)
+
+    for idx_dataset, dataset in enumerate(datasets):
+        for idx_model, model in enumerate(models):
+            for idx_label, graded_rel in enumerate(rel_labels):
+                mask = np.in1d(dataset.y, graded_rel)
+                # If this graded relevance is not present in this dataset, skip it
+                if not mask.any():
+                    continue
+                doc_scores = glob_doc_scores[idx_dataset][idx_model]
+                y_pred = doc_scores[mask]
+                # evaluate the histogram
+                values, base = np.histogram(y_pred, bins=bin_values)
+                # evaluate the cumulative
+                cumulative = np.cumsum(values, dtype=float) / len(y_pred)
+                data[idx_dataset][idx_model][idx_label] = cumulative
+
+    performance = xr.DataArray(data,
+                               name='Document Graded Relevance',
+                               coords=[datasets, models, rel_labels, bin_values[:-1] + 1.0 / bins],
+                               dims=['dataset', 'model', 'label', 'bin'])
+    return performance
 
 def rank_confusion_matrix(datasets=[], models=[], metrics=[], bins=100, display=False):
     pass

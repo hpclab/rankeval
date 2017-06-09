@@ -92,8 +92,8 @@ Citing RankEval
 -------------
 When `citing RankEval in academic papers, please use this BibTeX entry::
     @inproceedings{rankeval-sigir17,
-        author = {Claudio Lucchese and Cristina Ioana Muntean and Franco Maria Nardini and
-            Raffaele Perego and Salvatore Trani},
+        author = {Claudio Lucchese and Cristina Ioana Muntean and Franco Maria Nardini and 
+                    Raffaele Perego and Salvatore Trani},
         title = {RankEval: An Evaluation and Analysis Framework for Learning-to-Rank Solutions},
         booktitle = {SIGIR 2017: Proceedings of the 40th International {ACM} {SIGIR} 
             Conference on Research and Development in Information Retrieval},
