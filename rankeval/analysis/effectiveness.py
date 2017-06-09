@@ -42,7 +42,7 @@ def model_performance(datasets=[], models=[], metrics=[], display=False):
 
     Returns
     -------
-    metric_scores : xarray DataArray
+    metric_scores : xarray.DataArray
         A DataArray containing the metric scores of the models using the given metrics on the given datasets.
     """
     data = np.zeros(shape=(len(datasets), len(models), len(metrics)), dtype=np.float32)
@@ -53,7 +53,7 @@ def model_performance(datasets=[], models=[], metrics=[], display=False):
                 data[idx_dataset][idx_model][idx_metric] = metric.eval(dataset, scorer.y_pred)[0]
 
     performance = xr.DataArray(data,
-                               name='Model performance',
+                               name='Model Performance',
                                coords=[datasets, models, metrics],
                                dims=['dataset', 'model', 'metric'])
 
@@ -90,7 +90,7 @@ def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=F
 
     Returns
     -------
-    metric_scores : xarray DataArray
+    metric_scores : xarray.DataArray
         A DataArray containing the metric scores of each model using the given metrics on the given datasets.
         The metric scores are cumulatively reported tree by tree, i.e., top 10 trees, top 20, etc., with a step-size
         between the number of trees as highlighted by the step parameter.
@@ -133,7 +133,7 @@ def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=F
                     data[idx_dataset][idx_model][idx_top_k][idx_metric] = metric_score
 
     performance = xr.DataArray(data,
-                               name='Tree-Wise performance',
+                               name='Tree-Wise Performance',
                                coords=[datasets, models, tree_steps+1, metrics],
                                dims=['dataset', 'model', 'k', 'metric'])
     return performance
@@ -155,7 +155,7 @@ def tree_wise_average_contribution(datasets=[], models=[], display=False):
 
     Returns
     -------
-    average_contribution : xarray DataArray
+    average_contribution : xarray.DataArray
         A DataArray containing the average contribution given by each tree of
         each model to the scoring of the given datasets. The average
         contribution are reported tree by tree.
@@ -181,7 +181,7 @@ def tree_wise_average_contribution(datasets=[], models=[], display=False):
             data[idx_dataset][idx_model] = y_contributes
 
     performance = xr.DataArray(data,
-                               name='Tree-Wise average contribution',
+                               name='Tree-Wise Average Contribution',
                                coords=[datasets, models, np.arange(max_num_trees)],
                                dims=['dataset', 'model', 'trees'])
     return performance
@@ -216,7 +216,7 @@ def query_wise_performance(datasets=[], models=[], metrics=[], bins=None, start=
 
     Returns
     -------
-    metric_scores : xarray DataArray
+    metric_scores : xarray.DataArray
         A DataArray containing the metric scores of each model using the given metrics on the given datasets.
         The metric scores are cumulatively reported tree by tree, i.e., top 10 trees, top 20, etc., with a step-size
         between the number of trees as highlighted by the step parameter.
@@ -227,7 +227,7 @@ def query_wise_performance(datasets=[], models=[], metrics=[], bins=None, start=
     min_metric_score = max_metric_score = np.nan
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            scorer = model.score(dataset, detailed=True)
+            scorer = model.score(dataset, detailed=False)
             for idx_metric, metric in enumerate(metrics):
                 _, metric_scores = metric.eval(dataset, scorer.y_pred)
                 glob_metric_scores[idx_dataset][idx_model][idx_metric] = metric_scores
@@ -258,7 +258,7 @@ def query_wise_performance(datasets=[], models=[], metrics=[], bins=None, start=
                 data[idx_dataset][idx_model][idx_metric] = cumulative
 
     performance = xr.DataArray(data,
-                               name='Query-Wise performance',
+                               name='Query-Wise Performance',
                                coords=[datasets, models, metrics, bin_values[:-1] + 1.0 / bins],
                                dims=['dataset', 'model', 'metric', 'bin'])
     return performance
@@ -300,7 +300,7 @@ def document_graded_relevance(datasets=[], models=[], bins=100, start=None, end=
 
     Returns
     -------
-    graded_relevance : xarray DataArray
+    graded_relevance : xarray.DataArray
         A DataArray containing the fraction of documents with a predicted score
         smaller than a given score, for each model and each dataset.
     """
@@ -335,8 +335,8 @@ def document_graded_relevance(datasets=[], models=[], bins=100, start=None, end=
                 # If this graded relevance is not present in this dataset, skip it
                 if not mask.any():
                     continue
-                doc_scores = glob_doc_scores[idx_dataset][idx_model]
-                y_pred = doc_scores[mask]
+                scorer = model.score(dataset, detailed=False)
+                y_pred = scorer.y_pred[mask]
                 # evaluate the histogram
                 values, base = np.histogram(y_pred, bins=bin_values)
                 # evaluate the cumulative
@@ -349,5 +349,55 @@ def document_graded_relevance(datasets=[], models=[], bins=100, start=None, end=
                                dims=['dataset', 'model', 'label', 'bin'])
     return performance
 
-def rank_confusion_matrix(datasets=[], models=[], metrics=[], bins=100, display=False):
-    pass
+def rank_confusion_matrix(datasets=[], models=[], skip_same_label=False, display=False):
+    """
+    RankEval allows for a novel rank-oriented confusion matrix by reporting for
+    any given relevance label  l_i, the number of document with a predicted
+    score smaller than documents with label l_j. When  l_i > l_j this
+    corresponds to the number of mis-ranked document pairs. This can be
+    considered as a breakdown over the relevance labels of the ranking
+    effectiveness of the model.
+
+    Parameters
+    ----------
+    datasets : list of Dataset
+        The datasets to use for analyzing the behaviour of the model using the given models
+    models : list of RTEnsemble
+        The models to analyze
+
+    display : bool
+        True if the method has to display interestingly insights using inline plots/tables
+        These additional information will be displayed only if working inside a ipython notebook.
+    skip_same_label : bool
+        True if the method has to skip the pair with the same labels, False otherwise
+
+    Returns
+    -------
+    ranked_matrix: xarray.DataArray
+        A DataArray reporting for any given relevance label  l_i, the number of
+        documents with a predicted score smaller than documents with label l_j
+    """
+
+    rel_labels = np.sort(np.unique([dataset.y for dataset in datasets])).astype(np.int32)
+
+    data = np.zeros(shape=(len(datasets), len(models), len(rel_labels), len(rel_labels)), dtype=np.int32)
+
+    for idx_dataset, dataset in enumerate(datasets):
+        for idx_model, model in enumerate(models):
+            scorer = model.score(dataset, detailed=True)
+            for query_id, (start_offset, end_offset) in enumerate(dataset.query_offset_iterator()):
+                for i in np.arange(start_offset, end_offset):
+                    for j in np.arange(i, end_offset):
+                        # check if the two documents have the same label and skip them
+                        if skip_same_label and dataset.y[i] == dataset.y[j]:
+                            continue
+                        if scorer.y_pred[i] < scorer.y_pred[j]:
+                            data[idx_dataset][idx_model][dataset.y[i].astype(np.int32), dataset.y[j].astype(np.int32)] += 1
+                        else:
+                            data[idx_dataset][idx_model][dataset.y[j].astype(np.int32), dataset.y[i].astype(np.int32)] += 1
+
+    performance = xr.DataArray(data,
+                               name='Rank Confusion Matrix',
+                               coords=[datasets, models, rel_labels, rel_labels],
+                               dims=['dataset', 'model', 'label_i', 'label_j'])
+    return performance

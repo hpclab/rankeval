@@ -87,5 +87,20 @@ class Dataset(object):
         del self.X
         self.X = None
 
+    def query_offset_iterator(self):
+        """
+        This method implements and iterator over the offsets of the query_ids
+        in the dataset.
+
+        Returns
+        -------
+        offsets : tuple of (int, int)
+            The row index of instances belonging to the same query.
+            The two indices represent (start, end) offsets.
+
+        """
+        for i in np.arange(len(self.query_ids) - 1):
+            yield self.query_ids[i], self.query_ids[i+1]
+
     def __str__(self):
         return self.name

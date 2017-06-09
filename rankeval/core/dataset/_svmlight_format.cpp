@@ -31,7 +31,6 @@
 #include <string>
 #include <vector>
 
-
 /*
  * A Python object responsible for memory management of our vectors.
  */
@@ -220,7 +219,7 @@ int parse_line(const std::string &line,
   std::istringstream in(line.substr(0, hashIdx));
   in.exceptions(std::ios::badbit);
 
-    //printf("%s\n",line.substr(0,hashIdx).c_str());
+  printf("%s\n", line.substr(0,hashIdx).c_str());
   float y;
   if (!(in >> y)) {
     throw SyntaxError("non-numeric or missing label");
@@ -295,9 +294,9 @@ void parse_file(char const *file_path,
   }
 
   /*
-  * test is the dataset has qids! if yes -> add SENTINEL
+  * test is the dataset has not qids. if yes -> add SENTINEL
   */
-  if (qids.size()!=0){
+  if (qids.size() != 0) {
     qids.push_back(labels.size());
   }
 }
