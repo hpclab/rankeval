@@ -75,7 +75,8 @@ class RTEnsemble(object):
         model : RegressionTreeEnsemble
             The loaded model as a RTEnsemble object
         """
-        self.file = self.name = file_path
+        self.file = file_path
+        self.name = "RTEnsemble: " + file_path
         if name is not None:
             self.name = name
 

@@ -196,6 +196,39 @@ static PyObject *to_dense(std::vector<float> &data,
   return ret_tuple;
 }
 
+/*
+ * Reshape the data array to adjust number of columns (caused by loading of a sparse matrix)
+ */
+void reshape_data(std::vector<float> &data,
+                  std::vector<float> &labels,
+                  std::vector<int> &qids,
+                  int &old_num_feature,
+                  int new_num_feature)
+{
+  int rows_to_fix = (data.size() - new_num_feature) / old_num_feature;
+  int cells_to_add = rows_to_fix * (new_num_feature - old_num_feature);
+  int cells_to_add_per_row = cells_to_add / rows_to_fix;
+
+  for (int i=0; i<cells_to_add; ++i)
+    data.push_back(0);
+
+  std::vector<float>::iterator it = data.end() - new_num_feature - cells_to_add;
+  int move_counter = cells_to_add;
+  for (int i=0; i<=rows_to_fix; ++i) {
+    int window = (i == 0) ? new_num_feature : old_num_feature;
+    if (move_counter > 0)
+      std::copy(it, it + window, it + move_counter);
+
+    if (i > 0) {
+      for (int j=0; j<cells_to_add_per_row; ++j)
+        *(it + move_counter + old_num_feature + j) = 0;
+    }
+
+    move_counter -= cells_to_add_per_row;
+    it -= old_num_feature;
+  }
+}
+
 
 /*
  * Parse single line. Throws exception on failure.
@@ -204,11 +237,11 @@ int parse_line(const std::string &line,
                 std::vector<float> &data,
                 std::vector<float> &labels,
                 std::vector<int> &qids,
-                int &last_qid
-                )
+                int &last_qid,
+                int &max_feature)
 {
   if (line.length() == 0)
-    throw SyntaxError("empty line");
+  	throw std::invalid_argument( "empty line" );
 
   if (line[0] == '#')
     return last_qid;
@@ -219,37 +252,42 @@ int parse_line(const std::string &line,
   std::istringstream in(line.substr(0, hashIdx));
   in.exceptions(std::ios::badbit);
 
-  printf("%s\n", line.substr(0,hashIdx).c_str());
+    //printf("%s\n",line.substr(0,hashIdx).c_str());
   float y;
   if (!(in >> y)) {
-    throw SyntaxError("non-numeric or missing label");
+  	throw std::invalid_argument( "non-numeric or missing label" );
   }
   labels.push_back(y);
 
   std::string qidNonsense;
   if (!(in >> qidNonsense)) {
-    throw SyntaxError("Missing qid label");
+  	throw std::invalid_argument( "Missing qid label" );
   }
 
   char c;
   double x;
-  unsigned idx;
+  int idx;
   int idx_row=0;
-
+  int next_feature = 1;
 
   if (sscanf(qidNonsense.c_str(), "qid:%u", &idx) != 1) {
     if(sscanf(qidNonsense.c_str(), "%u%c%lf", &idx, &c, &x) == 3) {
+        // Add zeros in empty spaces between next_feature and idx indices  (iff idx > next_feature)
+        for (; next_feature < idx; ++next_feature)
+          data.push_back(0);
         data.push_back(x);
+        ++next_feature;
+    } else {
+    	throw std::invalid_argument( std::string("expected ':', got '") + c + "'");
     }
-    else {
-      throw SyntaxError(std::string("expected ':', got '") + c + "'");
-    }
-  }
-  else {
+
+  } else {
+
     if (last_qid == 0){
         last_qid = idx;
         qids.push_back(idx_row);
     }
+
     if (int(idx) != last_qid){
         idx_row = labels.size()-1;
         qids.push_back(idx_row);
@@ -259,9 +297,21 @@ int parse_line(const std::string &line,
 
   while (in >> idx >> c >> x) {
     if (c != ':')
-      throw SyntaxError(std::string("expected ':', got '") + c + "'");
+    	throw std::invalid_argument( std::string("expected ':', got '") + c + "'");
+    // Add zeros in empty spaces between next_feature and idx indices (iff idx > next_feature)
+    for (; next_feature < idx; ++next_feature)
+      data.push_back(0);
     data.push_back(x);
+    ++next_feature;
   }
+
+  // if the feature read is greater than the maximum feature read since here,
+  // it means we have to reshape the dataset to include new columns...
+  if (max_feature > 0 && (next_feature - 1) > max_feature) {
+    reshape_data(data, labels, qids, max_feature, next_feature - 1);
+  }
+
+  max_feature = std::max(next_feature - 1, max_feature);
 
   return last_qid;
 }
@@ -286,13 +336,13 @@ void parse_file(char const *file_path,
     throw std::ios_base::failure("File doesn't exist!");
 
   int last_qid = 0;
+  int max_feature = 0;
   int new_qid;
   std::string line;
   while (std::getline(file_stream, line)) {
-    new_qid = parse_line(line, data, labels, qids, last_qid);
+    new_qid = parse_line(line, data, labels, qids, last_qid, max_feature);
     last_qid = new_qid;
   }
-
   /*
   * test is the dataset has not qids. if yes -> add SENTINEL
   */

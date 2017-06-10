@@ -44,7 +44,8 @@ class Dataset(object):
         else:
             raise TypeError("Dataset format %s is not yet supported!" % format)
 
-        self.file = self.name = f
+        self.file = f
+        self.name = "Dataset: " + f
         if name is not None:
             self.name = name
 
