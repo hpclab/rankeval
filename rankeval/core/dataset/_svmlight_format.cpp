@@ -1,6 +1,7 @@
 /*
  * Authors: Mathieu Blondel <mathieu@mblondel.org>
  *          Lars Buitinck <L.J.Buitinck@uva.nl>
+ *          Salvatore Trani <salvatore.trani@isti.cnr.it>
  *
  * License: Simple BSD
  *
@@ -8,10 +9,12 @@
  * function to load the file format originally created for svmlight and now used
  * by many other libraries, including libsvm.
  *
- * The function loads the file directly in a dense sparse matrix without memory
- * copying.  The approach taken is to use 4 C++ vectors (data, indices, indptr
- * and labels) and to incrementally feed them with elements. Ndarrays are then
- * instantiated by PyArray_SimpleNewFromData, i.e., no memory is
+ * The function loads the file directly in a dense matrix without memory
+ * copying.  The approach taken is to use 2 C++ vectors (data, and labels)
+ * and to incrementally feed them with elements. If the dataset is sparse,
+ * the function will fix the previously loaded instances in order to reflect
+ * the new observed column (given 0-value to missing features). Ndarrays are
+ * then instantiated by PyArray_SimpleNewFromData, i.e., no memory is
  * copied.
  *
  * Since the memory is not allocated by the ndarray, the ndarray doesn't own the
@@ -200,8 +203,6 @@ static PyObject *to_dense(std::vector<float> &data,
  * Reshape the data array to adjust number of columns (caused by loading of a sparse matrix)
  */
 void reshape_data(std::vector<float> &data,
-                  std::vector<float> &labels,
-                  std::vector<int> &qids,
                   int &old_num_feature,
                   int new_num_feature)
 {
@@ -305,10 +306,10 @@ int parse_line(const std::string &line,
     ++next_feature;
   }
 
-  // if the feature read is greater than the maximum feature read since here,
+  // if the maximum feature read is greater than the maximum feature read since here,
   // it means we have to reshape the dataset to include new columns...
   if (max_feature > 0 && (next_feature - 1) > max_feature) {
-    reshape_data(data, labels, qids, max_feature, next_feature - 1);
+    reshape_data(data, max_feature, next_feature - 1);
   }
 
   max_feature = std::max(next_feature - 1, max_feature);
