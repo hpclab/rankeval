@@ -264,7 +264,7 @@ def query_wise_performance(datasets=[], models=[], metrics=[], bins=None, start=
     return performance
 
 
-def query_class_performance(datasets=[], models=[], metrics=[], query_class=[], display=False):
+def query_class_performance(datasets=[], models=[], metrics=[], query_classes=[], display=False):
     """
     This method implements the analysis of the effectiveness of a given model by providing a breakdown of the 
     performance over query class. Whenever a query classification is provided, e.g., navigational, informational,
@@ -281,7 +281,7 @@ def query_class_performance(datasets=[], models=[], metrics=[], query_class=[], 
         The models to analyze
     metrics : list of Metric
         The metrics to use for the analysis
-    query_class : list of lists
+    query_classes : list of lists
         A list containing lists of classes each one for a specific Dataset. The i-th item in the j-th list identifies
         the class of the i-th query of the j-th Dataset.
     display : bool
@@ -299,37 +299,40 @@ def query_class_performance(datasets=[], models=[], metrics=[], query_class=[], 
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
+            scorer = model.score(dataset, detailed=False)
             for idx_metric, metric in enumerate(metrics):
-                scorer = model.score(dataset, detailed=False)
-                for idx_metric, metric in enumerate(metrics):
-                    _, metric_scores = metric.eval(dataset, scorer.y_pred)
-                    glob_metric_scores[idx_dataset][idx_model][idx_metric] = metric_scores
-
-    query_class_unique = []
+                _, metric_scores = metric.eval(dataset, scorer.y_pred)
+                glob_metric_scores[idx_dataset][idx_model][idx_metric] = metric_scores
 
     # computing unique elements for each list of query class
-    for idx_query_class, query_class_item in enumerate(query_class):
-       query_class_unique.append(np.unique(query_class_item))
+    unique_query_classes = [np.unique(query_class) for query_class in query_classes]
+    unique_classes = np.unique([c for d in unique_query_classes for c in d])
 
     # defining destination array now saving values of the specific metric directly
-    query_class_metric_scores = np.empty(shape=(len(datasets), len(models), len(metrics), len(query_class_unique)), dtype=np.float32)
+    query_class_metric_scores = np.empty(shape=(len(datasets), len(models), len(metrics), len(unique_classes)),
+                                         dtype=np.float32)
     query_class_metric_scores.fill(np.nan)
 
     # computing the average metric over the specific categorization
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
             for idx_metric, metric in enumerate(metrics):
-                for idx_query_class, query_class_item in enumerate(query_class_unique):
-                    query_indices = np.where(query_class == query_class_item)
-                    current_value = glob_metric_scores[idx_dataset][idx_model][idx_metric][query_indices].mean()
-                    query_class_metric_scores[idx_dataset][idx_model][idx_metric][idx_query_class] = current_value
+                for idx_query_class, query_class in enumerate(unique_classes):
 
-    query_class_performance = xr.DataArray(query_class_metric_scores,
-                                            name='Query Class Performance',
-                                            coords=[datasets, models, metrics, query_class],
-                                            dims=['dataset', 'model', 'metric', 'classes'])
+                    mask = np.in1d(query_classes[idx_dataset], query_class)
+                    # If this query class is not present in this dataset, skip it
+                    if not mask.any():
+                        continue
 
-    return query_class_performance
+                    query_class_metric_scores[idx_dataset][idx_model][idx_metric][idx_query_class] = \
+                        glob_metric_scores[idx_dataset][idx_model][idx_metric][mask].mean()
+
+    performance = xr.DataArray(query_class_metric_scores,
+                               name='Query Class Performance',
+                               coords=[datasets, models, metrics, unique_classes],
+                               dims=['dataset', 'model', 'metric', 'classes'])
+
+    return performance
 
 
 def document_graded_relevance(datasets=[], models=[], bins=100, start=None, end=None, display=False):
@@ -413,6 +416,7 @@ def document_graded_relevance(datasets=[], models=[], bins=100, start=None, end=
                                dims=['dataset', 'model', 'label', 'bin'])
     return performance
 
+
 def rank_confusion_matrix(datasets=[], models=[], skip_same_label=False, display=False):
     """
     RankEval allows for a novel rank-oriented confusion matrix by reporting for
@@ -455,10 +459,12 @@ def rank_confusion_matrix(datasets=[], models=[], skip_same_label=False, display
                         # check if the two documents have the same label and skip them
                         if skip_same_label and dataset.y[i] == dataset.y[j]:
                             continue
+                        y_i = dataset.y[i].astype(np.int32)
+                        y_j = dataset.y[j].astype(np.int32)
                         if scorer.y_pred[i] < scorer.y_pred[j]:
-                            data[idx_dataset][idx_model][dataset.y[i].astype(np.int32), dataset.y[j].astype(np.int32)] += 1
+                            data[idx_dataset][idx_model][y_i, y_j] += 1
                         else:
-                            data[idx_dataset][idx_model][dataset.y[j].astype(np.int32), dataset.y[i].astype(np.int32)] += 1
+                            data[idx_dataset][idx_model][y_j, y_i] += 1
 
     performance = xr.DataArray(data,
                                name='Rank Confusion Matrix',
