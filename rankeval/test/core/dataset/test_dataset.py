@@ -3,9 +3,6 @@ import os
 import unittest
 import logging
 
-from numpy.testing import assert_equal, assert_array_equal
-from nose.tools import raises
-
 from rankeval.core.dataset import Dataset
 
 from rankeval.test.base import data_dir

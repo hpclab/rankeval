@@ -20,8 +20,10 @@ class SVMLightLoaderTestCase(unittest.TestCase):
     def test_load_svmlight_qid_file(self):
         X, y, q = load_svmlight_file(qid_datafile, query_id=True)
 
+        print X.shape
+
         # test X's shape
-        assert_array_equal(X.shape, (4, 3))
+        assert_array_equal(X.shape, (4, 33))
         #print X
 
         # test X's non-zero values
@@ -39,7 +41,7 @@ class SVMLightLoaderTestCase(unittest.TestCase):
         X, y, q = load_svmlight_file(datafile, query_id=True)
 
         # test X's shape
-        assert_array_equal(X.shape, (3, 2))
+        assert_array_equal(X.shape, (3, 20))
 
         # test X's non-zero values
         # tests X's zero values
@@ -55,7 +57,7 @@ class SVMLightLoaderTestCase(unittest.TestCase):
         X, y = load_svmlight_file(datafile)
 
         # test X's shape
-        assert_array_equal(X.shape, (3, 2))
+        assert_array_equal(X.shape, (3, 20))
 
         # test X's non-zero values
         # tests X's zero values
@@ -90,13 +92,19 @@ class SVMLightLoaderTestCase(unittest.TestCase):
         assert_equal(X2.dtype, X3.dtype)
         assert_equal(X3.dtype, np.float32)
 
-    @raises(ValueError)
     def test_load_invalid_file(self):
-        load_svmlight_file(invalidfile)
+        try:
+            load_svmlight_file(invalidfile)
+            assert False
+        except RuntimeError:
+            pass
 
-    @raises(ValueError)
     def test_load_invalid_file2(self):
-        load_svmlight_files([datafile, invalidfile, datafile])
+        try:
+            load_svmlight_files([datafile, invalidfile, datafile])
+            assert False
+        except RuntimeError:
+            pass
 
     @raises(TypeError)
     def test_not_a_filename(self):

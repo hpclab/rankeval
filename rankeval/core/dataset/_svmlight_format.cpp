@@ -306,6 +306,10 @@ int parse_line(const std::string &line,
     ++next_feature;
   }
 
+  // Add zeros at the end of the row (iff next_feature < max_feature)
+  for (; next_feature <= max_feature; ++next_feature)
+    data.push_back(0);
+
   // if the maximum feature read is greater than the maximum feature read since here,
   // it means we have to reshape the dataset to include new columns...
   if (max_feature > 0 && (next_feature - 1) > max_feature) {

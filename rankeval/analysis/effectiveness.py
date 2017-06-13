@@ -12,7 +12,7 @@ be applied to several models at the same time, so to have a direct comparison
 of the analysis performed.
 """
 
-# Author: Salvatore Trani <salvatore.trani@isti.cnr.it>
+# Authors: Salvatore Trani <salvatore.trani@isti.cnr.it>, Franco Maria Nardini <francomaria.nardini@isti.cnr.it>
 # License: <TO DEFINE>
 
 import numpy as np
@@ -264,8 +264,45 @@ def query_wise_performance(datasets=[], models=[], metrics=[], bins=None, start=
     return performance
 
 
-def query_class_performance(datasets=[], models=[], metrics=[], bins=100, display=False):
-    pass
+def query_class_performance(datasets=[], models=[], metrics=[], query_class=[], display=False):
+    """
+    This method implements the analysis of the effectiveness of a given model by providing a breakdown of the 
+    performance over query class. Whenever a query classification is provided, e.g., navigational, informational,
+    transactional, number of terms composing the query, etc., it provides the model effectiveness over such classes.
+    This analysis is important especially in a production environment, as it allows to calibrate the ranking
+    infrastructure w.r.t a specific context.
+    """
+
+    glob_metric_scores = np.empty(shape=(len(datasets), len(models), len(metrics)), dtype=object)
+    glob_metric_scores.fill(np.nan)
+
+    for idx_dataset, dataset in enumerate(datasets):
+        for idx_model, model in enumerate(models):
+            for idx_metric, metric in enumerate(metrics):
+                scorer = model.score(dataset, detailed=False)
+                for idx_metric, metric in enumerate(metrics):
+                    _, metric_scores = metric.eval(dataset, scorer.y_pred)
+                    glob_metric_scores[idx_dataset][idx_model][idx_metric] = metric_scores
+
+    query_class_unique = []
+
+    # computing unique elements for each list of query class
+    for idx_query_class, query_class_item in enumerate(query_class):
+       query_class_unique.append(np.unique(query_class_item))
+
+    # defining destination array now saving values of the specific metric directly
+    query_class_metric_scores = np.empty(shape=(len(datasets), len(models), len(metrics), len(query_class_unique)), dtype=np.float32)
+
+    # computing the average metric over the specific categorization
+    for idx_dataset, dataset in enumerate(datasets):
+        for idx_model, model in enumerate(models):
+            for idx_metric, metric in enumerate(metrics):
+                for idx_query_class, query_class_item in enumerate(query_class_unique):
+                    query_indices = np.where(query_class == query_class_item)
+                    current_value = glob_metric_scores[idx_dataset][idx_model][idx_metric][query_indices].avg()
+                    query_class_metric_scores[idx_dataset][idx_model][idx_metric][idx_query_class] = current_value
+
+    return query_class_metric_scores
 
 
 def document_graded_relevance(datasets=[], models=[], bins=100, start=None, end=None, display=False):
