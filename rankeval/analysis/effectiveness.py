@@ -270,7 +270,28 @@ def query_class_performance(datasets=[], models=[], metrics=[], query_class=[], 
     performance over query class. Whenever a query classification is provided, e.g., navigational, informational,
     transactional, number of terms composing the query, etc., it provides the model effectiveness over such classes.
     This analysis is important especially in a production environment, as it allows to calibrate the ranking
-    infrastructure w.r.t a specific context.
+    infrastructure w.r.t. a specific context.
+    
+    
+    Parameters
+    ----------
+    datasets : list of Dataset
+        The datasets to use for analyzing the behaviour of the model using the given metrics and models
+    models : list of RTEnsemble
+        The models to analyze
+    metrics : list of Metric
+        The metrics to use for the analysis
+    query_class : list of lists
+        A list containing lists of classes each one for a specific Dataset. The i-th item in the j-th list identifies
+        the class of the i-th query of the j-th Dataset.
+    display : bool
+        True if the method has to display interestingly insights using inline plots/tables
+        These additional information will be displayed only if working inside a ipython notebook. 
+    
+    Returns
+    -------
+    query_class_performance : xarray.DataArray
+        A DataArray containing the per-class metric scores of each model using the given metrics on the given datasets.
     """
 
     glob_metric_scores = np.empty(shape=(len(datasets), len(models), len(metrics)), dtype=object)
@@ -292,6 +313,7 @@ def query_class_performance(datasets=[], models=[], metrics=[], query_class=[], 
 
     # defining destination array now saving values of the specific metric directly
     query_class_metric_scores = np.empty(shape=(len(datasets), len(models), len(metrics), len(query_class_unique)), dtype=np.float32)
+    query_class_metric_scores.fill(np.nan)
 
     # computing the average metric over the specific categorization
     for idx_dataset, dataset in enumerate(datasets):
@@ -299,10 +321,15 @@ def query_class_performance(datasets=[], models=[], metrics=[], query_class=[], 
             for idx_metric, metric in enumerate(metrics):
                 for idx_query_class, query_class_item in enumerate(query_class_unique):
                     query_indices = np.where(query_class == query_class_item)
-                    current_value = glob_metric_scores[idx_dataset][idx_model][idx_metric][query_indices].avg()
+                    current_value = glob_metric_scores[idx_dataset][idx_model][idx_metric][query_indices].mean()
                     query_class_metric_scores[idx_dataset][idx_model][idx_metric][idx_query_class] = current_value
 
-    return query_class_metric_scores
+    query_class_performance = xr.DataArray(query_class_metric_scores,
+                                            name='Query Class Performance',
+                                            coords=[datasets, models, metrics, query_class],
+                                            dims=['dataset', 'model', 'metric', 'classes'])
+
+    return query_class_performance
 
 
 def document_graded_relevance(datasets=[], models=[], bins=100, start=None, end=None, display=False):
