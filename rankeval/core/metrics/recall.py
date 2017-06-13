@@ -48,11 +48,7 @@ class Recall(Metric):
         numpy.array
             The detailed Recall scores for each query, an array of length of the number of queries.
         """
-        super(Recall, self).eval(dataset, y_pred)
-
-        for query_id, query_y, query_y_pred in self.query_iterator(dataset, y_pred):
-            self.detailed_scores[query_id] = self.eval_per_query(query_y, query_y_pred)
-        return self.detailed_scores.mean(), self.detailed_scores
+        return super(Recall, self).eval(dataset, y_pred)
 
 
     def eval_per_query(self, y, y_pred):

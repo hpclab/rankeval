@@ -9,25 +9,77 @@
 https://en.wikipedia.org/wiki/Mean_reciprocal_rank
 
 """
+import numpy as np
+from rankeval.core.metrics import Metric
 
-def mean_reciprocal_rank(scores, labels, q_lens, cutoff=1):
-    """Score is reciprocal of the rank of the first relevant item
-    First element is 'rank 1'.  Relevance is binary (nonzero is relevant).
-    Example from http://en.wikipedia.org/wiki/Mean_reciprocal_rank
-    >>> rs = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
-    >>> mean_reciprocal_rank(rs)
-    0.61111111111111105
-    >>> rs = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    >>> mean_reciprocal_rank(rs)
-    0.5
-    >>> rs = [[0, 0, 0, 1], [1, 0, 0], [1, 0, 0]]
-    >>> mean_reciprocal_rank(rs)
-    0.75
-    Args:
-        rs: Iterator of relevance scores (list or numpy) in rank order
-            (first element is the first item)
-    Returns:
-        Mean reciprocal rank
+
+class MRR(Metric):
     """
-    rs = (np.asarray(r).nonzero()[0] for r in rs)
-    return np.mean([1. / (r[0] + 1) if r.size else 0. for r in rs])
+
+    """
+    def __init__(self, name='MRR', cutoff=None, threshold=0):
+        """
+
+        Parameters
+        ----------
+        name
+        cutoff
+        """
+        super(MRR, self).__init__(name)
+        self.cutoff = cutoff
+        self.threshold = threshold
+
+
+    def eval(self, dataset, y_pred):
+        """
+        The mean reciprocal rank is the average of the reciprocal ranks of results for a sample of queries
+
+        Parameters
+        ----------
+        dataset
+        y_pred
+
+        Returns
+        -------
+
+        """
+        return super(MRR, self).eval(dataset, y_pred)
+
+
+    def eval_per_query(self, y, y_pred):
+        """
+        We compute the reciprocal rank.
+        The reciprocal rank of a query response is the multiplicative inverse of the rank of the first correct answer.
+
+        Parameters
+        ----------
+        y
+        y_pred
+
+        Returns
+        -------
+
+        """
+        idx_y_pred_sorted = np.argsort(y_pred)[::-1]
+        if self.cutoff is not None:
+            idx_y_pred_sorted = idx_y_pred_sorted[:self.cutoff]
+
+        # rank of max predicted score
+        rank_max = None
+        for idx in idx_y_pred_sorted:
+            if y[idx] > self.threshold:
+                rank_max = idx
+                break
+
+        if rank_max is not None:
+            return 1./(rank_max+1)
+        else:
+            return 0.
+
+
+    def __str__(self):
+        s = self.name
+        if self.cutoff is not None:
+            s += "@{}".format(self.cutoff)
+        s += "[>{}]".format(self.threshold)
+        return s

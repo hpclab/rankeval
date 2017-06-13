@@ -64,10 +64,7 @@ class DCG(Metric):
             Represents the detailed DCG scores for each query. It has the length of n_queries.
 
         """
-        super(DCG, self).eval(dataset)
-        for query_id, query_y, query_y_pred in self.query_iterator(dataset, y_pred):
-            self.detailed_scores[query_id] = self.eval_per_query(query_y, query_y_pred)
-        return self.detailed_scores.mean(), self.detailed_scores
+        return super(DCG, self).eval(dataset, y_pred)
 
 
     def eval_per_query(self, y, y_pred):

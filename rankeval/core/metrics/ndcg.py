@@ -65,10 +65,7 @@ class NDCG(Metric):
             Represents the detailed NDCG scores for each query. It has the length of n_queries.
 
         """
-        super(NDCG, self).eval(dataset, y_pred)
-        for query_id, query_y, query_y_pred in self.query_iterator(dataset, y_pred):
-            self.detailed_scores[query_id] = self.eval_per_query(query_y, query_y_pred)
-        return self.detailed_scores.mean(), self.detailed_scores
+        return super(NDCG, self).eval(dataset, y_pred)
 
 
     def eval_per_query(self, y, y_pred):

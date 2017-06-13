@@ -35,7 +35,8 @@ class Metric(six.with_metaclass(ABCMeta)):
     @abstractmethod
     def eval(self, dataset, y_pred):
         """
-        This abstract method computes a specific metric over the predicted scores for a test dataset
+        This abstract method computes a specific metric over the predicted scores for a test dataset. It calls the
+        eval_per query method for each query in order to get the detailed metric score.
 
         Parameters
         ----------
@@ -47,6 +48,10 @@ class Metric(six.with_metaclass(ABCMeta)):
 
         """
         self.detailed_scores = np.zeros(dataset.n_queries, dtype=np.float32)
+
+        for query_id, query_y, query_y_pred in self.query_iterator(dataset, y_pred):
+            self.detailed_scores[query_id] = self.eval_per_query(query_y, query_y_pred)
+        return self.detailed_scores.mean(), self.detailed_scores
 
     @abstractmethod
     def eval_per_query(self, y, y_pred):
