@@ -12,7 +12,10 @@ from rankeval.core.metrics import Metric
 
 class RBP(Metric):
     """
-    Ranked biased Precision. # http://dl.acm.org/citation.cfm?doid=1416950.1416952
+    Ranked biased Precision.
+    Alistair Moffat and Justin Zobel. 2008. Rank-biased precision for measurement of retrieval effectiveness.
+    ACM Trans. Inf. Syst. 27, 1, Article 2 (December 2008), 27 pages. DOI=http://dx.doi.org/10.1145/1416950.1416952
+
     RBP is an extension of P@k. User has certain chance to view each result.
 
     RBP = E(# viewed relevant results) / E(# viewed results)
@@ -71,13 +74,10 @@ class RBP(Metric):
         if self.cutoff is not None:
             idx_y_pred_sorted = idx_y_pred_sorted[:self.cutoff]
 
-        # expected_utility
-        expected_utility = 0.
-        binary_rel = y[idx_y_pred_sorted] > self.threshold
-        for i, idx in enumerate(idx_y_pred_sorted):
-            expected_utility += binary_rel[i] * pow(self.p, i)
+        discount = np.power(self.p, np.arange(len(idx_y_pred_sorted)))
+        gain = y[idx_y_pred_sorted] > self.threshold
 
-        rbp = (1. - self.p) * expected_utility
+        rbp = (1. - self.p) * (gain * discount).sum()
         return rbp
 
 

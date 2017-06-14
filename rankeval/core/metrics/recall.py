@@ -72,7 +72,7 @@ class Recall(Metric):
             idx_y_pred_sorted = idx_y_pred_sorted[:self.cutoff]
 
         n_relevant_retrieved = (y[idx_y_pred_sorted] > self.threshold).sum()
-        n_relevant = (y > self.threshold).sum()
+        n_relevant = (y > self.threshold).sum()  # todo see how to deal with recall@k n_rel
         recall = float(n_relevant_retrieved) / n_relevant
         return recall
 

@@ -18,7 +18,7 @@ class DCG(Metric):
     [0] Jarvelin - "flat" 
     """
 
-    def __init__(self, name='DCG', cutoff=None, no_relevant_results=0.0, ties=True, implementation="flat"):
+    def __init__(self, name='DCG', cutoff=None, ties=True, implementation="flat"):
         """
         This is the constructor of DCG, an object of type Metric, with the name DCG.
         The constructor also allows setting custom values
@@ -38,7 +38,6 @@ class DCG(Metric):
         """
         super(DCG, self).__init__(name)
         self.cutoff = cutoff
-        self.no_relevant_results = no_relevant_results
         self.ties = ties
         self.implementation = implementation
 
@@ -89,12 +88,14 @@ class DCG(Metric):
         if self.cutoff is not None:
             idx_y_pred_sorted = idx_y_pred_sorted[:self.cutoff]
 
+        discount = np.log2(np.arange(2, len(idx_y_pred_sorted)+2))
+
         if self.implementation == "flat":
-            dcg = sum([y[rank] / (np.math.log(float(k) + 2.0, 2))
-                       for k, rank in enumerate(idx_y_pred_sorted)])
+            gain = y[idx_y_pred_sorted]
         elif self.implementation == "exp":
-            dcg = sum([(2.0 ** y[rank] - 1.0) / (np.math.log(float(k) + 2.0, 2))
-                       for k, rank in enumerate(idx_y_pred_sorted)])
+            gain = np.exp2(y[idx_y_pred_sorted]) - 1.0
+
+        dcg = (gain / discount).sum()
         return dcg
 
 
