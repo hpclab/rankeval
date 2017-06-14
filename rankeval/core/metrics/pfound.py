@@ -51,6 +51,7 @@ class Pfound(Metric):
     def eval_per_query(self, y, y_pred):
         """
         pFound was implemented as ERR in section 7.2 http://olivier.chapelle.cc/pub/err.pdf
+            - http://proceedings.mlr.press/v14/chapelle11a/chapelle11a.pdf
         Parameters
         ----------
         y
@@ -70,7 +71,7 @@ class Pfound(Metric):
 
         for i, idx in enumerate(idx_y_pred_sorted):
             utility = (pow(2., y[idx]) - 1.) / pow(2., max_grade)
-            err += prob_step_down * (utility * pow(self.p_abandonment, i + 1.))
+            err += prob_step_down * utility * pow(self.p_abandonment, i)
             prob_step_down *= (1. - utility)
 
         return err

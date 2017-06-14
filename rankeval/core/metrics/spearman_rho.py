@@ -9,7 +9,7 @@
 
 from rankeval.core.metrics.metric import Metric
 import scipy.stats as stats
-import numpy as np
+
 
 class SpearmanRho(Metric):
     """
@@ -18,7 +18,7 @@ class SpearmanRho(Metric):
     We use the Spearman Rho coefficient implementation from scipy.
     """
 
-    def __init__(self, name='SpearmanRho', cutoff=None):
+    def __init__(self, name='SpearmanRho'):
         """
 
 
@@ -29,7 +29,6 @@ class SpearmanRho(Metric):
         threshold: float
         """
         super(SpearmanRho, self).__init__(name)
-        self.cutoff = cutoff
 
 
     def eval(self, dataset, y_pred):
@@ -67,18 +66,10 @@ class SpearmanRho(Metric):
         float
             The Spearman Rho per query.
         """
-
-        if self.cutoff is not None:
-            idx_y_pred_sorted = np.argsort(y_pred)[::-1][:self.cutoff]
-            spearman_rho = stats.spearmanr(y[idx_y_pred_sorted], y_pred[idx_y_pred_sorted])
-        else:
-            spearman_rho = stats.spearmanr(y, y_pred)
-
+        spearman_rho = stats.spearmanr(y, y_pred)
         return spearman_rho.correlation
 
 
     def __str__(self):
         s = self.name
-        if self.cutoff is not None:
-            s += "@{}".format(self.cutoff)
         return s

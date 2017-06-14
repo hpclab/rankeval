@@ -18,7 +18,7 @@ class Kendalltau(Metric):
     We use the Kendall tau coefficient implementation from scipy.
     """
 
-    def __init__(self, name='Kendalltau', cutoff=None):
+    def __init__(self, name='Kendalltau'):
         """
 
 
@@ -29,7 +29,6 @@ class Kendalltau(Metric):
         threshold: float
         """
         super(Kendalltau, self).__init__(name)
-        self.cutoff = cutoff
 
 
     def eval(self, dataset, y_pred):
@@ -79,20 +78,10 @@ class Kendalltau(Metric):
         float
             The Kendall tau per query.
         """
-
-        if self.cutoff is not None:
-            idx_y_pred_sorted = np.argsort(y_pred)[::-1][:self.cutoff]
-            kendall_tau = stats.kendalltau(y[idx_y_pred_sorted], y_pred[idx_y_pred_sorted], initial_lexsort=True)
-        else:
-            kendall_tau = stats.kendalltau(y, y_pred, initial_lexsort=True)
-
+        kendall_tau = stats.kendalltau(y, y_pred, initial_lexsort=True)
         return kendall_tau.correlation
-
-
 
 
     def __str__(self):
         s = self.name
-        if self.cutoff is not None:
-            s += "@{}".format(self.cutoff)
         return s
