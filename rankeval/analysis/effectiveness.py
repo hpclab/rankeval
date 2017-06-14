@@ -319,13 +319,13 @@ def query_class_performance(datasets=[], models=[], metrics=[], query_classes=[]
             for idx_metric, metric in enumerate(metrics):
                 for idx_query_class, query_class in enumerate(unique_classes):
 
-                    mask = np.in1d(query_classes[idx_dataset], query_class)
+                    indices = np.where(query_classes[idx_dataset] == query_class)
                     # If this query class is not present in this dataset, skip it
-                    if not mask.any():
+                    if not len(indices):
                         continue
 
                     query_class_metric_scores[idx_dataset][idx_model][idx_metric][idx_query_class] = \
-                        glob_metric_scores[idx_dataset][idx_model][idx_metric][mask].mean()
+                        glob_metric_scores[idx_dataset][idx_model][idx_metric][indices].mean()
 
     performance = xr.DataArray(query_class_metric_scores,
                                name='Query Class Performance',
@@ -398,12 +398,12 @@ def document_graded_relevance(datasets=[], models=[], bins=100, start=None, end=
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
             for idx_label, graded_rel in enumerate(rel_labels):
-                mask = np.in1d(dataset.y, graded_rel)
+                indices = np.where(dataset.y == graded_rel)
                 # If this graded relevance is not present in this dataset, skip it
-                if not mask.any():
+                if not len(indices):
                     continue
                 scorer = model.score(dataset, detailed=False)
-                y_pred = scorer.y_pred[mask]
+                y_pred = scorer.y_pred[indices]
                 # evaluate the histogram
                 values, base = np.histogram(y_pred, bins=bin_values)
                 # evaluate the cumulative
