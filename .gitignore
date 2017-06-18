@@ -25,3 +25,5 @@ rankeval.egg-info
 # ignored files
 distribute-*
 
+# auto compiled files
+rankeval/core/scoring/_efficient_scoring.c
