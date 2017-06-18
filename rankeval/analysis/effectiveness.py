@@ -16,7 +16,6 @@ of the analysis performed.
 # License: <TO DEFINE>
 
 import numpy as np
-import pandas as pd
 import xarray as xr
 
 from rankeval.core.dataset import Dataset
@@ -176,7 +175,7 @@ def tree_wise_average_contribution(datasets=[], models=[], display=False):
             # the document scores are accumulated along for the various top-k (in order to avoid useless re-scoring)
             y_contributes = np.empty(max_num_trees, dtype=np.float32)
             y_contributes.fill(np.nan)
-            y_contributes[:model.n_trees] = scorer.partial_y_pred.sum(axis=0)
+            y_contributes[:model.n_trees] = np.average(np.abs(scorer.partial_y_pred), axis=0)
 
             data[idx_dataset][idx_model] = y_contributes
 
