@@ -113,12 +113,12 @@ class RTEnsemble(object):
         self.n_trees = n_trees
         self.n_nodes = n_nodes
 
-        self.trees_root = np.full(shape=n_trees, fill_value=-1, dtype=np.int16)
+        self.trees_root = np.full(shape=n_trees, fill_value=-1, dtype=np.int32)
         self.trees_weight = np.zeros(shape=n_trees, dtype=np.float32)
-        self.trees_left_child = np.full(shape=n_nodes, fill_value=-1, dtype=np.int16)
-        self.trees_right_child = np.full(shape=n_nodes, fill_value=-1, dtype=np.int16)
+        self.trees_left_child = np.full(shape=n_nodes, fill_value=-1, dtype=np.int32)
+        self.trees_right_child = np.full(shape=n_nodes, fill_value=-1, dtype=np.int32)
         self.trees_nodes_value = np.full(shape=n_nodes, fill_value=-1, dtype=np.float32)
-        self.trees_nodes_feature = np.full(shape=n_nodes, fill_value=-1, dtype=np.int16)
+        self.trees_nodes_feature = np.full(shape=n_nodes, fill_value=-1, dtype=np.uint16)
 
     def is_leaf_node(self, index):
         """
