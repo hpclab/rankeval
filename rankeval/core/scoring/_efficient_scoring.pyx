@@ -26,7 +26,6 @@ from cython.parallel import prange, parallel
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-@cython.nonecheck(False)
 def basic_scoring(model, X):
 
     cdef np.intp_t n_instances = X.shape[0]
@@ -35,12 +34,12 @@ def basic_scoring(model, X):
     cdef float[:, :] X_view = X
     cdef float[:] y = np.zeros(n_instances, dtype=np.float32)
 
-    cdef short[:] trees_root = model.trees_root
+    cdef int[:] trees_root = model.trees_root
     cdef float[:] trees_weight = model.trees_weight
     cdef short[:] trees_nodes_feature = model.trees_nodes_feature
     cdef float[:] trees_nodes_value = model.trees_nodes_value
-    cdef short[:] trees_left_child = model.trees_left_child
-    cdef short[:] trees_right_child  = model.trees_right_child
+    cdef int[:] trees_left_child = model.trees_left_child
+    cdef int[:] trees_right_child  = model.trees_right_child
 
     cdef float predicted_score
     cdef np.intp_t idx_tree, idx_instance
@@ -64,7 +63,6 @@ def basic_scoring(model, X):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-@cython.nonecheck(False)
 def detailed_scoring(model, X):
 
     cdef np.intp_t n_instances = X.shape[0]
@@ -73,12 +71,12 @@ def detailed_scoring(model, X):
     cdef float[:, :] X_view = X
     cdef float[:, :] partial_y = np.zeros((X.shape[0], model.n_trees), dtype=np.float32)
 
-    cdef short[:] trees_root = model.trees_root
+    cdef int[:] trees_root = model.trees_root
     cdef float[:] trees_weight = model.trees_weight
     cdef short[:] trees_nodes_feature = model.trees_nodes_feature
     cdef float[:] trees_nodes_value = model.trees_nodes_value
-    cdef short[:] trees_left_child = model.trees_left_child
-    cdef short[:] trees_right_child  = model.trees_right_child
+    cdef int[:] trees_left_child = model.trees_left_child
+    cdef int[:] trees_right_child  = model.trees_right_child
 
     cdef float predicted_score
     cdef np.intp_t idx_tree, idx_instance
@@ -102,16 +100,15 @@ def detailed_scoring(model, X):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-@cython.nonecheck(False)
 cdef float _score_single_instance_single_tree(float[:,:] X,
                                               np.intp_t idx_instance,
                                               np.intp_t idx_tree,
-                                              short[:] trees_root,
+                                              int[:] trees_root,
                                               float[:] trees_weight,
                                               short[:] trees_nodes_feature,
                                               float[:] trees_nodes_value,
-                                              short[:] trees_left_child,
-                                              short[:] trees_right_child) nogil:
+                                              int[:] trees_left_child,
+                                              int[:] trees_right_child) nogil:
 
     # Check the usage of np.intp_t in plave of np.int16_t
     cdef short cur_node = trees_root[idx_tree]
