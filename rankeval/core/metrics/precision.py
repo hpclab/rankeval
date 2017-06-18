@@ -69,14 +69,13 @@ class Precision(Metric):
         if self.cutoff is not None:
             idx_y_pred_sorted = idx_y_pred_sorted[:self.cutoff]
 
-        n_relevant_retrieved = (y[idx_y_pred_sorted] > self.threshold).sum()
-        precision = float(n_relevant_retrieved) / len(idx_y_pred_sorted)
-        return precision
+        n_relevant_retrieved = (y[idx_y_pred_sorted] >= self.threshold).sum()
+        return float(n_relevant_retrieved) / len(idx_y_pred_sorted)
 
 
     def __str__(self):
         s = self.name
         if self.cutoff is not None:
             s += "@{}".format(self.cutoff)
-        s += "[>{}]".format(self.threshold)
+        s += "[>={}]".format(self.threshold)
         return s

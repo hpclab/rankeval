@@ -67,7 +67,7 @@ class MRR(Metric):
         # rank of max predicted score
         rank_max = None
         for idx in idx_y_pred_sorted:
-            if y[idx] > self.threshold:
+            if y[idx] >= self.threshold:
                 rank_max = idx
                 break
 
@@ -75,7 +75,6 @@ class MRR(Metric):
             return 1./(rank_max+1)
         else:
             return 0.
-
 
     def __str__(self):
         s = self.name

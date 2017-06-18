@@ -43,7 +43,6 @@ class ERR(Metric):
         """
         return super(ERR, self).eval(dataset, y_pred)
 
-
     def eval_per_query(self, y, y_pred):
         idx_y_pred_sorted = np.argsort(y_pred)[::-1]
         if self.cutoff is not None:
@@ -59,7 +58,6 @@ class ERR(Metric):
             prob_step_down *= (1 - utility)
 
         return err
-
 
     def __str__(self):
         s = self.name

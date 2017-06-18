@@ -27,7 +27,6 @@ class RMSE(Metric):
         self.cutoff = cutoff
         self.threshold = threshold
 
-
     def eval(self, dataset, y_pred):
         """
 
@@ -41,7 +40,6 @@ class RMSE(Metric):
 
         """
         return super(RMSE, self).eval(dataset, y_pred)
-
 
     def eval_per_query(self, y, y_pred):
         """
@@ -62,12 +60,11 @@ class RMSE(Metric):
         mse = ((y[idx_y_pred_sorted] - y_pred[idx_y_pred_sorted]) ** 2).mean()
         return np.sqrt(mse)
 
-
     def __str__(self):
         s = self.name
         if self.cutoff is not None:
             s += "@{}".format(self.cutoff)
-        s += "[>{}]".format(self.threshold)
+        s += "[>={}]".format(self.threshold)
         return s
 
 

@@ -39,7 +39,6 @@ class RBP(Metric):
         self.threshold = threshold
         self.p = p
 
-
     def eval(self, dataset, y_pred):
         """
 
@@ -53,7 +52,6 @@ class RBP(Metric):
 
         """
         return super(RBP, self).eval(dataset, y_pred)
-
 
     def eval_per_query(self, y, y_pred):
         """
@@ -73,17 +71,16 @@ class RBP(Metric):
 
         # expected_utility
         expected_utility = 0.
-        binary_rel = y[idx_y_pred_sorted] > self.threshold
+        binary_rel = y[idx_y_pred_sorted] >= self.threshold
         for i, idx in enumerate(idx_y_pred_sorted):
             expected_utility += binary_rel[i] * pow(self.p, i)
 
         rbp = (1. - self.p) * expected_utility
         return rbp
 
-
     def __str__(self):
         s = self.name
         if self.cutoff is not None:
             s += "@{}".format(self.cutoff)
-        s += "[>{}]".format(self.threshold)
+        s += "[>={}]".format(self.threshold)
         return s
