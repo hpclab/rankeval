@@ -41,8 +41,7 @@ class NDCG(Metric):
         self.no_relevant_results = no_relevant_results
         self.ties = ties
         self.implementation = implementation
-        self.dcg = DCG(cutoff=self.cutoff, no_relevant_results=self.no_relevant_results,
-                  ties=self.ties, implementation=self.implementation)
+        self.dcg = DCG(cutoff=self.cutoff, ties=self.ties, implementation=self.implementation)
 
     def eval(self, dataset, y_pred):
         """

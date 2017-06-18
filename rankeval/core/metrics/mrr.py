@@ -66,9 +66,9 @@ class MRR(Metric):
 
         # rank of max predicted score
         rank_max = None
-        for idx in idx_y_pred_sorted:
+        for i, idx in enumerate(idx_y_pred_sorted):
             if y[idx] >= self.threshold:
-                rank_max = idx
+                rank_max = i
                 break
 
         if rank_max is not None:

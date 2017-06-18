@@ -17,7 +17,9 @@ class Metric(six.with_metaclass(ABCMeta)):
     """
     Metric is an abstract class which provides an interface for specific metrics.
     It also offers 2 methods, one for iterating over the indeces for a certain query 
-    and another for iterating over the entire dataset based on those indeces. 
+    and another for iterating over the entire dataset based on those indeces.
+
+    Some intuitions: https://stats.stackexchange.com/questions/159657/metrics-for-evaluating-ranking-algorithms
     """
 
     @abstractmethod
