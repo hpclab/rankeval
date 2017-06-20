@@ -106,13 +106,21 @@ def _randomization(metric_scores_A, metric_scores_B, n_perm=100000):
 	p2 = 0.0 # two-sided
 	N = float(len(metric_scores_A))
 
+	A_sum = np.sum(best_metrics)
+	B_sum = np.sum(worst_metrics)
+
 	# repeat n_prem times
 	for i in range(n_perm):
 		# select a random subset
 		sel = np.random.choice([False, True], len(metric_scores_A))
+
+		A_sel_sum = np.sum(best_metrics[sel])
+		B_sel_sum = np.sum(worst_metrics[sel])
+
 		# compute avg performance of randomized models
-		A_mean = (np.sum(best_metrics [np.logical_not(sel)]) + np.sum(worst_metrics[sel]) )/N
-		B_mean = (np.sum(worst_metrics[np.logical_not(sel)]) + np.sum(best_metrics [sel]) )/N
+		A_mean = ( A_sum - A_sel_sum + B_sel_sum )/N
+		B_mean = ( B_sum - B_sel_sum + A_sel_sum )/N
+
 		# performance difference
 		delta = A_mean - B_mean
 
@@ -123,7 +131,6 @@ def _randomization(metric_scores_A, metric_scores_B, n_perm=100000):
 
 	p1 /= n_perm
 	p2 /= n_perm
-
 
 	return (p1,p2)
 
