@@ -6,7 +6,7 @@ copyright: HPCLab, ISTI-CNR, Pisa, Italy.
 ## Installation
 
 The library works with OpenMP so you need a compiler supporting it. Below an example of installation with
-GCC and G++.
+GCC and G++ (required a gnu compiler).
 
 ```CC=gcc-6 CXX=g++-6 python setup.py install```
 

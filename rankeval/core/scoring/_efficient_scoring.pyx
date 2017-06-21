@@ -111,7 +111,7 @@ cdef float _score_single_instance_single_tree(float[:,:] X,
                                               int[:] trees_right_child) nogil:
 
     # Check the usage of np.intp_t in plave of np.int16_t
-    cdef short cur_node = trees_root[idx_tree]
+    cdef int cur_node = trees_root[idx_tree]
     cdef short feature_idx
     cdef float feature_threshold
     while trees_left_child[cur_node] != -1 and trees_right_child[cur_node] != -1:

@@ -5,7 +5,6 @@ loader for the svmlight / libsvm sparse dataset format.  """
 #          Lars Buitinck <L.J.Buitinck@uva.nl>
 # License: Simple BSD.
 
-# from rankeval.core.dataset._svmlight_format import _load_svmlight_file, _dump_svmlight_file
 from ._svmlight_format import _load_svmlight_file, _dump_svmlight_file
 import numpy as np
 
