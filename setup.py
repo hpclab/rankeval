@@ -41,6 +41,7 @@ class custom_build_ext(build_ext):
 rankeval_dir = os.path.join(os.path.dirname(__file__), 'rankeval')
 dataset_dir = os.path.join(rankeval_dir, 'core', 'dataset')
 scoring_dir = os.path.join(rankeval_dir, 'core', 'scoring')
+analysis_dir = os.path.join(rankeval_dir, 'analysis')
 
 cmdclass = {'build_ext': custom_build_ext}
 
@@ -122,7 +123,12 @@ setup(
                   sources=[scoring_dir + '/_efficient_scoring.pyx'],
                   include_dirs=[scoring_dir],
                   extra_compile_args=['-fopenmp', '-O3'],
-                  extra_link_args=['-fopenmp'],)
+                  extra_link_args=['-fopenmp'],),
+        Extension('rankeval.analysis._efficient_topological',
+                  sources=[analysis_dir + '/_efficient_topological.pyx'],
+                  include_dirs=[analysis_dir],
+                  extra_compile_args=['-fopenmp', '-O3'],
+                  extra_link_args=['-fopenmp'], )
     ],
 
     cmdclass=cmdclass,
@@ -169,7 +175,8 @@ setup(
         'scipy >= 0.7.0',
         'six >= 1.9.0',
         'pandas >= 0.19.1',
-        'xarray >= 0.9.5'
+        'xarray >= 0.9.5',
+        'cython >= 0.25.2'
     ],
     tests_require=[
         'nose >= 1.3.7',
