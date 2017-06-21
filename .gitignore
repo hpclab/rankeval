@@ -11,8 +11,6 @@
 # ignored dirs
 build
 dist
-doc/src/_build
-doc/src/conf.py
 rankeval.egg-info
 
 # ipython files
@@ -25,6 +23,11 @@ rankeval.egg-info
 
 # ignored files
 distribute-*
+
+# doc dirs and auto generated files
+doc/src/_build
+doc/src/conf.py
+
 
 # auto compiled files
 rankeval/core/scoring/_efficient_scoring.c
