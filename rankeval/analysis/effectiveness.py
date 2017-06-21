@@ -1,5 +1,6 @@
 # Copyright (c) 2017, All Contributors (see CONTRIBUTORS file)
-# Authors: Salvatore Trani <salvatore.trani@isti.cnr.it>
+# Authors:  Salvatore Trani <salvatore.trani@isti.cnr.it>
+#           Franco Maria Nardini <francomaria.nardini@isti.cnr.it>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,9 +13,6 @@ be applied to several models at the same time, so to have a direct comparison
 of the analysis performed.
 """
 
-# Authors: Salvatore Trani <salvatore.trani@isti.cnr.it>, Franco Maria Nardini <francomaria.nardini@isti.cnr.it>
-# License: <TO DEFINE>
-
 import numpy as np
 import xarray as xr
 
@@ -23,7 +21,7 @@ from rankeval.core.model import RTEnsemble
 from rankeval.core.metrics import Metric
 
 
-def model_performance(datasets=[], models=[], metrics=[], display=False):
+def model_performance(datasets, models, metrics, display=False):
     """
     This method implements the model performance analysis (part of the effectiveness analysis category).
 
@@ -68,7 +66,7 @@ def model_performance(datasets=[], models=[], metrics=[], display=False):
     return performance
 
 
-def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=False):
+def tree_wise_performance(datasets, models, metrics, step=10, display=False):
     """
     This method implements the analysis of the model on a tree-wise basis (part of the effectiveness analysis category).
 
@@ -138,7 +136,7 @@ def tree_wise_performance(datasets=[], models=[], metrics=[], step=10, display=F
     return performance
 
 
-def tree_wise_average_contribution(datasets=[], models=[], display=False):
+def tree_wise_average_contribution(datasets, models, display=False):
     """
     This method provides the average contribution given by each tree of each model to the scoring of the datasets.
 
@@ -186,7 +184,7 @@ def tree_wise_average_contribution(datasets=[], models=[], display=False):
     return performance
 
 
-def query_wise_performance(datasets=[], models=[], metrics=[], bins=None, start=None, end=None, display=False):
+def query_wise_performance(datasets, models, metrics, bins=None, start=None, end=None, display=False):
     """
     This method implements the analysis of the model on a query-wise basis, i.e., it compute the cumulative distribution
     of a given performance metric. For example, the fraction of queries with a NDCG score smaller that any given
@@ -263,7 +261,7 @@ def query_wise_performance(datasets=[], models=[], metrics=[], bins=None, start=
     return performance
 
 
-def query_class_performance(datasets=[], models=[], metrics=[], query_classes=[], display=False):
+def query_class_performance(datasets, models, metrics, query_classes, display=False):
     """
     This method implements the analysis of the effectiveness of a given model by providing a breakdown of the 
     performance over query class. Whenever a query classification is provided, e.g., navigational, informational,
@@ -334,7 +332,7 @@ def query_class_performance(datasets=[], models=[], metrics=[], query_classes=[]
     return performance
 
 
-def document_graded_relevance(datasets=[], models=[], bins=100, start=None, end=None, display=False):
+def document_graded_relevance(datasets, models, bins=100, start=None, end=None, display=False):
     """
     This method implements the analysis of the model on a per-label basis,
     i.e., it allows the evaluation of the cumulative predicted score
@@ -416,7 +414,7 @@ def document_graded_relevance(datasets=[], models=[], bins=100, start=None, end=
     return performance
 
 
-def rank_confusion_matrix(datasets=[], models=[], skip_same_label=False, display=False):
+def rank_confusion_matrix(datasets, models, skip_same_label=False, display=False):
     """
     RankEval allows for a novel rank-oriented confusion matrix by reporting for
     any given relevance label  l_i, the number of document with a predicted
