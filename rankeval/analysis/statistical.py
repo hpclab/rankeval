@@ -1,5 +1,5 @@
 # Copyright (c) 2017, All Contributors (see CONTRIBUTORS file)
-# Authors: Salvatore Trani <salvatore.trani@isti.cnr.it>
+# Authors: Claudio Lucchese <claudio.lucchese@isti.cnr.it>, Cristina I. Muntean <cristina.muntean@isti.cnr.it>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,9 +8,6 @@
 """
 This package implements several statistical significance tests.
 """
-
-# Authors: Claudio Lucchese <claudio.lucchese@isti.cnr.it>, Cristina I. Muntean <cristina.muntean@isti.cnr.it>
-# License: <TO BE DEFINED>
 
 import numpy as np
 import xarray as xr
