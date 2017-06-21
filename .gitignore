@@ -12,6 +12,7 @@
 build
 dist
 doc/src/_build
+doc/src/conf.py
 rankeval.egg-info
 
 # ipython files
