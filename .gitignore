@@ -11,7 +11,7 @@
 # ignored dirs
 build
 dist
-doc/doc
+doc/src/_build
 rankeval.egg-info
 
 # ipython files
