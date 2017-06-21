@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # RankEval documentation build configuration file, created by
-# sphinx-quickstart on Wed Jun 21 13:14:05 2017.
+# sphinx-quickstart on Wed Jun 21 13:15:14 2017.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
