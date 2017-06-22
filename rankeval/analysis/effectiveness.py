@@ -120,9 +120,10 @@ def tree_wise_performance(datasets, models, metrics, step=10, display=False):
             for idx_top_k, top_k in enumerate(get_tree_steps(model.n_trees)):
 
                 # compute the document scores using only top-k trees of the model on the given dataset
-                for idx_tree in np.arange(start=idx_top_k*step, stop=top_k+1):
-                    for idx_instance in np.arange(dataset.n_instances):
-                        y_pred[idx_instance] += scorer.partial_y_pred[idx_instance][idx_tree]
+                idx_tree_start = idx_top_k * step
+                idx_tree_stop = top_k + 1
+
+                y_pred += scorer.partial_y_pred[:, idx_tree_start:idx_tree_stop].sum(axis=1)
 
                 # compute the metric score using the predicted document scores
                 for idx_metric, metric in enumerate(metrics):
