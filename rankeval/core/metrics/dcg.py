@@ -41,7 +41,6 @@ class DCG(Metric):
         self.ties = ties
         self.implementation = implementation
 
-
     def eval(self, dataset, y_pred):
         """
         The method computes DCG by taking as input the dataset and the predicted document scores
@@ -64,7 +63,6 @@ class DCG(Metric):
 
         """
         return super(DCG, self).eval(dataset, y_pred)
-
 
     def eval_per_query(self, y, y_pred):
         """
@@ -97,7 +95,6 @@ class DCG(Metric):
 
         dcg = (gain / discount).sum()
         return dcg
-
 
     def __str__(self):
         s = self.name
