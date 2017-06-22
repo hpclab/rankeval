@@ -30,15 +30,15 @@ def efficient_topological_analysis(model, include_leaves=True):
     cdef int[:] trees_left_child = model.trees_left_child
     cdef int[:] trees_right_child  = model.trees_right_child
     
-    node_indices = np.full(model.n_nodes, fill_value=-1, dtype=np.int32)
-    cdef int[:] node_indices_view = node_indices
+    node_indices = np.full(model.n_nodes, fill_value=-1, dtype=np.int64)
+    cdef long[:] node_indices_view = node_indices
     cdef unsigned int[:] height_trees = np.zeros(model.n_trees, dtype=np.uint32)
     
     cdef bint c_include_leaves = include_leaves
 
     cdef np.intp_t idx_tree
     cdef int idx_last_node
-    with nogil, parallel(num_threads=1):
+    with nogil, parallel():
         for idx_tree in prange(n_trees):
             idx_last_node = trees_root[idx_tree+1] if idx_tree < n_trees-1 else n_nodes
             height_trees[idx_tree] = _compute_node_indices(idx_tree,
@@ -53,14 +53,14 @@ def efficient_topological_analysis(model, include_leaves=True):
     # Computes unique indices and counts the occurrences of each index (aggregate)
     unique_counts = np.unique(node_indices[node_indices != -1], return_counts=True)
     
-    cdef int[:] data_indices_view = unique_counts[0]
+    cdef long[:] data_indices_view = unique_counts[0]
     cdef int[:] counts_view = unique_counts[1].astype(np.int32)
     
     cdef np.intp_t data_indices_size = data_indices_view.size
 
     # indices in a sparse matrix representation
-    cdef unsigned int[:] row_ind = np.zeros(data_indices_size, dtype=np.uint32)
-    cdef unsigned int[:] col_ind = np.zeros(data_indices_size, dtype=np.uint32)
+    cdef unsigned long[:] row_ind = np.zeros(data_indices_size, dtype=np.uint64)
+    cdef unsigned long[:] col_ind = np.zeros(data_indices_size, dtype=np.uint64)
     
     cdef np.intp_t idx_data
     cdef int exp
@@ -78,7 +78,7 @@ cdef int _compute_node_indices(np.intp_t idx_tree,
                                int[:] trees_root,
                                int[:] trees_left_child,
                                int[:] trees_right_child,
-                               int[:] node_indices,
+                               long[:] node_indices,
                                int idx_last_node,
                                bint include_leaves) nogil:
 
@@ -94,7 +94,7 @@ cdef int _compute_node_indices(np.intp_t idx_tree,
         cur_node += 1
     
     cur_node = 0
-    cdef int max_index = 0    
+    cdef long max_index = 0
     for cur_node in xrange(trees_root[idx_tree], idx_last_node):
         max_index = max(max_index, node_indices[cur_node])
     cdef int height

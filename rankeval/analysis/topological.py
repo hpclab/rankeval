@@ -79,7 +79,7 @@ class TopologicalAnalysisResult(object):
             to a full binary tree.
         """
         self.model = model
-        self.height_trees, self.topology = efficient_topological_analysis(model, include_leaves)
+        self.topology, self.height_trees = efficient_topological_analysis(model, include_leaves)
 
     def describe_height_trees(self):
         """
