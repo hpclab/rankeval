@@ -6,6 +6,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+from __future__ import print_function
+
 """
 This package implements several effectiveness analysis focused on assessing
 the performance of the models in terms of accuracy. These functionalities can
@@ -107,8 +109,8 @@ def tree_wise_performance(datasets, models, metrics, step=10, display=False):
 
     tree_steps = get_tree_steps(max_num_trees)
 
-    data = np.empty(shape=(len(datasets), len(models), len(tree_steps), len(metrics)), dtype=np.float32)
-    data.fill(np.nan)
+    data = np.full(shape=(len(datasets), len(models), len(tree_steps), len(metrics)),
+                   fill_value=np.nan, dtype=np.float32)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
@@ -164,16 +166,14 @@ def tree_wise_average_contribution(datasets, models, display=False):
         if model.n_trees > max_num_trees:
             max_num_trees = model.n_trees
 
-    data = np.empty(shape=(len(datasets), len(models), max_num_trees), dtype=np.float32)
-    data.fill(np.nan)
+    data = np.full(shape=(len(datasets), len(models), max_num_trees), fill_value=np.nan, dtype=np.float32)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
             scorer = model.score(dataset, detailed=True)
 
             # the document scores are accumulated along for the various top-k (in order to avoid useless re-scoring)
-            y_contributes = np.empty(max_num_trees, dtype=np.float32)
-            y_contributes.fill(np.nan)
+            y_contributes = np.full(max_num_trees, fill_value=np.nan, dtype=np.float32)
             y_contributes[:model.n_trees] = np.average(np.abs(scorer.partial_y_pred), axis=0)
 
             data[idx_dataset][idx_model] = y_contributes
@@ -219,8 +219,7 @@ def query_wise_performance(datasets, models, metrics, bins=None, start=None, end
         The metric scores are cumulatively reported tree by tree, i.e., top 10 trees, top 20, etc., with a step-size
         between the number of trees as highlighted by the step parameter.
     """
-    glob_metric_scores = np.empty(shape=(len(datasets), len(models), len(metrics)), dtype=object)
-    glob_metric_scores.fill(np.nan)
+    glob_metric_scores = np.full(shape=(len(datasets), len(models), len(metrics)), fill_value=np.nan, dtype=object)
 
     min_metric_score = max_metric_score = np.nan
     for idx_dataset, dataset in enumerate(datasets):
@@ -241,8 +240,7 @@ def query_wise_performance(datasets, models, metrics, bins=None, start=None, end
 
     bin_values = np.linspace(start=start, stop=end, num=bins+1)
 
-    data = np.empty(shape=(len(datasets), len(models), len(metrics), bins), dtype=np.float32)
-    data.fill(np.nan)
+    data = np.full(shape=(len(datasets), len(models), len(metrics), bins), fill_value=np.nan, dtype=np.float32)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
@@ -251,7 +249,7 @@ def query_wise_performance(datasets, models, metrics, bins=None, start=None, end
                 # evaluate the histogram
                 values, base = np.histogram(metric_scores, bins=bin_values)
                 # evaluate the cumulative
-                cumulative = np.cumsum(values, dtype=float) / bins
+                cumulative = np.cumsum(values, dtype=float) / metric_scores.size
 
                 data[idx_dataset][idx_model][idx_metric] = cumulative
 
@@ -292,8 +290,7 @@ def query_class_performance(datasets, models, metrics, query_classes, display=Fa
         A DataArray containing the per-class metric scores of each model using the given metrics on the given datasets.
     """
 
-    glob_metric_scores = np.empty(shape=(len(datasets), len(models), len(metrics)), dtype=object)
-    glob_metric_scores.fill(np.nan)
+    glob_metric_scores = np.full(shape=(len(datasets), len(models), len(metrics)), fill_value=np.nan, dtype=object)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
@@ -307,16 +304,14 @@ def query_class_performance(datasets, models, metrics, query_classes, display=Fa
     unique_classes = np.unique([c for d in unique_query_classes for c in d])
 
     # defining destination array now saving values of the specific metric directly
-    query_class_metric_scores = np.empty(shape=(len(datasets), len(models), len(metrics), len(unique_classes)),
-                                         dtype=np.float32)
-    query_class_metric_scores.fill(np.nan)
+    query_class_metric_scores = np.full(shape=(len(datasets), len(models), len(metrics), len(unique_classes)),
+                                        fill_value=np.nan, dtype=np.float32)
 
     # computing the average metric over the specific categorization
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
             for idx_metric, metric in enumerate(metrics):
                 for idx_query_class, query_class in enumerate(unique_classes):
-
                     indices = np.where(query_classes[idx_dataset] == query_class)
                     # If this query class is not present in this dataset, skip it
                     if not len(indices):
@@ -370,8 +365,7 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None, 
         smaller than a given score, for each model and each dataset.
     """
 
-    glob_doc_scores = np.empty(shape=(len(datasets), len(models)), dtype=object)
-    glob_doc_scores.fill(np.nan)
+    glob_doc_scores = np.full(shape=(len(datasets), len(models)), fill_value=np.nan, dtype=object)
 
     min_doc_score = max_doc_score = np.nan
     for idx_dataset, dataset in enumerate(datasets):
@@ -390,8 +384,7 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None, 
 
     rel_labels = np.sort(np.unique([dataset.y for dataset in datasets]))
 
-    data = np.empty(shape=(len(datasets), len(models), len(rel_labels), bins), dtype=np.float32)
-    data.fill(np.nan)
+    data = np.full(shape=(len(datasets), len(models), len(rel_labels), bins), fill_value=np.nan, dtype=np.float32)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
