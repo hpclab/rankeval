@@ -5,14 +5,22 @@ copyright: HPCLab, ISTI-CNR, Pisa, Italy.
 
 ## Installation
 
-The library works with OpenMP so you need a compiler supporting it. Below an example of installation with
-GCC and G++ (required a gnu compiler).
+The library works with OpenMP so you need a compiler supporting it. 
+If your machine uses a default compiler different from gnu, change it 
+appropriately before proceeding with the installation:
 
-```CC=gcc-6 CXX=g++-6 python setup.py install```
+```
+export CC=gcc-5
+export CXX=g++-5
+```
+
+Below an example of installation.
+
+```python setup.py install```
 
 or
 
-```pip install -e .```
+```pip install -e .```u
 
 ## Development
 
