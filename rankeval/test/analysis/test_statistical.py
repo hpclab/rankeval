@@ -22,7 +22,7 @@ class StatisticalSignificanceTestCase(unittest.TestCase):
     def setUp(self):
         self.model_a = RTEnsemble(os.path.join(data_dir, "quickrank.model.xml"), format="quickrank")
         self.model_b = RTEnsemble(os.path.join(data_dir, "quickrank.model.v2.xml"), format="quickrank")
-        self.dataset = Dataset(os.path.join(data_dir, "msn1.fold1.test.5k.txt"), format="svmlight")
+        self.dataset = Dataset.load(os.path.join(data_dir, "msn1.fold1.test.5k.txt"), format="svmlight")
         self.metric = NDCG()
 
     def tearDown(self):

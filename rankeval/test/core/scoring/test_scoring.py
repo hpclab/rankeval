@@ -18,7 +18,7 @@ class ScoringTestCase(unittest.TestCase):
 
     def setUp(self):
         self.model = RTEnsemble(model_file, format="quickrank")
-        self.dataset = Dataset(data_file, format="svmlight")
+        self.dataset = Dataset.load(data_file, format="svmlight")
         self.scorer = Scorer(self.model, self.dataset)
 
     def tearDown(self):
@@ -34,11 +34,11 @@ class ScoringTestCase(unittest.TestCase):
         assert_array_almost_equal(self.scorer.get_predicted_scores()[:3],
                                   [0.16549695, 0.07126279, 0.10397919])
         assert_array_almost_equal(self.scorer.get_predicted_scores()[-3:],
-                                  [0.19496895, 0.13345119, 0.07126279])
+                                  [0.13345119, 0.13345119, 0.07126279])
 
     def test_basic_scoring_sum(self):
         self.scorer.score(detailed=False)
-        assert_almost_equal(self.scorer.get_predicted_scores().sum(), 621.9671631)
+        assert_almost_equal(self.scorer.get_predicted_scores().sum(), 598.72852, decimal=5)
 
     def test_detailed_scoring_values(self):
         self.scorer.score(detailed=True)
@@ -47,7 +47,7 @@ class ScoringTestCase(unittest.TestCase):
                                    [0.03412888,  0.03713391],
                                    [0.06684528,  0.03713391]])
         assert_array_almost_equal(self.scorer.get_partial_predicted_scores()[-3:],
-                                  [[0.09631728,  0.09865167],
+                                  [[0.09631728,  0.03713391],
                                    [0.09631728,  0.03713391],
                                    [0.03412888,  0.03713391]])
 
@@ -60,12 +60,12 @@ class ScoringTestCase(unittest.TestCase):
 
     def test_detailed_scoring_sum(self):
         self.scorer.score(detailed=True)
-        assert_almost_equal(self.scorer.get_partial_predicted_scores().sum(), 621.9671631)
-        assert_array_almost_equal(self.scorer.get_partial_predicted_scores().sum(axis=0), [312.43994141, 309.53387451])
+        assert_almost_equal(self.scorer.get_partial_predicted_scores().sum(), 598.72852, decimal=5)
+        assert_array_almost_equal(self.scorer.get_partial_predicted_scores().sum(axis=0), [312.43994141, 286.2948])
         assert_array_almost_equal(self.scorer.get_partial_predicted_scores().sum(axis=1)[:3],
                                   [0.16549695, 0.07126279, 0.10397919])
         assert_array_almost_equal(self.scorer.get_partial_predicted_scores().sum(axis=1)[-3:],
-                                  [0.19496895, 0.13345119, 0.07126279])
+                                  [0.13345119, 0.13345119, 0.07126279])
 
 
 if __name__ == '__main__':
