@@ -42,7 +42,7 @@ class MetricsTestCase(unittest.TestCase):
         self.y_query2 = np.array([0, 1, 0, 3, 0])
 
         # setup a Dataset object
-        self.dataset = Dataset(data_file, name="TestDataset", format="svmlight")
+        self.dataset = Dataset.load(data_file, name="TestDataset", format="svmlight")
         self.dataset.y = np.concatenate((self.y_query1, self.y_query2))
         self.dataset.query_ids = np.array([0,5,10])
         self.dataset.n_queries = 2

@@ -7,8 +7,6 @@
 
 """Class for efficient modelling of an ensemble-based model of binary regression trees."""
 
-# Author: Salvatore Trani <salvatore.trani@isti.cnr.it>
-
 import numpy as np
 from rankeval.core.scoring import Scorer
 
@@ -171,9 +169,9 @@ class RTEnsemble(object):
         scorer : Scorer
             The scorer object resulting from scoring the model on the given dataset
         """
-        if dataset.file not in self._cache_scorer:
-            self._cache_scorer[dataset.file] = Scorer(self, dataset)
-        scorer = self._cache_scorer[dataset.file]
+        if dataset not in self._cache_scorer:
+            self._cache_scorer[dataset] = Scorer(self, dataset)
+        scorer = self._cache_scorer[dataset]
         # The scoring is performed only if it has not been done before...
         scorer.score(detailed)
         return scorer

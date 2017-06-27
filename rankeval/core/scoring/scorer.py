@@ -9,8 +9,6 @@
 Class for efficient scoring of an ensemble-based model composed of binary regression trees on a given dataset.
 """
 
-import numpy as np
-
 from rankeval.core.dataset import Dataset
 from rankeval.core.scoring._efficient_scoring import basic_scoring, detailed_scoring
 

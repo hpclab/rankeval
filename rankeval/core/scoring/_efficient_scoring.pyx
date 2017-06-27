@@ -117,7 +117,7 @@ cdef float _score_single_instance_single_tree(float[:,:] X,
     while trees_left_child[cur_node] != -1 and trees_right_child[cur_node] != -1:
         feature_idx = trees_nodes_feature[cur_node]
         feature_threshold = trees_nodes_value[cur_node]
-        if X[idx_instance, feature_idx] < feature_threshold:
+        if X[idx_instance, feature_idx] <= feature_threshold:
             cur_node = trees_left_child[cur_node]
         else:
             cur_node = trees_right_child[cur_node]

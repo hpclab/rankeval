@@ -14,10 +14,57 @@ from rankeval.core.dataset.svmlight_format import load_svmlight_file, dump_svmli
 
 
 class Dataset(object):
+    """
+    This class describe the dataset object, with its utility and features
 
-    def __init__(self, f, name=None, format="svmlight"):
+    Attributes
+    -------
+    X : numpy 2d array of float
+        It is a dense numpy matrix of shape (n_samples, n_features),
+    y : numpy 1d array of float
+        It is a ndarray of shape (n_samples,) with the gold label
+    query_ids : numpy 1d array of int
+        It is a ndarray of shape(nsamples,)
+    name : str
+        The name to give to the dataset
+    n_instances : int
+        The number of instances in the dataset
+    n_features : int
+        The number of features in the dataset
+    n_queries : int
+        The number of queries in the dataset
+    """
+
+    def __init__(self, X, y, query_ids, name=None):
         """
         This module implements the generic class for loading/dumping a dataset from/to file.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            The matrix with feature values
+        y : numpy.array
+            The vector with label values
+        query_ids : numpy.array
+            The vector with the query_id for each sample.
+        """
+        # convert from query_ids per sample to query offset
+        self.query_ids = np.append(np.unique(query_ids, return_index=True)[1],
+                                   query_ids.size)
+
+        self.X, self.y = X, y
+        self.name = "Dataset %s" % (self.X.shape,)
+        if name is not None:
+            self.name = name
+
+        self.n_instances = len(self.y)
+        self.n_features = self.X.shape[1]
+        self.n_queries = len(self.query_ids) - 1
+
+    @staticmethod
+    def load(f, name=None, format="svmlight"):
+        """
+        This static method implements the loading of a dataset from file.
 
         Parameters
         ----------
@@ -28,29 +75,16 @@ class Dataset(object):
         format : str
             The format of the dataset file to load (actually supported is only "svmlight" format)
 
-        Attributes
+        Returns
         -------
-        f : path
-            The file name of the dataset to load
-        X : numpy 2d array of float
-            It is a dense numpy matrix of shape (n_samples, n_features),
-        y : numpy 1d array of float
-            It is a ndarray of shape (n_samples,) with the gold label
-        query_ids : numpy 1d array of int
-            It is a ndarray of shape(nsamples,)
+        dataset : Dataset
+            The dataset read from file
         """
         if format == "svmlight":
-            self.X, self.y, self.query_ids = load_svmlight_file(f, query_id=True)
+            X, y, query_ids = load_svmlight_file(f, query_id=True)
         else:
             raise TypeError("Dataset format %s is not yet supported!" % format)
-
-        self.file = f
-        self.name = "Dataset: " + f
-        if name is not None:
-            self.name = name
-
-        self.n_instances = len(self.y)
-        self.n_queries = len(self.query_ids) - 1
+        return Dataset(X, y, query_ids, name)
 
     def dump(self, f, format):
         """
@@ -64,7 +98,8 @@ class Dataset(object):
             The format to use for dumping the dataset on file (actually supported is only "svmlight" format)
         """
         if len(self.query_ids) != self.X.shape[0]:
-            # we need to unroll the query_ids (it is compacted: it reports only the offset where a new query id starts)
+            # we need to unroll the query_ids (it is compacted: it reports only
+            # the offset where a new query id starts)
             query_ids = np.ndarray(self.X.shape[0], dtype=np.float32)
             last_idx = 0
             for qid, qid_offset in enumerate(self.query_ids, start=1):
@@ -105,3 +140,17 @@ class Dataset(object):
 
     def __str__(self):
         return self.name
+
+    def __hash__(self):
+        # fast implementation not taking into account the full arrays...
+        return hash((str(self.X), str(self.y), str(self.query_ids)))
+
+    def __eq__(self, other):
+        return self.X == other.X and \
+               self.y == other.y and \
+               self.query_ids == other.query_ids
+
+    def __ne__(self, other):
+        # Not strictly necessary, but to avoid having both x==y and x!=y
+        # True at the same time
+        return not(self == other)

@@ -14,13 +14,13 @@ class SVMLightLoaderTestCase(unittest.TestCase):
 
     def test_svmlight_dataset(self):
         try:
-            dataset = Dataset(datafile, format="svmlight")
+            dataset = Dataset.load(datafile, format="svmlight")
         except TypeError:
             assert False
 
     def test_not_supported_dataset(self):
         try:
-            Dataset(datafile, format="unsupported")
+            Dataset.load(datafile, format="unsupported")
             # if we reach the code below, it means the constructor has not failed...raise error!
             assert False
         except TypeError:
