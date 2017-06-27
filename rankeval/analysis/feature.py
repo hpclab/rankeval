@@ -46,10 +46,6 @@ def feature_importance(dataset, model):
                                        y_pred, feature_imp)
         y_pred += y_pred_tree * model.trees_weight[tree_id]
 
-    # TO DELETE BEFORE COMMIT
-    from numpy.testing import assert_array_almost_equal
-    assert_array_almost_equal(model.score(dataset).y_pred, y_pred)
-
     return feature_imp
 
 
