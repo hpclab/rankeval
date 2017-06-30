@@ -146,9 +146,9 @@ class Dataset(object):
         return hash((str(self.X), str(self.y), str(self.query_ids)))
 
     def __eq__(self, other):
-        return self.X == other.X and \
-               self.y == other.y and \
-               self.query_ids == other.query_ids
+        return (self.X == other.X).all() and \
+               (self.y == other.y).all() and \
+               (self.query_ids == other.query_ids).all()
 
     def __ne__(self, other):
         # Not strictly necessary, but to avoid having both x==y and x!=y

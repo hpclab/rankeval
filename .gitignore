@@ -15,7 +15,7 @@ rankeval.egg-info
 
 # ipython files
 .ipynb_checkpoints
-./*.ipynb
+/*.ipynb
 
 *.prefs
 .pydevproject
