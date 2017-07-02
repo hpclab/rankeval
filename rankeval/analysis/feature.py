@@ -46,7 +46,6 @@ def feature_importance(model, dataset):
                                        y_pred, feature_imp)
         y_pred += y_pred_tree * model.trees_weight[tree_id]
 
-    print feature_imp
     return feature_imp
 
 
