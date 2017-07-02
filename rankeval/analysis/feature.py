@@ -15,7 +15,7 @@ from collections import deque
 from rankeval.core.model import RTEnsemble
 
 
-def feature_importance(dataset, model):
+def feature_importance(model, dataset):
     """
     This method computes the feature importance relative to the given model
     and dataset.
@@ -42,14 +42,15 @@ def feature_importance(dataset, model):
 
     # iterate trees of the model
     for tree_id in np.arange(model.n_trees):
-        y_pred_tree = _feature_tree_imp(dataset, model, tree_id,
+        y_pred_tree = _feature_tree_imp(model, dataset, tree_id,
                                        y_pred, feature_imp)
         y_pred += y_pred_tree * model.trees_weight[tree_id]
 
+    print feature_imp
     return feature_imp
 
 
-def _feature_tree_imp(dataset, model, tree_id, y_pred, feature_imp):
+def _feature_tree_imp(model, dataset, tree_id, y_pred, feature_imp):
     """
     This method computes the feature importance relative to a single tree of
     the given model.
@@ -78,12 +79,8 @@ def _feature_tree_imp(dataset, model, tree_id, y_pred, feature_imp):
     # The residual scores to fit
     y_target = dataset.y - y_pred
 
-    # copy the y_pred vector
+    # Set the default y_pred vector to the mean residual score
     y_pred_tree = np.full(dataset.n_instances, fill_value=y_target.mean())
-
-    # compute initial MSE (variance)
-    # ((y_target - y_pred_tree) ** 2.0).sum()
-    previous_mse = y_target.var() * dataset.n_instances
 
     # queue with node_id to be visited and list of documents in the node
     root_node_id = model.trees_root[tree_id]
@@ -124,7 +121,5 @@ def _feature_tree_imp(dataset, model, tree_id, y_pred, feature_imp):
             node_queue.append((model.trees_left_child[node_id], left_docs))
         if not model.is_leaf_node(model.trees_right_child[node_id]):
             node_queue.append((model.trees_right_child[node_id], right_docs))
-
-        previous_mse -= delta_mse
 
     return y_pred_tree
