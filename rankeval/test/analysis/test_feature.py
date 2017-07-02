@@ -33,7 +33,7 @@ class FeatureImportanceTestCase(unittest.TestCase):
         self.dataset = None
  
     def test_feature_importance(self):
-        feature_imp = feature_importance(self.dataset, self.model)
+        feature_imp = feature_importance(self.model, self.dataset)
 
         assert_allclose(feature_imp[[7, 105, 107, 114]],
                         [0.0405271754093, 0.0215954124466,
@@ -50,7 +50,7 @@ class FeatureImportanceTestCase(unittest.TestCase):
         feature_imp = np.zeros(self.dataset.n_features)
 
         for tree_id in np.arange(self.model.n_trees):
-            y_pred_tree = _feature_tree_imp(self.dataset, self.model, tree_id,
+            y_pred_tree = _feature_tree_imp(self.model, self.dataset, tree_id,
                                             y_pred, feature_imp)
             y_pred_tree *= self.model.trees_weight[tree_id]
 

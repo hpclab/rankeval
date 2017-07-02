@@ -17,9 +17,6 @@ The splitting nodes are described with two information: the feature id used for 
 nodes on the other hand are described by an "output" tag with the value as content.
 """
 
-# Author: Salvatore Trani <salvatore.trani@isti.cnr.it>
-# License: <TO DEFINE>
-
 from rankeval.core.model.rt_ensemble import RTEnsemble
 
 try:
