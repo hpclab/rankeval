@@ -48,9 +48,13 @@ class Dataset(object):
         query_ids : numpy.array
             The vector with the query_id for each sample.
         """
-        # convert from query_ids per sample to query offset
-        self.query_ids = np.append(np.unique(query_ids, return_index=True)[1],
-                                   query_ids.size)
+
+        if len(query_ids) == X.shape[0]:
+            # convert from query_ids per sample to query offset
+            self.query_ids = np.append(np.unique(query_ids, return_index=True)[1],
+                                       query_ids.size)
+        else:
+            self.query_ids = query_ids
 
         self.X, self.y = X, y
         self.name = "Dataset %s" % (self.X.shape,)

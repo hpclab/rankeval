@@ -15,7 +15,7 @@ class Recall(Metric):
     
     """
 
-    def __init__(self, name='Recall', cutoff=None, threshold=0):
+    def __init__(self, name='Recall', cutoff=None, threshold=1):
         """
         This is the constructor of Precision, an object of type Metric, with the name Precision.
         The constructor also allows setting custom values for cutoff and threshold, otherwise it uses the default values.

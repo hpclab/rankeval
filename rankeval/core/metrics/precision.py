@@ -14,7 +14,7 @@ class Precision(Metric):
     This class implements Precision as: (relevant docs & retrieved docs) / retrieved docs.
     """
 
-    def __init__(self, name='Precision', cutoff=None, threshold=0):
+    def __init__(self, name='Precision', cutoff=None, threshold=1):
         """
         This is the constructor of Precision, an object of type Metric, with the name Precision.
         The constructor also allows setting custom values for cutoff and threshold, otherwise it uses the default values.
@@ -28,7 +28,6 @@ class Precision(Metric):
         super(Precision, self).__init__(name)
         self.cutoff = cutoff
         self.threshold = threshold
-
 
     def eval(self, dataset, y_pred):
         """
@@ -48,7 +47,6 @@ class Precision(Metric):
             The detailed Precision scores for each query, an array of length of the number of queries.
         """
         return super(Precision, self).eval(dataset, y_pred)
-
 
     def eval_per_query(self, y, y_pred):
         """
