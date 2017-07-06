@@ -23,7 +23,7 @@ from rankeval.core.model import RTEnsemble
 from rankeval.core.metrics import Metric
 
 
-def model_performance(datasets, models, metrics, display=False):
+def model_performance(datasets, models, metrics):
     """
     This method implements the model performance analysis (part of the effectiveness analysis category).
 
@@ -35,9 +35,7 @@ def model_performance(datasets, models, metrics, display=False):
         The models to analyze
     metrics : list of Metric
         The metrics to use for the analysis
-    display : bool
-        True if the method has to display interestingly insights using inline plots/tables
-        These additional information will be displayed only if working inside a ipython notebook.
+
 
     Returns
     -------
@@ -56,19 +54,10 @@ def model_performance(datasets, models, metrics, display=False):
                                coords=[datasets, models, metrics],
                                dims=['dataset', 'model', 'metric'])
 
-    if display:
-        try:
-            from IPython.display import display, HTML
-            for dataset in performance.coords['dataset'].values:
-                display(HTML("<h3>Dateset: %s</h3>" % dataset))
-                display(performance.sel(dataset=dataset).to_pandas())
-        except ImportError:
-            pass
-
     return performance
 
 
-def tree_wise_performance(datasets, models, metrics, step=10, display=False):
+def tree_wise_performance(datasets, models, metrics, step=10):
     """
     This method implements the analysis of the model on a tree-wise basis (part of the effectiveness analysis category).
 
@@ -139,7 +128,7 @@ def tree_wise_performance(datasets, models, metrics, step=10, display=False):
     return performance
 
 
-def tree_wise_average_contribution(datasets, models, display=False):
+def tree_wise_average_contribution(datasets, models):
     """
     This method provides the average contribution given by each tree of each model to the scoring of the datasets.
 
