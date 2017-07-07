@@ -32,7 +32,8 @@ def basic_scoring(model, X):
     cdef np.intp_t n_trees = model.n_trees
 
     cdef float[:, :] X_view = X
-    cdef float[:] y = np.zeros(n_instances, dtype=np.float32)
+    y = np.zeros(n_instances, dtype=np.float32)
+    cdef float[:] y_view = y
 
     cdef int[:] trees_root = model.trees_root
     cdef float[:] trees_weight = model.trees_weight
@@ -58,8 +59,8 @@ def basic_scoring(model, X):
                     trees_right_child
                 )
 
-                y[idx_instance] += predicted_score * trees_weight[idx_tree]
-    return np.asarray(y)
+                y_view[idx_instance] += predicted_score * trees_weight[idx_tree]
+    return y
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -69,7 +70,8 @@ def detailed_scoring(model, X):
     cdef np.intp_t n_trees = model.n_trees
 
     cdef float[:, :] X_view = X
-    cdef float[:, :] partial_y = np.zeros((X.shape[0], model.n_trees), dtype=np.float32)
+    partial_y = np.zeros((X.shape[0], model.n_trees), dtype=np.float32)
+    cdef float[:, :] partial_y_view = partial_y
 
     cdef int[:] trees_root = model.trees_root
     cdef float[:] trees_weight = model.trees_weight
@@ -95,8 +97,8 @@ def detailed_scoring(model, X):
                     trees_right_child
                 )
 
-                partial_y[idx_instance, idx_tree] = predicted_score * trees_weight[idx_tree]
-    return np.asarray(partial_y)
+                partial_y_view[idx_instance, idx_tree] = predicted_score * trees_weight[idx_tree]
+    return partial_y
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

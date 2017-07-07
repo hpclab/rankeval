@@ -116,8 +116,8 @@ setup(
     ext_modules=[
         Extension('rankeval.core.dataset._svmlight_format',
                   sources=[dataset_dir + '/_svmlight_format.cpp'],
-                  language='c++',
                   include_dirs=[dataset_dir],
+                  language='c++',
                   extra_compile_args=['-O3']),
         Extension('rankeval.core.scoring._efficient_scoring',
                   sources=[scoring_dir + '/_efficient_scoring.pyx'],
@@ -128,6 +128,13 @@ setup(
                   sources=[analysis_dir + '/_efficient_topological.pyx'],
                   include_dirs=[analysis_dir],
                   extra_compile_args=['-fopenmp', '-O3'],
+                  extra_link_args=['-fopenmp'], ),
+        Extension('rankeval.analysis._efficient_feature',
+                  sources=[analysis_dir + '/_efficient_feature.pyx',
+                           analysis_dir + '/_efficient_feature_impl.cpp'],
+                  include_dirs=[analysis_dir],
+                  language='c++',
+                  extra_compile_args=['-fopenmp', '-O3', "-w", "-std=c++11"],
                   extra_link_args=['-fopenmp'], )
     ],
 
@@ -167,7 +174,9 @@ setup(
 
     test_suite="rankeval.test",
     setup_requires=[
-        'numpy >= 1.12'
+        'setuptools>=18.0',
+        'numpy >= 1.12',
+        'cython >= 0.25.2'
     ],
     install_requires=[
         # Use 1.13: https://github.com/quantopian/zipline/issues/1808
@@ -175,8 +184,7 @@ setup(
         'scipy >= 0.7.0',
         'six >= 1.9.0',
         'pandas >= 0.19.1',
-        'xarray >= 0.9.5',
-        'cython >= 0.25.2'
+        'xarray >= 0.9.5'
     ],
     tests_require=[
         'nose >= 1.3.7',
