@@ -1,10 +1,7 @@
 #include "_efficient_feature_impl.h"
 
-#include <iostream>
 #include <math.h>
 #include <vector>
-#include <cstdio>
-#include <ctime>
 
 void c_feature_importance(
         const float* X,

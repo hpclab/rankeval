@@ -37,8 +37,6 @@ except ImportError:
             A vector of importance values, one for each feature in the given model.
         """
 
-        print "FEATURE IMPORTANCE, SLOW VERSION"
-
         # initialize features importance
         feature_imp = np.zeros(dataset.n_features)
 
@@ -47,8 +45,8 @@ except ImportError:
 
         # iterate trees of the model
         for tree_id in np.arange(model.n_trees):
-            y_pred_tree = _feature_importance_tree(model, dataset, tree_id,
-                                                   y_pred, feature_imp)
+            _feature_importance_tree(model, dataset, tree_id,
+                                     y_pred, feature_imp)
 
         return feature_imp
 
@@ -115,16 +113,6 @@ except ImportError:
 
             # compute new_mse
             delta_mse = pre_split_mse - post_split_mse
-
-            # print("")
-            # print("NodeId: %d, FeatureId: %d, Delta MSE: %.2f" % (node_id, feature_id, delta_mse))
-            # print("Mean y target: %f" % y_target.mean())
-            # print("Left Docs: %d" % len(left_docs))
-            # print("Right Docs: %d" % len(right_docs))
-            # print("Pre Split MSE: %.2f" % pre_split_mse)
-            # print("Post Split MSE: %.2f" % post_split_mse)
-            # print("Left Split Mean: %f" % y_target[left_docs].mean())
-            # print("Right Split Mean: %f" % y_target[right_docs].mean())
 
             # update feature importance
             feature_imp[feature_id] += delta_mse / dataset.n_instances
