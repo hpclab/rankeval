@@ -120,7 +120,7 @@ class TopologicalAnalysisResult(object):
             respect to a full binary tree. Each cell value highlights how many
             trees have the specific node, normalized by the number of trees.
         """
-        return self.topology.astype(np.float32) / self.model.n_trees
+        return self.topology / self.model.n_trees
 
     def fullness_per_level(self):
         """
@@ -140,4 +140,4 @@ class TopologicalAnalysisResult(object):
         # to the number of nonzero elements in each row.
         sums = self.topology.sum(axis=1).A1
         counts = np.diff(self.topology.indptr)
-        return sums.astype(np.float32) / counts / self.model.n_trees
+        return sums / counts / self.model.n_trees

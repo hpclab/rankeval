@@ -71,7 +71,7 @@ def efficient_topological_analysis(model, include_leaves=True):
             row_ind[idx_data] = most_significant_bit(data_indices_view[idx_data] + 1)
             col_ind[idx_data] = data_indices_view[idx_data] + 1 - 2**row_ind[idx_data]
 
-    return sc.sparse.csr_matrix((counts_view, (row_ind, col_ind))), np.asarray(height_trees)
+    return sc.sparse.csr_matrix((counts_view, (row_ind, col_ind)), dtype=np.float32), np.asarray(height_trees)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

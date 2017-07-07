@@ -15,7 +15,7 @@ class Recall(Metric):
     
     """
 
-    def __init__(self, name='Recall', cutoff=None, threshold=1):
+    def __init__(self, name='Recall', no_relevant_results=0.0, cutoff=None, threshold=1, normalized=False):
         """
         This is the constructor of Precision, an object of type Metric, with the name Precision.
         The constructor also allows setting custom values for cutoff and threshold, otherwise it uses the default values.
@@ -27,8 +27,10 @@ class Recall(Metric):
         threshold: float
         """
         super(Recall, self).__init__(name)
+        self.no_relevant_results = no_relevant_results
         self.cutoff = cutoff
         self.threshold = threshold
+        self.normalized = normalized
 
 
     def eval(self, dataset, y_pred):
@@ -73,7 +75,14 @@ class Recall(Metric):
 
         n_relevant_retrieved = (y[idx_y_pred_sorted] >= self.threshold).sum()
         n_relevant = (y >= self.threshold).sum()  # todo see how to deal with recall@k n_rel
-        return float(n_relevant_retrieved) / n_relevant
+
+        if self.normalized:
+            pass
+
+        if n_relevant != 0:
+            return float(n_relevant_retrieved) / n_relevant
+        else:
+            return self.no_relevant_results
 
     def __str__(self):
         s = self.name
