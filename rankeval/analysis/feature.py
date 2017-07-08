@@ -40,6 +40,10 @@ except ImportError:
             given dataset. The improvements are computed as the delta MSE before
             a split node and after, evaluating how much the MSE is improved as a
             result of the split.
+        feature_count : numpy.array
+            A vector of count values, one for each feature in the given
+            model. The count values reported highlights the number of times each
+            feature is used in a split node, i.e., to improve the MSE.
         """
 
         # initialize features importance
@@ -79,7 +83,7 @@ except ImportError:
         feature_imp : numpy.array
             The feature importance array, to be updated with the evaluation of the
             current tree.
-        feature_imp : numpy.array
+        feature_count : numpy.array
             The feature count array, to be updated with the evaluation of the
             current tree.
 
