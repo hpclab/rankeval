@@ -34,11 +34,19 @@ except ImportError:
         Returns
         -------
         feature_importance : numpy.array
-            A vector of importance values, one for each feature in the given model.
+            A vector of importance values, one for each feature in the given
+            model. The importance values reported are the sum of the
+            improvements, in terms of MSE, of each feature, evaluated on the
+            given dataset. The improvements are computed as the delta MSE before
+            a split node and after, evaluating how much the MSE is improved as a
+            result of the split.
         """
 
         # initialize features importance
-        feature_imp = np.zeros(dataset.n_features)
+        feature_imp = np.zeros(dataset.n_features, dtype=np.float32)
+
+        # initialize features count
+        feature_count = np.zeros(dataset.n_features, dtype=np.uint16)
 
         # default scores on the root node of the first tree
         y_pred = np.zeros(dataset.n_instances)
@@ -46,12 +54,13 @@ except ImportError:
         # iterate trees of the model
         for tree_id in np.arange(model.n_trees):
             _feature_importance_tree(model, dataset, tree_id,
-                                     y_pred, feature_imp)
+                                     y_pred, feature_imp, feature_count)
 
-        return feature_imp
+        return feature_imp, feature_count
 
 
-    def _feature_importance_tree(model, dataset, tree_id, y_pred, feature_imp):
+    def _feature_importance_tree(model, dataset, tree_id, y_pred,
+                                 feature_imp, feature_count):
         """
         This method computes the feature importance relative to a single tree of
         the given model.
@@ -69,6 +78,9 @@ except ImportError:
             Current instance predictions.
         feature_imp : numpy.array
             The feature importance array, to be updated with the evaluation of the
+            current tree.
+        feature_imp : numpy.array
+            The feature count array, to be updated with the evaluation of the
             current tree.
 
         Returns
@@ -92,6 +104,8 @@ except ImportError:
             node_id, doc_list = node_queue.popleft()
             feature_id = model.trees_nodes_feature[node_id]
             threshold = model.trees_nodes_value[node_id]
+
+            feature_count[feature_id] += 1
 
             # this is good only for the internal nodes (non root)
             if doc_list is not None:

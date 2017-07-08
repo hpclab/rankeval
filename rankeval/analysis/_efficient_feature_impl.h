@@ -26,6 +26,7 @@ void c_feature_importance(
         const int* trees_left_child,
         const int* trees_right_child,
         float* feature_imp,
+        short* feature_count,
         const int n_instances,
         const int n_features,
         const int n_trees);
@@ -41,6 +42,7 @@ void c_feature_importance_tree(
         const int* trees_right_child,
         const int tree_id,
         float* feature_imp,
+        short* feature_count,
         const int n_instances,
         const int n_features,
         float* y_pred,

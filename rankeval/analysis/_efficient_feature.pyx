@@ -22,6 +22,7 @@ cdef extern from "_efficient_feature_impl.h":
         const int* trees_left_child,
         const int* trees_right_child,
         float* feature_imp,
+        short* feature_count,
         const int n_instances,
         const int n_features,
         const int n_trees);
@@ -37,6 +38,7 @@ cdef extern from "_efficient_feature_impl.h":
         const int* trees_right_child,
         const int tree_id,
         float* feature_imp,
+        short* feature_count,
         const int n_instances,
         const int n_features,
         float* y_pred,
@@ -49,6 +51,9 @@ def feature_importance(model, dataset):
     # initialize features importance
     feature_imp = np.zeros(dataset.n_features, dtype=np.float32)
 
+    # initialize features importance
+    feature_count = np.zeros(dataset.n_features, dtype=np.uint16)
+
     c_feature_importance(
         <float*> np.PyArray_DATA(dataset.X),
         <float*> np.PyArray_DATA(dataset.y),
@@ -59,15 +64,18 @@ def feature_importance(model, dataset):
         <int*> np.PyArray_DATA(model.trees_left_child),
         <int*> np.PyArray_DATA(model.trees_right_child),
         <float*> np.PyArray_DATA(feature_imp),
+        <short*> np.PyArray_DATA(feature_count),
         dataset.X.shape[0],
         dataset.X.shape[1],
         model.n_trees);
 
-    return np.asarray(feature_imp, dtype=np.float32)
+    return np.asarray(feature_imp, dtype=np.float32), \
+           np.asarray(feature_count, dtype=np.uint16)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def _feature_importance_tree(model, dataset, tree_id, y_pred, feature_imp):
+def _feature_importance_tree(model, dataset, tree_id, y_pred,
+                             feature_imp, feature_count):
 
     y_pred_tree = np.zeros(dataset.n_instances, dtype=np.float32);
 
@@ -82,6 +90,7 @@ def _feature_importance_tree(model, dataset, tree_id, y_pred, feature_imp):
         <int*> np.PyArray_DATA(model.trees_right_child),
         tree_id,
         <float*> np.PyArray_DATA(feature_imp),
+        <short*> np.PyArray_DATA(feature_count),
         dataset.X.shape[0],
         dataset.X.shape[1],
         <float*> np.PyArray_DATA(y_pred),

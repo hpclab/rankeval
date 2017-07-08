@@ -13,6 +13,7 @@ void c_feature_importance(
         const int* trees_left_child,
         const int* trees_right_child,
         float* feature_imp,
+        short* feature_count,
         int n_instances,
         int n_features,
         int n_trees) {
@@ -42,6 +43,7 @@ void c_feature_importance(
                                   trees_right_child,
                                   tree_id,
                                   feature_imp,
+                                  feature_count,
                                   n_instances,
                                   n_features,
                                   y_pred.data(),
@@ -60,6 +62,7 @@ void c_feature_importance_tree(
         const int* trees_right_child,
         const int tree_id,
         float* feature_imp,
+        short* feature_count,
         const int n_instances,
         const int n_features,
         float* y_pred,
@@ -97,6 +100,8 @@ void c_feature_importance_tree(
         int node_id = node.node_id;
         short feature_id = trees_nodes_feature[node_id];
         float threshold = trees_nodes_value[node_id];
+
+        feature_count[feature_id]++;
 
         // Split the instances in left-right (end_id will be the frontier)
         int start_id = node.start_id;
