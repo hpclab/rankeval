@@ -81,7 +81,7 @@ class TopologicalAnalysisResult(object):
         self.model = model
         self.topology, self.height_trees = efficient_topological_analysis(model, include_leaves)
 
-    def describe_height_trees(self):
+    def describe_tree_height(self):
         """
         Computes several descriptive statistics of the height of the trees.
 
@@ -105,7 +105,7 @@ class TopologicalAnalysisResult(object):
         """
         return scipy.stats.describe(self.height_trees)
 
-    def fraction_of_trees_per_node(self):
+    def avg_tree_shape(self):
         """
         Computes the fraction of trees having each node with respect to a
         full binary tree. The fraction is obtained by normalizing the count
