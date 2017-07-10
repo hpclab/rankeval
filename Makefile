@@ -5,7 +5,7 @@ clean:
 	$(PYTHON) setup.py clean
 	rm -rf dist
 	rm -rf rankeval.egg-info
-	rm -rf build *.so *.pyc *.egg
+	rm -rf build *.so *.pyc *.egg *.so
 
 test:
 	$(NOSETESTS)

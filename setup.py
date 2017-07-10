@@ -13,10 +13,10 @@ sudo python ./setup.py install
 import sys
 import os
 
-if sys.version_info[:2] < (2, 7) or (sys.version_info[:1] == 3 and sys.version_info[:2] < (3, 5)):
+if (sys.version_info[:1] == 2 and sys.version_info[:2] < (2, 7)) or \
+    (sys.version_info[:1] == 3 and sys.version_info[:2] < (3, 5)):
     raise Exception('This version of rankeval needs Python 2.7, 3.5 or later.')
 
-# import ez_setup
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
