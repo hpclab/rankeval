@@ -212,8 +212,8 @@ def plot_document_graded_relevance(performance):
             plt.tight_layout()
 
 
-def logMatrix(matrix):
-    flat=matrix.values.flatten()
+def is_log_scale_matrix(matrix):
+    flat = matrix.values.flatten()
     flat.sort()
     if flat[-1]/flat[-2] > 2:
         return True
@@ -227,7 +227,7 @@ def plot_rank_confusion_matrix(performance):
         for i, model in enumerate(performance.coords['model'].values):
             matrix = performance.sel(dataset=dataset, model=model)
             #if scale of very off -> take log
-            if logMatrix(matrix):
+            if is_log_scale_matrix(matrix):
                 matrix = np.log(matrix)
 #             axes[i,0]= matrix.plot()
             axes[i,0].pcolormesh(matrix)
