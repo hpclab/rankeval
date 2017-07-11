@@ -46,8 +46,6 @@ def efficient_topological_analysis(model, include_leaves=True):
                                                            idx_last_node,
                                                            c_include_leaves)
 
-    print node_indices
-
     # Computes unique indices and counts the occurrences of each index (aggregate)
     unique_counts = np.unique(node_indices, return_counts=True)
 
