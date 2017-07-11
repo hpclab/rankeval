@@ -10,8 +10,10 @@ The :mod:`rankeval.core.model` module includes utilities to load a model
 and dump it according to several supported model's format.
 """
 
-from .rt_ensemble import RTEnsemble
-from .proxy_quickrank import ProxyQuickRank
+from rankeval.core.model.rt_ensemble import RTEnsemble
+from rankeval.core.model.proxy_QuickRank import ProxyQuickRank
+from rankeval.core.model.proxy_LightGBM import ProxyLightGBM
 
 __all__ = ['RTEnsemble',
-           'ProxyQuickRank']
+           'ProxyQuickRank',
+           'ProxyLightGBM']

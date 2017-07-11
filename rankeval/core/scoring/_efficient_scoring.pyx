@@ -98,7 +98,7 @@ def detailed_scoring(model, X):
                 )
 
                 partial_y_view[idx_instance, idx_tree] = predicted_score * trees_weight[idx_tree]
-    return partial_y
+    return np.asarray(partial_y)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

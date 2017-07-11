@@ -3,7 +3,8 @@ import unittest
 import logging
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal, assert_allclose
+from numpy.testing import assert_array_almost_equal, assert_allclose, \
+    assert_array_equal
 
 from rankeval.analysis.feature import feature_importance, _feature_importance_tree
 
@@ -15,27 +16,32 @@ from rankeval.core.dataset import Dataset
 
 class FeatureImportanceTestCase(unittest.TestCase):
 
-    def setUp(self):
-        self.model = RTEnsemble(
+    @classmethod
+    def setUpClass(cls):
+        cls.model = RTEnsemble(
             os.path.join(data_dir, "quickrank.model.xml"),
-            format="quickrank")
-        self.dataset = Dataset.load(
+            format="QuickRank")
+        cls.dataset = Dataset.load(
             os.path.join(data_dir, "msn1.fold1.train.5k.txt"),
             format="svmlight")
 
-    def tearDown(self):
-        del self.model
-        self.model = None
-        del self.dataset
-        self.dataset = None
+    @classmethod
+    def tearDownClass(cls):
+        del cls.model
+        cls.model = None
+        del cls.dataset
+        cls.dataset = None
  
     def test_feature_importance(self):
-        feature_imp = feature_importance(self.model, self.dataset)
+        feature_imp, feature_cnt = feature_importance(self.model, self.dataset)
 
         assert_allclose(feature_imp[[7, 105, 107, 114]],
                         [0.0405271754093, 0.0215954124466,
                          0.0478155618964, 0.018661751695],
                         atol=1e-6)
+
+        assert_array_equal(feature_cnt[[7, 105, 107, 114]], [1, 1, 1, 1])
+        assert(feature_cnt.sum(), 4)
 
     def test_scoring_feature_importance(self):
 
@@ -45,11 +51,15 @@ class FeatureImportanceTestCase(unittest.TestCase):
         # initialize features importance
         feature_imp = np.zeros(self.dataset.n_features, dtype=np.float32)
 
+        # initialize features count
+        feature_count = np.zeros(self.dataset.n_features, dtype=np.uint16)
+
         scorer = self.model.score(self.dataset, detailed=True)
 
         for tree_id in np.arange(self.model.n_trees):
             y_pred_tree = _feature_importance_tree(self.model, self.dataset,
-                                                   tree_id, y_pred, feature_imp)
+                                                   tree_id, y_pred, feature_imp,
+                                                   feature_count)
             y_pred_tree *= self.model.trees_weight[tree_id]
 
             # Check the partial scores of each tree are compatible with

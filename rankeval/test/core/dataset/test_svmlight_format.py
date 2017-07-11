@@ -20,8 +20,6 @@ class SVMLightLoaderTestCase(unittest.TestCase):
     def test_load_svmlight_qid_file(self):
         X, y, q = load_svmlight_file(qid_datafile, query_id=True)
 
-        print X.shape
-
         # test X's shape
         assert_array_equal(X.shape, (4, 33))
         #print X

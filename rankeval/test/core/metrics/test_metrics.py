@@ -30,24 +30,39 @@ data_file = os.path.join(data_dir, "msn1.fold1.test.5k.txt")
 
 class MetricsTestCase(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         # self.model = ProxyQuickRank.load(model_file)
         # self.dataset = Dataset(data_file, format="svmlight")
         # self.scorer = Scorer(self.model, self.dataset)
 
         # setup document scores and predicted scored
-        self.y_pred_query1 = np.array([2.3, 0.0, 0.1, 5.5, 1.0])
-        self.y_pred_query2 = np.array([2.6, 0.2, 0.1, 1.5, 1.0])
-        self.y_query1 = np.array([2, 3, 0, 1, 0])
-        self.y_query2 = np.array([0, 1, 0, 3, 0])
+        cls.y_pred_query1 = np.array([2.3, 0.0, 0.1, 5.5, 1.0])
+        cls.y_pred_query2 = np.array([2.6, 0.2, 0.1, 1.5, 1.0])
+        cls.y_query1 = np.array([2, 3, 0, 1, 0])
+        cls.y_query2 = np.array([0, 1, 0, 3, 0])
 
         # setup a Dataset object
-        self.dataset = Dataset.load(data_file, name="TestDataset", format="svmlight")
-        self.dataset.y = np.concatenate((self.y_query1, self.y_query2))
-        self.dataset.query_ids = np.array([0,5,10])
-        self.dataset.n_queries = 2
-        self.y_pred = np.concatenate((self.y_pred_query1, self.y_pred_query2))
+        cls.dataset = Dataset.load(data_file, name="TestDataset", format="svmlight")
+        cls.dataset.y = np.concatenate((cls.y_query1, cls.y_query2))
+        cls.dataset.query_ids = np.array([0,5,10])
+        cls.dataset.n_queries = 2
+        cls.y_pred = np.concatenate((cls.y_pred_query1, cls.y_pred_query2))
 
+    @classmethod
+    def tearDownClass(cls):
+        del cls.y_pred_query1
+        cls.y_pred_query1 = None
+        del cls.y_pred_query2
+        cls.y_pred_query2 = None
+        del cls.y_query1
+        cls.y_query1 = None
+        del cls.y_query2
+        cls.y_query2 = None
+        del cls.dataset
+        cls.dataset = None
+        del cls.y_pred
+        cls.y_pred = None
 
     # # Precision
     # def test_precision_eval_per_query_cutoff(self):

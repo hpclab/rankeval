@@ -90,48 +90,61 @@ class RTEnsemble(object):
 
         self._cache_scorer = dict()
 
-        if format == "quickrank":
+        if format == "QuickRank":
             from rankeval.core.model import ProxyQuickRank
             ProxyQuickRank.load(file_path, self)
+        elif format == "LightGBM":
+            from rankeval.core.model import ProxyLightGBM
+            ProxyLightGBM.load(file_path, self)
         else:
             raise TypeError("Model format %s not yet supported!" % format)
 
     def initialize(self, n_trees, n_nodes):
         """
-        Initialize the internal data structures in order to reflect the given shape and size of the ensemble.
-        This method should be called only by the Proxy Models (the specific format-based loader/saver)
+        Initialize the internal data structures in order to reflect the given
+        shape and size of the ensemble. This method should be called only by
+        the Proxy Models (the specific format-based loader/saver)
 
         Parameters
         ----------
         n_trees : integer
             The number of regression trees in the ensemble.
         n_nodes : integer
-            The total number of nodes (splitting nodes and leaves) in the ensemble
+            The total number of nodes (splitting nodes and leaves) in the
+            ensemble
         """
         self.n_trees = n_trees
         self.n_nodes = n_nodes
 
         self.trees_root = np.full(shape=n_trees, fill_value=-1, dtype=np.int32)
-        self.trees_weight = np.zeros(shape=n_trees, dtype=np.float32)
-        self.trees_left_child = np.full(shape=n_nodes, fill_value=-1, dtype=np.int32)
-        self.trees_right_child = np.full(shape=n_nodes, fill_value=-1, dtype=np.int32)
-        self.trees_nodes_value = np.full(shape=n_nodes, fill_value=-1, dtype=np.float32)
-        self.trees_nodes_feature = np.full(shape=n_nodes, fill_value=-1, dtype=np.int16)
+        self.trees_weight = \
+            np.zeros(shape=n_trees, dtype=np.float32)
+        self.trees_left_child = \
+            np.full(shape=n_nodes, fill_value=-1, dtype=np.int32)
+        self.trees_right_child = \
+            np.full(shape=n_nodes, fill_value=-1, dtype=np.int32)
+        self.trees_nodes_value = \
+            np.full(shape=n_nodes, fill_value=-1, dtype=np.float32)
+        self.trees_nodes_feature = \
+            np.full(shape=n_nodes, fill_value=-1, dtype=np.int16)
 
     def is_leaf_node(self, index):
         """
-        This method returns true if the node identified by the given index is a leaf node, false otherwise
+        This method returns true if the node identified by the given index is a
+        leaf node, false otherwise
 
         Parameters
         ----------
         index : integer
             The index of the node to test
         """
-        return self.trees_left_child[index] == -1 and self.trees_right_child[index] == -1
+        return self.trees_left_child[index] == -1 and \
+               self.trees_right_child[index] == -1
 
     def save(self, f, format="quickrank"):
         """
-        Save the model onto the file identified by file_path, using the given model format.
+        Save the model onto the file identified by file_path, using the given
+        model format.
 
         Parameters
         ----------
@@ -153,21 +166,25 @@ class RTEnsemble(object):
 
     def score(self, dataset, detailed=False):
         """
-        Score the given model on the given dataset. Depending on the detailed parameter, the scoring will be either
-        basic (i.e., compute only the document scores) or detailed (i.e., besides computing the document scores analyze
-        also several characteristics of the model. The scorer is cached until existance of the model instance.
+        Score the given model on the given dataset. Depending on the detailed
+        parameter, the scoring will be either basic (i.e., compute only the
+        document scores) or detailed (i.e., besides computing the document
+        scores analyze also several characteristics of the model. The scorer is
+        cached until existance of the model instance.
 
         Parameters
         ----------
         dataset : Dataset
             The dataset to be scored
         detailed : bool
-            True if the model has to be scored in a detailed fashion, false otherwise
+            True if the model has to be scored in a detailed fashion, false
+            otherwise
 
         Returns
         -------
         scorer : Scorer
-            The scorer object resulting from scoring the model on the given dataset
+            The scorer object resulting from scoring the model on the given
+            dataset
         """
         if dataset not in self._cache_scorer:
             self._cache_scorer[dataset] = Scorer(self, dataset)
@@ -178,9 +195,10 @@ class RTEnsemble(object):
 
     def clear_cache(self):
         """
-        This method is used to clear the internal cache of the model from the scoring objects.
-        Call this method at the end of the analysis of the current model (the memory otherwise will be automatically
-        be freed on object deletion)
+        This method is used to clear the internal cache of the model from the
+        scoring objects. Call this method at the end of the analysis of the
+        current model (the memory otherwise will be automatically be freed on
+        object deletion)
         """
         self._cache_scorer.clear()
 

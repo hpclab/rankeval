@@ -2,19 +2,19 @@ import os
 import unittest
 import logging
 
-from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_equal, assert_array_equal, \
+    assert_array_almost_equal
 from rankeval.core.dataset import Dataset
-
 from rankeval.core.model import RTEnsemble
 
-from rankeval.core.model.proxy_LightGBM import ProxyLightGBM
+from rankeval.core.model import ProxyLightGBM
 from rankeval.test.base import data_dir
 
 model_file = os.path.join(data_dir, "LightGBM.model.txt")
 data_file = os.path.join(data_dir, "msn1.fold1.test.5k.txt")
 
 
-class ProxyQuickRankTestCase(unittest.TestCase):
+class ProxyLightGBMTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
