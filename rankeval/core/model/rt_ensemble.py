@@ -22,7 +22,7 @@ class RTEnsemble(object):
     """
 
     def __init__(self, file_path, name=None, format="QuickRank",
-                 base_score=None):
+                 base_score=None, learning_rate=1):
         """
         Load the model from the file identified by file_path using the given format.
 
@@ -38,6 +38,9 @@ class RTEnsemble(object):
             The initial prediction score of all instances, global bias.
             If None, it uses default value used by each software
             (0.5 XGBoost, 0.0 all the others).
+        learning_rate : None or float
+            The learning rate used by the model to shrinks the contribution of
+             each tree. By default it is set to 1 (no shrinking at all).
 
         Attributes
         ----------
@@ -80,10 +83,11 @@ class RTEnsemble(object):
         """
         self.file = file_path
         self.format = format
-        self.name = "RTEnsemble: " + file_path
+        self.name = "RTEnsemble: " + str(file_path)
         if name is not None:
             self.name = name
         self.base_score = base_score
+        self.learning_rate = learning_rate
 
         self.n_trees = None
         self.n_nodes = None
@@ -106,6 +110,9 @@ class RTEnsemble(object):
         elif format == "XGBoost":
             from rankeval.core.model import ProxyXGBoost
             ProxyXGBoost.load(file_path, self)
+        elif format == "ScikitLearn":
+            from rankeval.core.model import ProxyScikitLearn
+            ProxyScikitLearn.load(file_path, self)
         else:
             raise TypeError("Model format %s not yet supported!" % format)
 
@@ -202,20 +209,28 @@ class RTEnsemble(object):
             The scorer object resulting from scoring the model on the given
             dataset
         """
-        if dataset not in self._cache_scorer:
-            self._cache_scorer[dataset] = Scorer(self, dataset)
-        scorer = self._cache_scorer[dataset]
-        # The scoring is performed only if it has not been done before...
-        scorer.score(detailed)
+        if dataset not in self._cache_scorer or \
+                (detailed and not self._cache_scorer[dataset].partial_y_pred):
+            scorer = Scorer(self, dataset)
+            self._cache_scorer[dataset] = scorer
+            # The scoring is performed only if it has not been done before...
+            scorer.score(detailed)
 
-        base_score = self.base_score
-        if self.base_score is None and self.format == "XGBoost":
-            base_score = 0.5
+            if self.learning_rate != 1:
+                scorer.y_pred *= self.learning_rate
+                if detailed:
+                    scorer.partial_y_pred *= self.learning_rate
 
-        if base_score:
-            scorer.y_pred += base_score
-            if detailed:
-                scorer.partial_y_pred += 0.5 / self.n_trees
+            base_score = self.base_score
+            if self.base_score is None and self.format == "XGBoost":
+                base_score = 0.5
+
+            if base_score:
+                scorer.y_pred += base_score
+                if detailed:
+                    scorer.partial_y_pred += base_score / self.n_trees
+        else:
+            scorer = self._cache_scorer[dataset]
 
         return scorer
 
