@@ -9,10 +9,18 @@ rankeval\.core\.model package
 Submodules
 ----------
 
-rankeval\.core\.model\.proxy\_quickrank module
+rankeval\.core\.model\.proxy\_LightGBM module
+---------------------------------------------
+
+.. automodule:: rankeval.core.model.proxy_LightGBM
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+rankeval\.core\.model\.proxy\_QuickRank module
 ----------------------------------------------
 
-.. automodule:: rankeval.core.model.proxy_quickrank
+.. automodule:: rankeval.core.model.proxy_QuickRank
     :members:
     :undoc-members:
     :show-inheritance:

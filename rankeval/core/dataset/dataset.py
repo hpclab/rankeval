@@ -18,7 +18,7 @@ class Dataset(object):
     This class describe the dataset object, with its utility and features
 
     Attributes
-    -------
+    ----------
     X : numpy 2d array of float
         It is a dense numpy matrix of shape (n_samples, n_features),
     y : numpy 1d array of float
