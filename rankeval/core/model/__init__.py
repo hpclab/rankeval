@@ -13,7 +13,9 @@ and dump it according to several supported model's format.
 from rankeval.core.model.rt_ensemble import RTEnsemble
 from rankeval.core.model.proxy_QuickRank import ProxyQuickRank
 from rankeval.core.model.proxy_LightGBM import ProxyLightGBM
+from rankeval.core.model.proxy_XGBoost import ProxyXGBoost
 
 __all__ = ['RTEnsemble',
            'ProxyQuickRank',
-           'ProxyLightGBM']
+           'ProxyLightGBM',
+           'ProxyXGBoost']

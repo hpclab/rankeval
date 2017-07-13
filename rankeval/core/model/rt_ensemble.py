@@ -21,7 +21,8 @@ class RTEnsemble(object):
     The responsibility to correctly fill these data structures is delegated to the various proxies model.
     """
 
-    def __init__(self, file_path, name=None, format="quickrank"):
+    def __init__(self, file_path, name=None, format="QuickRank",
+                 base_score=None):
         """
         Load the model from the file identified by file_path using the given format.
 
@@ -33,6 +34,10 @@ class RTEnsemble(object):
             The name to be given to the current model
         format : str
             The format of the model to load (currently supported is only [quickrank])
+        base_score : None or float
+            The initial prediction score of all instances, global bias.
+            If None, it uses default value used by each software
+            (0.5 XGBoost, 0.0 all the others).
 
         Attributes
         ----------
@@ -74,9 +79,11 @@ class RTEnsemble(object):
             The loaded model as a RTEnsemble object
         """
         self.file = file_path
+        self.format = format
         self.name = "RTEnsemble: " + file_path
         if name is not None:
             self.name = name
+        self.base_score = base_score
 
         self.n_trees = None
         self.n_nodes = None
@@ -96,6 +103,9 @@ class RTEnsemble(object):
         elif format == "LightGBM":
             from rankeval.core.model import ProxyLightGBM
             ProxyLightGBM.load(file_path, self)
+        elif format == "XGBoost":
+            from rankeval.core.model import ProxyXGBoost
+            ProxyXGBoost.load(file_path, self)
         else:
             raise TypeError("Model format %s not yet supported!" % format)
 
@@ -158,9 +168,15 @@ class RTEnsemble(object):
         status : bool
             Returns true if the save is successful, false otherwise
         """
-        if format == "quickrank":
+        if format == "QuickRank":
             from rankeval.core.model import ProxyQuickRank
             ProxyQuickRank.save(f, self)
+        elif format == "LightGBM":
+            from rankeval.core.model import ProxyLightGBM
+            ProxyLightGBM.save(f, self)
+        elif format == "XGBoost":
+            from rankeval.core.model import ProxyXGBoost
+            ProxyXGBoost.save(f, self)
         else:
             raise TypeError("Model format %s not yet supported!" % format)
 
@@ -191,6 +207,16 @@ class RTEnsemble(object):
         scorer = self._cache_scorer[dataset]
         # The scoring is performed only if it has not been done before...
         scorer.score(detailed)
+
+        base_score = self.base_score
+        if self.base_score is None and self.format == "XGBoost":
+            base_score = 0.5
+
+        if base_score:
+            scorer.y_pred += base_score
+            if detailed:
+                scorer.partial_y_pred += 0.5 / self.n_trees
+
         return scorer
 
     def clear_cache(self):

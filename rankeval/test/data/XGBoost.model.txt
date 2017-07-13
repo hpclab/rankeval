@@ -1,0 +1,16 @@
+booster[0]:
+0:[f52<0.0444665] yes=1,no=2,missing=1
+	1:[f14<26.5] yes=3,no=4,missing=3
+		3:leaf=0.0330693
+		4:leaf=-0.0274553
+	2:[f17<23.1987] yes=5,no=6,missing=5
+		5:leaf=0.0289187
+		6:leaf=0.067713
+booster[1]:
+0:[f54<0.0035545] yes=1,no=2,missing=1
+	1:[f10<209.5] yes=3,no=4,missing=3
+		3:leaf=-0.0018294
+		4:leaf=-0.0425189
+	2:[f52<0.0444665] yes=5,no=6,missing=5
+		5:leaf=0.00209278
+		6:leaf=0.0306171

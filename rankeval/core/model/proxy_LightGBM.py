@@ -13,15 +13,13 @@ The LightGBM project is described here:
 
 The LightGBM format adopts a textual representation using arrays for storing
 split nodes (both features and thresholds), leaf values and tree structure.
+Not all the information reported in the model are useful for the different
+analysis, thus only the relevant parts are parsed.
 
-// TODO
-There is an header section, identified by the "info" tag, with the most important parameters adopted to
-learn such a model. It follows then the description of the ensemble, with a node
-for each tree, identified by the "tree" tag, followed by the description of the
-tree (with splitting and leaf nodes). The splitting nodes are described with two
- information: the feature id used for splitting, and the threshold value. Leaf
-nodes on the other hand are described by an "output" tag with the value as
-content.
+NOTE: the leaves output of the regression trees already take into account the
+weight of the tree (i.e., the learning rate or shrinkage factor). In order to
+maintain the scoring made by rankeval (that multiply the leaf output by the tree
+weight), the weight of the trees have been set equals to 1.
 """
 
 from rankeval.core.model.rt_ensemble import RTEnsemble
@@ -80,7 +78,6 @@ class ProxyLightGBM(object):
                 if match:
                     split_features = map(int, match.group(1).strip().split())
                     for pos, feature in enumerate(split_features):
-                        # TODO: Check if feature starts from 1
                         model.trees_nodes_feature[root_node + pos] = feature
                     num_splits = len(split_features)
                     continue
