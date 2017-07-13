@@ -209,6 +209,13 @@ class RTEnsemble(object):
             The scorer object resulting from scoring the model on the given
             dataset
         """
+
+        # check that the features used by the model are "compatible" with the
+        # features in the dataset (at least, in terms of their number)
+        if np.max(self.trees_nodes_feature) + 1 > dataset.X.shape[1]:
+            raise OverflowError("Dataset features are not compatible with "
+                                "model features")
+
         if dataset not in self._cache_scorer or \
                 (detailed and not self._cache_scorer[dataset].partial_y_pred):
             scorer = Scorer(self, dataset)
