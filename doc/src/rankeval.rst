@@ -13,4 +13,5 @@ Subpackages
 
     rankeval.analysis
     rankeval.core
+    rankeval.visualization
 
