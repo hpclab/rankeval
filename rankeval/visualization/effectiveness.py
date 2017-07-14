@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+from itertools import islice
+
 """
 This package provides visualizations for several effectiveness analysis focused on assessing
 the performance of the models in terms of accuracy. 
@@ -7,9 +9,11 @@ the performance of the models in terms of accuracy.
 
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
-
+# plt.rcParams.update(plt.rcParamsDefault)
 plt.style.use("seaborn-notebook")
+sns.set_palette("deep")
 
 
 def pretty_print_model_performance(performance):
@@ -28,13 +32,13 @@ def pretty_print_model_performance(performance):
     try:
         from IPython.display import display, HTML
         for dataset in performance.coords['dataset'].values:
-            display(HTML("<h3>Dateset: %s</h3>" % dataset))
+            display(HTML("<h3>Dataset: %s</h3>" % dataset))
             display(performance.sel(dataset=dataset).to_pandas())
     except ImportError:
         pass
 
 
-def plot_model_performance(performance, compare="metrics", show_values=False):
+def plot_model_performance(performance, compare="models", show_values=False):
     for dataset in performance.coords['dataset'].values:
         fig, axes = plt.subplots()
         num_metrics = len(performance.coords['metric'].values)
@@ -46,11 +50,11 @@ def plot_model_performance(performance, compare="metrics", show_values=False):
         else:
             shrinkage = 1
 
-        if compare == "metrics":
+        if compare == "models":
             ind = np.arange(num_metrics)
             for i, model in enumerate(performance.coords['model'].values):
                 metrics = performance.sel(dataset=dataset, model=model)
-                a = axes.bar(ind + (i * width), metrics.values, width * shrinkage)
+                a = axes.bar(ind + (i * width), metrics.values, width * shrinkage, align="center")
 
                 # add column values on the bars
                 if show_values:
@@ -61,19 +65,20 @@ def plot_model_performance(performance, compare="metrics", show_values=False):
 
             # add some text for labels, title and axes ticks
             axes.set_title(performance.name + " for " + dataset.name)
-            axes.set_xticks(ind + width / 2)
+            axes.set_xticks(ind + width*shrinkage / 2.)
             axes.set_xticklabels(performance.coords['metric'].values)
+            axes.set_ylim([0, 1])
 
             axes.legend(performance.coords['model'].values)
 
             plt.tight_layout()
 
         # should i have multiple subplots here? one per metric?
-        elif compare == "models":
+        elif compare == "metrics":
             ind = np.arange(num_models)
             for i, metric in enumerate(performance.coords['metric'].values):
                 models = performance.sel(dataset=dataset, metric=metric)
-                a = axes.bar(ind + (i * width), models.values, width * shrinkage)
+                a = axes.bar(ind + (i * width), models.values, width * shrinkage, align="center")
 
                 # add column values on the bars
                 if show_values:
@@ -84,55 +89,99 @@ def plot_model_performance(performance, compare="metrics", show_values=False):
 
             # add some text for labels, title and axes ticks
             axes.set_title(performance.name + " for " + dataset.name)
-            axes.set_xticks(ind + width / 2)
-            axes.set_xticklabels(performance.coords['model'].values)
+            if num_models > 1:
+                axes.set_xticks(ind + width*shrinkage / 2)
+                axes.set_xticklabels(performance.coords['model'].values)
+            else:
+                axes.set_xlabel(performance.coords['model'].values[0].name)
+                axes.get_xaxis().set_ticks([])
+            axes.set_ylim([0, 1])
 
             axes.legend(performance.coords['metric'].values)
 
             plt.tight_layout()
 
-            "You need to choose the compare option: ['models','metrics']"
-
 
             # http://xarray.pydata.org/en/stable/examples/monthly-means.html
 
 
-def plot_tree_wise_model_performance(performance, compare="model"):
+def resolvexticks(performance):
+    sampling_factor = len(performance.coords['k'].values) / 10.
+    new_xtick = islice(np.arange(len(performance.coords['k'].values)), 0, None, sampling_factor)
+    new_xticklabel = islice(performance.coords['k'].values, 0, None, sampling_factor)
+    xticks = list(new_xtick)
+    xticks.append(np.arange(len(performance.coords['k'].values))[-1])
+    xticks_labels = list(new_xticklabel)
+    xticks_labels.append(performance.coords['k'].values[-1])
+    return xticks, xticks_labels
+
+
+def plot_tree_wise_model_performance(performance, compare="models"):
     # test k reset xtick and xticks_labels for bigger k datatsets like istella
 
-    for dataset in performance.coords['dataset'].values:
-        if compare == "metric":
-            fig, axes = plt.subplots(len(performance.coords['model'].values), sharex=True)
+
+    if compare == "metrics":
+        for dataset in performance.coords['dataset'].values:
+            fig, axes = plt.subplots(len(performance.coords['model'].values), sharex=True, squeeze=False)
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
                     k_values = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[i].plot(k_values.values)
+                    a = axes[i,0].plot(k_values.values)
 
-                axes[i].legend(performance.coords['metric'].values)
-                axes[i].set_ylabel(model)
-                axes[i].set_xticks(np.arange(len(performance.coords['k'].values)))
-                axes[i].set_xticklabels(performance.coords['k'].values)
+                axes[i,0].legend(performance.coords['metric'].values)
+                axes[i,0].set_ylabel(model)
 
-            axes[i].set_xlabel("Number of trees")
-            fig.suptitle(performance.name + " for " + dataset.name, size=16)
+                if len(performance.coords['k'].values) > 10:
+                    xticks, xticks_labels = resolvexticks(performance)
+                    axes[i,0].set_xticks(xticks)
+                    axes[i,0].set_xticklabels(xticks_labels)
+
+            axes[i,0].set_xlabel("Number of trees")
+            fig.suptitle(performance.name + " for " + dataset.name) #), size=16)
+            # fig.subplots_adjust(top=0.88)
+            plt.tight_layout()
+
+
+    elif compare == "models":
+        for dataset in performance.coords['dataset'].values:
+            fig, axes = plt.subplots(len(performance.coords['metric'].values), sharey=True, squeeze=False)
+            for j, metric in enumerate(performance.coords['metric'].values):  # we need to change figure!!!!
+                for i, model in enumerate(performance.coords['model'].values):
+                    k_values = performance.sel(dataset=dataset, model=model, metric=metric)
+                    a = axes[j,0].plot(k_values.values)
+
+                axes[j,0].legend(performance.coords['model'].values)
+                axes[j,0].set_ylabel(metric)
+
+                if len(performance.coords['k'].values) > 10:
+                    xticks, xticks_labels = resolvexticks(performance)
+                    axes[j,0].set_xticks(xticks)
+                    axes[j,0].set_xticklabels(xticks_labels)
+
+            axes[j,0].set_xlabel("Number of trees")
+            fig.suptitle(performance.name + " for " + dataset.name) #, size=16)
             fig.subplots_adjust(top=0.88)
             plt.tight_layout()
 
 
-        elif compare == "model":
-            fig, axes = plt.subplots(len(performance.coords['metric'].values), sharey=True)
+    elif compare == "datasets":
+        for model in performance.coords['model'].values:
+            fig, axes = plt.subplots(len(performance.coords['metric'].values), sharey=True, squeeze=False)
             for j, metric in enumerate(performance.coords['metric'].values):  # we need to change figure!!!!
-                for i, model in enumerate(performance.coords['model'].values):
+                for k, dataset in enumerate(performance.coords['dataset'].values):
                     k_values = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[j].plot(k_values.values)
+                    a = axes[j,0].plot(k_values.values)
 
-                axes[j].legend(performance.coords['model'].values)
-                axes[j].set_ylabel(metric)
-                axes[j].set_xticks(np.arange(len(performance.coords['k'].values)))
-                axes[j].set_xticklabels(performance.coords['k'].values)
+                axes[j,0].legend(performance.coords['dataset'].values)
+                axes[j,0].set_ylabel(metric)
 
-            axes[j].set_xlabel("Number of trees")
-            fig.suptitle(performance.name + " for " + dataset.name, size=16)
+                if len(performance.coords['k'].values) > 10:
+                    xticks, xticks_labels = resolvexticks(performance)
+                    axes[j,0].set_xticks(xticks)
+                    axes[j,0].set_xticklabels(xticks_labels)
+
+            axes[j,0].set_xlabel("Number of trees")
+            fig.suptitle(performance.name + " for " + dataset.name) #, size=16)
             fig.subplots_adjust(top=0.88)
             plt.tight_layout()
 
