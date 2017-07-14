@@ -18,11 +18,6 @@ import numpy as np
 # Import the C-level symbols of numpy
 cimport numpy as np
 
-try:
-    xrange
-except NameError:
-    # Python3's range is Python2's xrange
-    xrange = range
 
 # Numpy must be initialized. When using numpy from C or Cython you must
 # _always_ do that, or you will have segfaults
