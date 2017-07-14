@@ -17,6 +17,13 @@ import numpy as np
 
 from rankeval.analysis.topological import TopologicalAnalysisResult
 
+try:
+    xrange
+except NameError:
+    # Python3's range is Python2's xrange
+    xrange = range
+
+
 def plot_tree_shape(topological, max_level=10):
     '''
     Shows the average tree shape as a bullseye plot.
