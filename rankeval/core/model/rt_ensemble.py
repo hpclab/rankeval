@@ -5,26 +5,33 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-"""Class for efficient modelling of an ensemble-based model of binary regression trees."""
+"""
+Class for efficient modelling of an ensemble-based model of binary regression
+trees.
+"""
 
 import numpy as np
+import copy
 from rankeval.core.scoring import Scorer
 
 
 class RTEnsemble(object):
     """
-    Class for efficient modelling of an ensemble-based model composed of binary regression trees.
+    Class for efficient modelling of an ensemble-based model composed of binary
+    regression trees.
 
     Notes
     ----------
-    This class only provides the sketch of the data structure to use for storing the model.
-    The responsibility to correctly fill these data structures is delegated to the various proxies model.
+    This class only provides the sketch of the data structure to use for storing
+    the model. The responsibility to correctly fill these data structures is
+    delegated to the various proxies model.
     """
 
     def __init__(self, file_path, name=None, format="QuickRank",
-                 base_score=None, learning_rate=1):
+                 base_score=None, learning_rate=1, n_trees=None):
         """
-        Load the model from the file identified by file_path using the given format.
+        Load the model from the file identified by file_path using the given
+        format.
 
         Parameters
         ----------
@@ -32,8 +39,8 @@ class RTEnsemble(object):
             The path to the filename where the model has been saved
         name : str
             The name to be given to the current model
-        format : str
-            The format of the model to load (currently supported is only [quickrank])
+        format : ['QuickRank', 'ScikitLearn', 'XGBoost', 'LightGBM']
+            The format of the model to load.
         base_score : None or float
             The initial prediction score of all instances, global bias.
             If None, it uses default value used by each software
@@ -41,6 +48,9 @@ class RTEnsemble(object):
         learning_rate : None or float
             The learning rate used by the model to shrinks the contribution of
              each tree. By default it is set to 1 (no shrinking at all).
+        n_trees : None or int
+            The maximum number of trees to load from the model. By default it is
+            set to None, meaning the method will load all the trees.
 
         Attributes
         ----------
@@ -117,6 +127,9 @@ class RTEnsemble(object):
             ProxyScikitLearn.load(file_path, self)
         else:
             raise TypeError("Model format %s not yet supported!" % format)
+
+        if n_trees is not None and n_trees < self.n_trees:
+            self._prune_model(n_trees)
 
     def initialize(self, n_trees, n_nodes):
         """
@@ -223,6 +236,7 @@ class RTEnsemble(object):
 
         if dataset not in self._cache_scorer or \
                 detailed and self._cache_scorer[dataset].partial_y_pred is None:
+
             scorer = Scorer(self, dataset)
             self._cache_scorer[dataset] = scorer
             # The scoring is performed only if it has not been done before...
@@ -236,7 +250,7 @@ class RTEnsemble(object):
             if self.base_score:
                 scorer.y_pred += self.base_score
                 if detailed:
-                    scorer.partial_y_pred += self.base_score / self.n_trees
+                    scorer.partial_y_pred[:, :1] += self.base_score
         else:
             scorer = self._cache_scorer[dataset]
 
@@ -250,6 +264,58 @@ class RTEnsemble(object):
         object deletion)
         """
         self._cache_scorer.clear()
+
+    def copy(self, n_trees=None):
+        """
+        Create a copy of this model, with all the trees up to the given number.
+        By default it is set to None, meaning the method will copy all the trees
+
+        Parameters
+        ----------
+        n_trees : None or int
+            The number of trees the model will have after calling this method.
+
+        Returns
+        -------
+        model : RTEnsemble
+            The copied model, pruned from all the trees exceeding the given
+            number of trees chosen
+        """
+        new_model = copy.deepcopy(self)
+        new_model._prune_model(n_trees=n_trees)
+        return new_model
+
+    def _prune_model(self, n_trees):
+        """
+        This method prunes the ensemble of trees up to the given number of trees
+        in order to reduce the size of the model. Useful for creating smaller
+        models starting from a bigger model.
+
+        Parameters
+        ----------
+        n_trees : int
+            The number of trees the model will have after calling this method.
+        """
+        # skip the pruning if the model already contains less trees than
+        # expected
+        if n_trees > self.n_trees:
+            return
+
+        start_idx_prune = self.trees_root[n_trees]
+
+        self.trees_root = self.trees_root[:n_trees]
+        self.trees_weight = self.trees_weight[:n_trees]
+
+        self.trees_nodes_feature = self.trees_nodes_feature[:start_idx_prune]
+        self.trees_nodes_value = self.trees_nodes_value[:start_idx_prune]
+        self.trees_right_child = self.trees_right_child[:start_idx_prune]
+        self.trees_left_child = self.trees_left_child[:start_idx_prune]
+
+        self.n_trees = n_trees
+        self.n_nodes = start_idx_prune
+
+        # Reset cache scorer
+        self._cache_scorer = dict()
 
     def __str__(self):
         return self.name
