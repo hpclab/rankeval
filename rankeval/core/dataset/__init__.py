@@ -11,5 +11,6 @@ and dump datasets according to several supported formats.
 """
 
 from .dataset import Dataset
+from .dataset import DatasetContainer
 
-__all__ = ['Dataset']
+__all__ = ['Dataset','DatasetContainer']

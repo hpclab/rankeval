@@ -72,9 +72,7 @@ def tree_wise_performance(datasets, models, metrics, step=10):
     step : int
         Step-size identifying evenly spaced number of trees for evaluating the top=k model performance.
         (e.g., step=100 means the method will evaluate the model performance at 100, 200, 300, etc trees).
-    display : bool
-        True if the method has to display interestingly insights using inline plots/tables
-        These additional information will be displayed only if working inside a ipython notebook.
+
 
     Returns
     -------
@@ -138,9 +136,6 @@ def tree_wise_average_contribution(datasets, models):
         The datasets to use for analyzing the behaviour of the model using the given metrics and models
     models : list of RTEnsemble
         The models to analyze
-    display : bool
-        True if the method has to display interestingly insights using inline plots/tables
-        These additional information will be displayed only if working inside a ipython notebook.
 
     Returns
     -------
@@ -174,7 +169,7 @@ def tree_wise_average_contribution(datasets, models):
     return performance
 
 
-def query_wise_performance(datasets, models, metrics, bins=None, start=None, end=None, display=False):
+def query_wise_performance(datasets, models, metrics, bins=None, start=None, end=None):
     """
     This method implements the analysis of the model on a query-wise basis, i.e., it compute the cumulative distribution
     of a given performance metric. For example, the fraction of queries with a NDCG score smaller that any given
@@ -197,9 +192,6 @@ def query_wise_performance(datasets, models, metrics, bins=None, start=None, end
     end : int or None
         The end point of the range for which we will compute the cumulative distribution of the given metric
         if end is None, it will use the maximum metric score as starting point for the range.
-    display : bool
-        True if the method has to display interestingly insights using inline plots/tables
-        These additional information will be displayed only if working inside a ipython notebook.
 
     Returns
     -------
@@ -249,7 +241,7 @@ def query_wise_performance(datasets, models, metrics, bins=None, start=None, end
     return performance
 
 
-def query_class_performance(datasets, models, metrics, query_classes, display=False):
+def query_class_performance(datasets, models, metrics, query_classes):
     """
     This method implements the analysis of the effectiveness of a given model by providing a breakdown of the 
     performance over query class. Whenever a query classification is provided, e.g., navigational, informational,
@@ -269,9 +261,6 @@ def query_class_performance(datasets, models, metrics, query_classes, display=Fa
     query_classes : list of lists
         A list containing lists of classes each one for a specific Dataset. The i-th item in the j-th list identifies
         the class of the i-th query of the j-th Dataset.
-    display : bool
-        True if the method has to display interestingly insights using inline plots/tables
-        These additional information will be displayed only if working inside a ipython notebook. 
     
     Returns
     -------
@@ -317,7 +306,7 @@ def query_class_performance(datasets, models, metrics, query_classes, display=Fa
     return performance
 
 
-def document_graded_relevance(datasets, models, bins=100, start=None, end=None, display=False):
+def document_graded_relevance(datasets, models, bins=100, start=None, end=None):
     """
     This method implements the analysis of the model on a per-label basis,
     i.e., it allows the evaluation of the cumulative predicted score
@@ -343,9 +332,6 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None, 
     end : int or None
         The end point of the range for which we will compute the cumulative distribution of the predicted scores
         if end is None, it will use the maximum metric score as starting point for the range.
-    display : bool
-        True if the method has to display interestingly insights using inline plots/tables
-        These additional information will be displayed only if working inside a ipython notebook.
 
     Returns
     -------
@@ -397,7 +383,7 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None, 
     return performance
 
 
-def rank_confusion_matrix(datasets, models, skip_same_label=False, display=False):
+def rank_confusion_matrix(datasets, models, skip_same_label=False):
     """
     RankEval allows for a novel rank-oriented confusion matrix by reporting for
     any given relevance label  l_i, the number of document with a predicted
@@ -412,10 +398,6 @@ def rank_confusion_matrix(datasets, models, skip_same_label=False, display=False
         The datasets to use for analyzing the behaviour of the model using the given models
     models : list of RTEnsemble
         The models to analyze
-
-    display : bool
-        True if the method has to display interestingly insights using inline plots/tables
-        These additional information will be displayed only if working inside a ipython notebook.
     skip_same_label : bool
         True if the method has to skip the pair with the same labels, False otherwise
 
