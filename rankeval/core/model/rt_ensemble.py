@@ -268,7 +268,7 @@ class RTEnsemble(object):
     def copy(self, n_trees=None):
         """
         Create a copy of this model, with all the trees up to the given number.
-        By default it is set to None, meaning the method will copy all the trees
+        By default n_trees is set to None, meaning to copy all the trees
 
         Parameters
         ----------
@@ -296,9 +296,9 @@ class RTEnsemble(object):
         n_trees : int
             The number of trees the model will have after calling this method.
         """
-        # skip the pruning if the model already contains less trees than
-        # expected
-        if n_trees > self.n_trees:
+        # skip the pruning if the model already contains less or equals trees
+        # than expected
+        if n_trees >= self.n_trees:
             return
 
         start_idx_prune = self.trees_root[n_trees]

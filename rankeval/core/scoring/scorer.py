@@ -10,7 +10,8 @@ Class for efficient scoring of an ensemble-based model composed of binary regres
 """
 
 from rankeval.core.dataset import Dataset
-from rankeval.core.scoring._efficient_scoring import basic_scoring, detailed_scoring
+from rankeval.core.scoring._efficient_scoring import basic_scoring, \
+    detailed_scoring
 
 
 class Scorer(object):
@@ -41,6 +42,7 @@ class Scorer(object):
         The predicted score of each tree of the model for each dataset instance
 
     """
+
     def __init__(self, model, dataset):
         self.model = model
         self.dataset = dataset
@@ -48,7 +50,8 @@ class Scorer(object):
         # Save the predicted scores for each dataset instance
         self.y_pred = None
 
-        # Save the partial scores of each tree for each dataset instance (if detailed scoring is True)
+        # Save the partial scores of each tree for each dataset instance
+        # (if detailed scoring is True)
         self.partial_y_pred = None
 
     def score(self, detailed):
@@ -70,8 +73,9 @@ class Scorer(object):
             The predicted scores of each dataset instance
         """
 
-        # Skip the scoring if it has already been computed (return cached results)
-        if not detailed and self.y_pred is not None or detailed and self.partial_y_pred is not None:
+        # Skip the scoring if it has already been done (return cached results)
+        if not detailed and self.y_pred is not None or \
+                        detailed and self.partial_y_pred is not None:
             return self.y_pred
 
         if detailed:
