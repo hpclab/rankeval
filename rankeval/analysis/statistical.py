@@ -40,7 +40,7 @@ def statistical_significance(datasets, model_a, model_b, metrics, n_perm=100000)
     -------
     stat_sig : xarray.DataArray
         A DataArray containing the statistical significance of the performance difference
-        between any pair of models on the given dataset,
+        between any pair of models on the given dataset.
     """
 
     data = np.zeros(shape=(len(datasets), len(metrics), 2), dtype=np.float32)
