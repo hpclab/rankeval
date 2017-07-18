@@ -1,17 +1,16 @@
+import logging
 import os
 import unittest
-import logging
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_allclose, \
     assert_array_equal
 
-from rankeval.analysis.feature import feature_importance, _feature_importance_tree
-
-from rankeval.test.base import data_dir
-
-from rankeval.core.model import RTEnsemble
-from rankeval.core.dataset import Dataset
+from rankeval.analysis.feature import feature_importance, \
+    _feature_importance_tree
+from rankeval.dataset import Dataset
+from rankeval.model import RTEnsemble
+from ..base import data_dir
 
 
 class FeatureImportanceTestCase(unittest.TestCase):

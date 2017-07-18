@@ -6,8 +6,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import print_function
-
 """
 This package implements several effectiveness analysis focused on assessing
 the performance of the models in terms of accuracy. These functionalities can
@@ -18,9 +16,9 @@ of the analysis performed.
 import numpy as np
 import xarray as xr
 
-from rankeval.core.dataset import Dataset
-from rankeval.core.model import RTEnsemble
-from rankeval.core.metrics import Metric
+from ..dataset import Dataset
+from ..model import RTEnsemble
+from ..metrics import Metric
 
 
 def model_performance(datasets, models, metrics):

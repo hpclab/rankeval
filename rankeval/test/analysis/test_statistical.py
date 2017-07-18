@@ -1,18 +1,16 @@
+import logging
 import os
 import unittest
-import logging
 
 import numpy as np
 from numpy.testing import assert_almost_equal
 
-from rankeval.analysis.statistical import statistical_significance
 from rankeval.analysis.statistical import _randomization
-
-from rankeval.core.model import RTEnsemble
-from rankeval.core.dataset import Dataset
-from rankeval.core.metrics.ndcg import NDCG
-
-from rankeval.test.base import data_dir
+from rankeval.analysis.statistical import statistical_significance
+from rankeval.dataset import Dataset
+from rankeval.metrics.ndcg import NDCG
+from rankeval.model import RTEnsemble
+from ..base import data_dir
 
 
 class StatisticalSignificanceTestCase(unittest.TestCase):

@@ -5,9 +5,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-"""Generic method useful for testing"""
+"""
+The :mod:`rankeval.scoring` module includes utilities to score a model on a given dataset.
+"""
 
-import os
+from .scorer import Scorer
 
-test_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(test_dir, "data")
+__all__ = ['Scorer']

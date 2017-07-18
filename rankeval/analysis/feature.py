@@ -10,12 +10,14 @@
 This package implements feature importance analysis.
 """
 
-import numpy as np
 from collections import deque
-from rankeval.core.model import RTEnsemble
+
+import numpy as np
+
+from ..model import RTEnsemble
 
 try:
-    from ._efficient_feature import feature_importance, _feature_importance_tree
+    from _efficient_feature import feature_importance, _feature_importance_tree
 except ImportError:
 
     def feature_importance(model, dataset):

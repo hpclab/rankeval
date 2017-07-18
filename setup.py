@@ -39,8 +39,8 @@ class custom_build_ext(build_ext):
 
 
 rankeval_dir = os.path.join(os.path.dirname(__file__), 'rankeval')
-dataset_dir = os.path.join(rankeval_dir, 'core', 'dataset')
-scoring_dir = os.path.join(rankeval_dir, 'core', 'scoring')
+dataset_dir = os.path.join(rankeval_dir, 'dataset')
+scoring_dir = os.path.join(rankeval_dir, 'scoring')
 analysis_dir = os.path.join(rankeval_dir, 'analysis')
 
 cmdclass = {'build_ext': custom_build_ext}
@@ -114,12 +114,12 @@ setup(
     long_description=LONG_DESCRIPTION,
 
     ext_modules=[
-        Extension('rankeval.core.dataset._svmlight_format',
+        Extension('rankeval.dataset._svmlight_format',
                   sources=[dataset_dir + '/_svmlight_format.cpp'],
                   include_dirs=[dataset_dir],
                   language='c++',
                   extra_compile_args=['-O3']),
-        Extension('rankeval.core.scoring._efficient_scoring',
+        Extension('rankeval.scoring._efficient_scoring',
                   sources=[scoring_dir + '/_efficient_scoring.pyx'],
                   include_dirs=[scoring_dir],
                   extra_compile_args=['-fopenmp', '-O3'],

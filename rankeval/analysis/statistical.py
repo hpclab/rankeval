@@ -11,12 +11,13 @@ This package implements several statistical significance tests.
 
 from __future__ import print_function
 
-import numpy as np
-import xarray as xr
 import math
 
-from rankeval.core.dataset import Dataset
-from rankeval.core.metrics.metric import Metric
+import numpy as np
+import xarray as xr
+
+from ..dataset import Dataset
+from ..metrics.metric import Metric
 
 
 def statistical_significance(datasets, model_a, model_b, metrics, n_perm=100000):
@@ -141,7 +142,7 @@ def _kfold_scoring(dataset, k, algo, verbose=0):
 
     Parameters
     ----------
-    dataset : rankeval.core.dataset.Dataset
+    dataset : rankeval.dataset.Dataset
         The dataset instance.
     k : int
         Number of folds.
@@ -185,7 +186,7 @@ def _multi_kfold_scoring(dataset, algo, L=10, k=2, verbose=0):
 
     Parameters
     ----------
-    dataset : rankeval.core.dataset.Dataset
+    dataset : rankeval.dataset.Dataset
         The dataset instance.
     algo : function
         See :func:`bias_variance`.
@@ -235,7 +236,7 @@ def bias_variance(dataset, algo, metric="mse", L=10, k=2, verbose=1):
 
     Parameters
     ----------
-    dataset : rankeval.core.dataset.Dataset
+    dataset : rankeval.dataset.Dataset
         The dataset instance.
     algo : function
         This should be a wrapper of learning algorithm.
@@ -247,7 +248,7 @@ def bias_variance(dataset, algo, metric="mse", L=10, k=2, verbose=1):
         
         A model is trained on `train_X`, `train_Y`, `train_q`, and used to score `test_X`.
         An numpy.ndarray with such score must be returned.
-    metric : "mse" or rankeval.core.metrics.metric.Metric
+    metric : "mse" or rankeval.metrics.metric.Metric
         The metric used to compute the error.
     L : int
         Number of iterations
