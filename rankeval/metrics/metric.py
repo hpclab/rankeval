@@ -42,11 +42,17 @@ class Metric(six.with_metaclass(ABCMeta)):
 
         Parameters
         ----------
-        dataset
-        y_pred
+        dataset : Dataset
+            Represents the Dataset object on which to apply the metric.
+        y_pred : numpy 1d array of float
+            Represents the predicted document scores for each instance in the dataset.
 
         Returns
         -------
+        avg_score: float
+            Represents the average values of a metric over all metric scores per query.
+        detailed_scores: numpy 1d array of floats
+            Represents the detailed metric scores for each query. It has the length of n_queries.
 
         """
         self.detailed_scores = np.zeros(dataset.n_queries, dtype=np.float32)
@@ -63,8 +69,10 @@ class Metric(six.with_metaclass(ABCMeta)):
 
         Parameters
         ----------
-        y
-        y_pred
+        y: numpy array
+            Represents the labels of instances corresponding to one query in the dataset (ground truth).
+        y_pred: numpy array.
+            Represents the predicted document scores obtained during the model scoring phase for that query.
 
         Returns
         -------
@@ -78,15 +86,15 @@ class Metric(six.with_metaclass(ABCMeta)):
         Parameters
         ----------
         dataset :  Datatset
-        y_pred  : numpy.array
+        y_pred  : numpy array
 
         Returns
         -------
-        int:
+        : int
             The query id.
-        numpy.array:
+        : numpy.array
             The document scores of the instances in the labeled dataset (instance labels) belonging to the same query id.
-        numpy.array:
+        : numpy.array
             The predicted scores for the instances in the dataset belonging to the same query id.
         """
         for query_id, (start_offset, end_offset) in enumerate(dataset.query_offset_iterator()):

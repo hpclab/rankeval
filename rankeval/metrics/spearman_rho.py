@@ -14,23 +14,26 @@ from rankeval.metrics.metric import Metric
 
 class SpearmanRho(Metric):
     """
-
+    This class implements Spearman's Rho.
 
     We use the Spearman Rho coefficient implementation from scipy.
+
+    Attributes
+    ----------
+    name: string
+       SpearmanRho
     """
 
     def __init__(self, name='SpearmanRho'):
         """
-
+        This is the constructor of Spearman Rho, an object of type Metric, with the name SpearmanRho.
+        The constructor also allows setting custom values in the following parameters.
 
         Parameters
         ----------
         name: string
-        cutoff: int
-        threshold: float
         """
         super(SpearmanRho, self).__init__(name)
-
 
     def eval(self, dataset, y_pred):
         """
@@ -40,36 +43,37 @@ class SpearmanRho(Metric):
         Parameters
         ----------
         dataset : Dataset
-        y_pred : numpy.array
+            Represents the Dataset object on which to apply Spearman Rho.
+        y_pred : numpy 1d array of float
+            Represents the predicted document scores for each instance in the dataset.
 
         Returns
         -------
-        float
+        avg_score: float
             The overall Spearman Rho score (averages over the detailed scores).
-        numpy.array
+        detailed_scores: numpy 1d array of floats
             The detailed Spearman Rho scores for each query, an array of length of the number of queries.
         """
         return super(SpearmanRho, self).eval(dataset, y_pred)
-
 
     def eval_per_query(self, y, y_pred):
         """
         This methods computes Spearman Rho at per query level (on the instances belonging to a specific query).
 
-
         Parameters
         ----------
-        y : numpy.array
-        y_pred : numpy.array
+        y: numpy array
+            Represents the labels of instances corresponding to one query in the dataset (ground truth).
+        y_pred: numpy array.
+            Represents the predicted document scores obtained during the model scoring phase for that query.
 
         Returns
         -------
-        float
+        spearmanrho: float
             The Spearman Rho per query.
         """
         spearman_rho = stats.spearmanr(y, y_pred)
         return spearman_rho.correlation
-
 
     def __str__(self):
         s = self.name

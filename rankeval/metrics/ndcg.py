@@ -14,46 +14,46 @@ class NDCG(Metric):
     """
     This class implements NDCG with several parameters.
 
-    Available implementations:
-    [1] Burges - "exp"
-    [0] Jarvelin - "flat" 
+    Attributes
+    ----------
+    name: string
+        NDCG
+    cutoff: int
+        The top k results to be considered at per query level (e.g. 10)
+    no_relevant_results: float
+        Float indicating how to treat the cases where then are no relevant results (e.g. 0.5)
+    implementation: string
+        Indicates whether to consider the flat or the exponential DCG formula (e.g.  {"flat", "exp"})
     """
 
-    def __init__(self, name='NDCG', cutoff=None, no_relevant_results=0.0, ties=True, implementation="flat"):
+    def __init__(self, name='NDCG', cutoff=None, no_relevant_results=0.0, implementation="flat"):
         """
         This is the constructor of NDCG, an object of type Metric, with the name NDCG.
-        The constructor also allows setting custom values
-            - cutoff: the top k results to be considered at per query level
-            - no_relevant_results: is a float values indicating how to treat the cases where then are no relevant results
-            - ties: indicates how we should consider the ties
-            - implementation: indicates whether to consider the flat or the exponential NDCG formula
+        The constructor also allows setting custom parameter values.
 
         Parameters
         ----------
         name : string
         cutoff: int
         no_relevant_results: float
-        ties: bool
         implementation: string
             it can range between {"flat", "exp"}
         """
         super(NDCG, self).__init__(name)
         self.cutoff = cutoff
         self.no_relevant_results = no_relevant_results
-        self.ties = ties
         self.implementation = implementation
-        self.dcg = DCG(cutoff=self.cutoff, ties=self.ties, implementation=self.implementation)
+        self.dcg = DCG(cutoff=self.cutoff, implementation=self.implementation)
 
     def eval(self, dataset, y_pred):
         """
-        The method computes NDCG by taking as input the dataset and the predicted document scores
-        (obtained with the scoring methods). It returns the averaged NDCG score over the entire dataset and the
-        detailed NDCG scores per query.
+        The method computes NDCG by taking as input the dataset and the predicted document scores.
+        It returns the averaged NDCG score over the entire dataset and the detailed NDCG scores per query.
 
         Parameters
         ----------
         dataset : Dataset
-            Represents the Dataset object on which we want to apply NDCG.
+            Represents the Dataset object on which to apply NDCG.
         y_pred : numpy 1d array of float
             Represents the predicted document scores for each instance in the dataset.
 
@@ -66,7 +66,6 @@ class NDCG(Metric):
 
         """
         return super(NDCG, self).eval(dataset, y_pred)
-
 
     def eval_per_query(self, y, y_pred):
         """
@@ -99,12 +98,10 @@ class NDCG(Metric):
             ndcg = self.no_relevant_results
         return ndcg
 
-
     def __str__(self):
         s = self.name
         if self.cutoff is not None:
             s += "@{}".format(self.cutoff)
-        # s += "[no-rel:{}, ties:{}, impl={}]".format(self.no_relevant_results, self.ties, self.implementation)
         return s
 
 
