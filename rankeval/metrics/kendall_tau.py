@@ -7,27 +7,29 @@
 
 
 import scipy.stats as stats
-
 from rankeval.metrics.metric import Metric
 
 
 class Kendalltau(Metric):
     """
-    https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient
-    https://docs.scipy.org/doc/scipy-0.15.1/reference/generated/scipy.stats.kendalltau.html
+    This class implements Kendall's Tau.
 
     We use the Kendall tau coefficient implementation from scipy.
+
+    Attributes
+    ----------
+    name: string
+       Kendalltau
     """
 
     def __init__(self, name='Kendalltau'):
         """
-
+        This is the constructor of Kendall Tau, an object of type Metric, with the name Kendalltau.
+        The constructor also allows setting custom values in the following parameters.
 
         Parameters
         ----------
         name: string
-        cutoff: int
-        threshold: float
         """
         super(Kendalltau, self).__init__(name)
 
@@ -40,13 +42,15 @@ class Kendalltau(Metric):
         Parameters
         ----------
         dataset : Dataset
-        y_pred : numpy.array
+            Represents the Dataset object on which to apply Kendall Tau.
+        y_pred : numpy 1d array of float
+            Represents the predicted document scores for each instance in the dataset.
 
         Returns
         -------
-        float
+        avg_score: float
             The overall Kendall tau score (averages over the detailed scores).
-        numpy.array
+        detailed_scores: numpy 1d array of floats
             The detailed Kendall tau scores for each query, an array of length of the number of queries.
         """
         return super(Kendalltau, self).eval(dataset, y_pred)
@@ -68,15 +72,16 @@ class Kendalltau(Metric):
         Default is lexsort (True), for which kendalltau is of complexity O(n log(n)).
         If False, the complexity is O(n^2), but with a smaller pre-factor (so quicksort may be faster for small arrays).
 
-
         Parameters
         ----------
-        y : numpy.array
-        y_pred : numpy.array
+        y: numpy array
+            Represents the labels of instances corresponding to one query in the dataset (ground truth).
+        y_pred: numpy array.
+            Represents the predicted document scores obtained during the model scoring phase for that query.
 
         Returns
         -------
-        float
+        kendalltau: float
             The Kendall tau per query.
         """
         kendall_tau = stats.kendalltau(y, y_pred, initial_lexsort=True)
