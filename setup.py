@@ -184,7 +184,8 @@ setup(
         'scipy >= 0.7.0',
         'six >= 1.9.0',
         'pandas >= 0.19.1',
-        'xarray >= 0.9.5'
+        'xarray >= 0.9.5',
+        'seaborn >= 0.8'
     ],
     tests_require=[
         'nose >= 1.3.7',
