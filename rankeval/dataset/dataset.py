@@ -147,7 +147,7 @@ class Dataset(object):
 
     def __hash__(self):
         # fast implementation not taking into account the full arrays...
-        return hash((str(self.X), str(self.y), str(self.query_ids)))
+        return hash((str(self.X), str(self.y), str(self.query_ids), str(self.name)))
 
     def __eq__(self, other):
         return (self.X == other.X).all() and \
