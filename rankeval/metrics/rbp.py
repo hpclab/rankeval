@@ -29,7 +29,7 @@ class RBP(Metric):
 
     """
 
-    def __init__(self, name='RBP', cutoff=None, threshold=0, p=0.5):
+    def __init__(self, name='RBP', cutoff=None, threshold=1, p=0.5):
         """
 
         Parameters

@@ -15,18 +15,16 @@ class RMSE(Metric):
     Root mean squared error
 
     """
-    def __init__(self, name='RMSE', cutoff=None, threshold=0):
+    def __init__(self, name='RMSE', cutoff=None):
         """
 
         Parameters
         ----------
         name
         cutoff
-        threshold
         """
         super(RMSE, self).__init__(name)
         self.cutoff = cutoff
-        self.threshold = threshold
 
     def eval(self, dataset, y_pred):
         """
@@ -65,7 +63,6 @@ class RMSE(Metric):
         s = self.name
         if self.cutoff is not None:
             s += "@{}".format(self.cutoff)
-        s += "[>={}]".format(self.threshold)
         return s
 
 

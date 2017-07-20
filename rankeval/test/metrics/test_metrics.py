@@ -69,11 +69,11 @@ class MetricsTestCase(unittest.TestCase):
     def test_precision_eval_per_query_threshold(self):
         p = Precision(threshold=2)
         result = p.eval_per_query(self.y_query1, self.y_pred_query1)
-        assert_equal(result, 1./5)
+        assert_equal(result, 2./5)
 
         p = Precision(threshold=1)
         result = p.eval_per_query(self.y_query1, self.y_pred_query1)
-        assert_equal(result, 2./5)
+        assert_equal(result, 3./5)
 
     def test_precision_eval_per_query(self):
         p = Precision()
@@ -203,6 +203,10 @@ class MetricsTestCase(unittest.TestCase):
     def test_MRR_eval_per_query_threshold(self):
         p = MRR(threshold=1)
         result = p.eval_per_query(self.y_query1, self.y_pred_query1)
+        assert_almost_equal(result, 1. / 1, decimal=3)
+
+        p = MRR(threshold=2)
+        result = p.eval_per_query(self.y_query1, self.y_pred_query1)
         assert_almost_equal(result, 1. / 2, decimal=3)
 
 
@@ -250,8 +254,6 @@ class MetricsTestCase(unittest.TestCase):
                             , decimal=3)
 
         # without cutoff
-
-
         # result: correct value is 3.422
         p = RBP(p=0.5)
         result = p.eval_per_query(self.y_query1, self.y_pred_query1)
