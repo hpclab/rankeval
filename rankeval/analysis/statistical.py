@@ -206,7 +206,7 @@ def _multi_kfold_scoring(dataset, algo, L=10, k=2, progress_bar=None):
 
     for l in range(L):
         progress_bar.value = float(l)/L
-        if verbose>0: print (" + Dataset scoring", l, "of", L)
+#s        if verbose>0: print (" + Dataset scoring", l, "of", L)
         scores[:,l] = _kfold_scoring(dataset, k, algo) #, verbose-1)
     
     return scores
