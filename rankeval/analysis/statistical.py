@@ -180,7 +180,7 @@ def _kfold_scoring(dataset, k, algo, verbose=0):
         
     return scores
             
-def _multi_kfold_scoring(dataset, algo, L=10, k=2, verbose=0):
+def _multi_kfold_scoring(dataset, algo, L=10, k=2, progress_bar=None):
     """
     Performs multiple scorings of the given dataset.
 
@@ -205,13 +205,14 @@ def _multi_kfold_scoring(dataset, algo, L=10, k=2, verbose=0):
     scores = np.zeros( (dataset.n_instances, L), dtype=np.float32)
 
     for l in range(L):
-        if verbose>0: print (" + Dataset scoring", l, "of", L)
-        scores[:,l] = _kfold_scoring(dataset, k, algo, verbose-1)
+        progress_bar.value = float(l)/L
+#s        if verbose>0: print (" + Dataset scoring", l, "of", L)
+        scores[:,l] = _kfold_scoring(dataset, k, algo) #, verbose-1)
     
     return scores
 
 
-def bias_variance(dataset, algo, metric="mse", L=10, k=2, verbose=1):
+def bias_variance(dataset, algo, metric="mse", L=10, k=2, progress_bar=None):
     """
     This method computes the bias vs. variance decomposition of the error.
     The approach used here is based on the works of [Webb05]_ and [Dom05]_.
@@ -271,7 +272,7 @@ def bias_variance(dataset, algo, metric="mse", L=10, k=2, verbose=1):
     """
     assert (isinstance(metric, str) and metric=="mse") or isinstance(metric, Metric)
         
-    scores = _multi_kfold_scoring(dataset, algo=algo, L=L, k=k, verbose=verbose)
+    scores = _multi_kfold_scoring(dataset, algo=algo, L=L, k=k, progress_bar=progress_bar)
     
     avg_error = 0.
     avg_bias = 0.

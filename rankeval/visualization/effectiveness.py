@@ -1,19 +1,24 @@
-from __future__ import print_function
-
-from itertools import islice
-
 """
 This package provides visualizations for several effectiveness analysis focused on assessing
 the performance of the models in terms of accuracy. 
 """
 
+from __future__ import print_function
+
+from itertools import islice
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# plt.rcParams.update(plt.rcParamsDefault)
-plt.style.use("seaborn-notebook")
-sns.set_palette("deep")
+
+def init_plot_style():
+    '''
+    Initilize plot style for RankEval visualization utilities.
+    '''
+    plt.style.use("seaborn-notebook")
+    sns.set_palette("deep")
 
 
 def pretty_print_model_performance(performance):
