@@ -25,7 +25,8 @@ def __dataset_catalogue__():
     return data
 
 def __get_data_home__(data_home=None):
-    """Return the path of the rankeval data dir.
+    """
+    Return the path of the rankeval data dir.
     This folder is used by some large dataset loaders to avoid
     downloading the data several times.
     By default the data dir is set to a folder named 'rankeval_data'
@@ -49,7 +50,7 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, subset='all
     Parameters
     ----------
     subset : 'train' or 'test' or 'all', optional
-        Select the dataset to download:
+        Select a specific dataset to return:
           'train' for the training set,
           'test' for the test set,
           'validation' for the validation set (if present),
@@ -60,6 +61,9 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, subset='all
     download_if_missing : optional, True by default
         If False, raise an IOError if the data is not locally available
         instead of trying to download the data from the source site.
+    with_models : optional, True by default
+        When True, the method downloads the models generated with different
+        tools (QuickRank, LightGBM, XGBoost, etc.) to ease the comparison.
     """
     dataset_home = os.path.join(data_home, os.path.join(dataset_dictionary['DATASET_NAME'], "dataset"))
     models_home = os.path.join(data_home, os.path.join(dataset_dictionary['DATASET_NAME'], "models"))
@@ -110,8 +114,9 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, subset='all
             "subset can only be 'train', 'test' or 'all', got '%s'" % subset)
 
     license_agreement = ""
-    for line in open(os.path.join(dataset_home, dataset_dictionary['LICENSE_FILE']), 'r'):
-        license_agreement += line
+    if dataset_dictionary.get('LICENSE_FILE') is not None:
+        for line in open(os.path.join(dataset_home, dataset_dictionary['LICENSE_FILE']), 'r'):
+            license_agreement += line
     data['license_agreement'] = license_agreement
 
     # MODELS
@@ -138,6 +143,21 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, subset='all
     return data
 
 def load_dataset_and_models(dataset_name, download_if_missing=True, with_models=True):
+    """
+    The method allow to download a given dataset (and available models) by providing its name.
+    Datasets and models are available here: http://rankeval.isti.cnr.it/rankeval-datasets/dataset_dictionary.json
+
+    Parameters
+    ----------
+    dataset_name:
+        The name of the dataset (and models) to download.
+    download_if_missing : optional, True by default
+        If False, raise an IOError if the data is not locally available
+        instead of trying to download the data from the source site.
+    with_models : optional, True by default
+        When True, the method downloads the models generated with different
+        tools (QuickRank, LightGBM, XGBoost, etc.) to ease the comparison.
+    """
     dataset_catalogue = __dataset_catalogue__()
     dataset_dictionary = dataset_catalogue.get(dataset_name)
     if dataset_dictionary == None:
@@ -154,11 +174,14 @@ def load_dataset_and_models(dataset_name, download_if_missing=True, with_models=
     dataset_format = dataset_dictionary['DATASET_FORMAT']
 
     container = DatasetContainer()
-    train_dataset = Dataset.load(data['train'], name=dataset_name, format=dataset_format)
-    container.train_dataset = train_dataset
 
-    test_dataset = Dataset.load(data['test'], name=dataset_name, format=dataset_format)
-    container.test_dataset = test_dataset
+    if (data.get('train') is not None):
+        train_dataset = Dataset.load(data['train'], name=dataset_name, format=dataset_format)
+        container.train_dataset = train_dataset
+
+    if (data.get('test') is not None):
+        test_dataset = Dataset.load(data['test'], name=dataset_name, format=dataset_format)
+        container.test_dataset = test_dataset
 
     if (dataset_dictionary.get('VALIDATION_FILE') is not None):
         validation_dataset = Dataset.load(data['validation'], name=dataset_name, format=dataset_format)
