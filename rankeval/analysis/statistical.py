@@ -60,7 +60,7 @@ def statistical_significance(datasets, model_a, model_b, metrics, n_perm=100000)
     performance = xr.DataArray(data,
                                name='Statistical Significance',
                                coords=[datasets, metrics, ['one-sided', 'two-sided']],
-                               dims=['dataset', 'metric', '1-2 sided'])
+                               dims=['dataset', 'metric', 'p-value'])
 
     return performance
 
