@@ -19,6 +19,8 @@ import xarray as xr
 from ..dataset import Dataset
 from ..metrics.metric import Metric
 
+from ipywidgets import IntProgress
+from IPython.display import display
 
 def statistical_significance(datasets, model_a, model_b, metrics, n_perm=100000):
     """
@@ -136,7 +138,7 @@ def _randomization(metric_scores_a, metric_scores_b, n_perm=100000):
     return p1, p2
 
 
-def _kfold_scoring(dataset, k, algo, verbose=0):
+def _kfold_scoring(dataset, k, algo, progress_bar=None):
     """
     Scored the given datset with the given algo unsing k-fold train/test.
 
@@ -148,8 +150,7 @@ def _kfold_scoring(dataset, k, algo, verbose=0):
         Number of folds.
     algo : function
         See :func:`bias_variance`.
-    verbose : int
-        Verbosity could be 0,1.
+    progress_bar : ipywidgets.IntFloat
 
     Returns
     -------
@@ -163,7 +164,6 @@ def _kfold_scoring(dataset, k, algo, verbose=0):
     shuffled_qid = np.random.permutation(dataset.n_queries)
     chunk_size = int(math.ceil(dataset.n_queries/float(k)))
     for f,p in enumerate(range(0,dataset.n_queries,chunk_size)):
-        if verbose>0: print ("   - Processing fold", f, "of", k)
         # p-th fold is used for testing
         test_rows = np.zeros(dataset.n_instances, dtype=np.bool)
         for q in shuffled_qid[p: p+chunk_size]:
@@ -178,9 +178,11 @@ def _kfold_scoring(dataset, k, algo, verbose=0):
         # update scores for the current fold
         scores[test_rows] = fold_scores
         
+        if progress_bar: progress_bar.value+=1
+        
     return scores
             
-def _multi_kfold_scoring(dataset, algo, L=10, k=2, progress_bar=None):
+def _multi_kfold_scoring(dataset, algo, L=10, k=2):
     """
     Performs multiple scorings of the given dataset.
 
@@ -194,25 +196,25 @@ def _multi_kfold_scoring(dataset, algo, L=10, k=2, progress_bar=None):
         Number of iterations
     k : int
         Number of folds.
-    verbose : int
-        Verbosity could be 0,1,2.
 
     Returns
     -------
     score : numpy.ndarray
         A matrix num_instances x L.
     """
+    progress_bar = IntProgress(min=0, max=k*l, description="Progress")
+    display(progress_bar)    
+    
     scores = np.zeros( (dataset.n_instances, L), dtype=np.float32)
 
     for l in range(L):
-        progress_bar.value = float(l)/L
-#s        if verbose>0: print (" + Dataset scoring", l, "of", L)
-        scores[:,l] = _kfold_scoring(dataset, k, algo) #, verbose-1)
+        scores[:,l] = _kfold_scoring(dataset, k, algo, progress_bar)
+#    progress_bar.value += 1
     
     return scores
 
 
-def bias_variance(dataset, algo, metric="mse", L=10, k=2, progress_bar=None):
+def bias_variance(dataset, algo, metric="mse", L=10, k=2):
     """
     This method computes the bias vs. variance decomposition of the error.
     The approach used here is based on the works of [Webb05]_ and [Dom05]_.
@@ -255,8 +257,6 @@ def bias_variance(dataset, algo, metric="mse", L=10, k=2, progress_bar=None):
         Number of iterations
     k : int
         Number of folds.
-    verbose : int
-        Verbosity could be 0,1,2.
 
     Returns
     -------
@@ -271,8 +271,8 @@ def bias_variance(dataset, algo, metric="mse", L=10, k=2, progress_bar=None):
             In Proceedings of 17th International Conference on Machine Learning 2000 (pp. 231-238).
     """
     assert (isinstance(metric, str) and metric=="mse") or isinstance(metric, Metric)
-        
-    scores = _multi_kfold_scoring(dataset, algo=algo, L=L, k=k, progress_bar=progress_bar)
+    
+    scores = _multi_kfold_scoring(dataset, algo=algo, L=L, k=k)
     
     avg_error = 0.
     avg_bias = 0.
