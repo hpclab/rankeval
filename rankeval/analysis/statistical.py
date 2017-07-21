@@ -46,6 +46,9 @@ def statistical_significance(datasets, model_a, model_b, metrics, n_perm=100000)
         between any pair of models on the given dataset.
     """
 
+    progress_bar = IntProgress(min=0, max=len(datasets)*len(metrics)*10, description="Progress")
+    display(progress_bar)    
+
     data = np.zeros(shape=(len(datasets), len(metrics), 2), dtype=np.float32)
     for idx_dataset, dataset in enumerate(datasets):
         scorer_a = model_a.score(dataset, detailed=False)
@@ -54,7 +57,7 @@ def statistical_significance(datasets, model_a, model_b, metrics, n_perm=100000)
             metrics_a = metric.eval(dataset, scorer_a.y_pred)[1]
             metrics_b = metric.eval(dataset, scorer_b.y_pred)[1]
 
-            p1, p2 = _randomization(metrics_a, metrics_b, n_perm=n_perm)
+            p1, p2 = _randomization(metrics_a, metrics_b, n_perm=n_perm, progress_bar=progress_bar)
 
             data[idx_dataset][idx_metric][0] = p1
             data[idx_dataset][idx_metric][1] = p2
@@ -67,7 +70,7 @@ def statistical_significance(datasets, model_a, model_b, metrics, n_perm=100000)
     return performance
 
 
-def _randomization(metric_scores_a, metric_scores_b, n_perm=100000):
+def _randomization(metric_scores_a, metric_scores_b, n_perm=100000, progress_bar=None):
     """
     This method computes the randomization test as described in [1].
 
@@ -79,6 +82,8 @@ def _randomization(metric_scores_a, metric_scores_b, n_perm=100000):
         Vector of per-query metric scores for the IR system B.
     n_perm : int
         Number of permutations evaluated in the randomization test.
+    progress_bar : ipywidgets.IntProgress
+        The progress bas to be updated
 
     Returns
     -------
@@ -114,6 +119,9 @@ def _randomization(metric_scores_a, metric_scores_b, n_perm=100000):
 
     # repeat n_prem times
     for i in range(n_perm):
+        if progress_bar:
+            if i % (n_perm/10)==0: 
+                progress_bar.value+=1
         # select a random subset
         sel = np.random.choice([False, True], len(metric_scores_a))
 
@@ -150,7 +158,8 @@ def _kfold_scoring(dataset, k, algo, progress_bar=None):
         Number of folds.
     algo : function
         See :func:`bias_variance`.
-    progress_bar : ipywidgets.IntFloat
+    progress_bar : ipywidgets.IntProgress
+        The progress bas to be updated
 
     Returns
     -------
@@ -196,6 +205,8 @@ def _multi_kfold_scoring(dataset, algo, L=10, k=2, progress_bar=None):
         Number of iterations
     k : int
         Number of folds.
+    progress_bar : ipywidgets.IntProgress
+        The progress bas to be updated
 
     Returns
     -------
@@ -304,8 +315,8 @@ def bias_variance(datasets=[], algos=[], metrics=["MSE"], L=10, k=2):
                     avg_var   = np.mean( (scores-avg_pred.reshape((-1,1)))**2. )
 
                 data[idx_dataset][idx_metric][idx_algo][0] = avg_error
-                data[idx_dataset][idx_metric][idx_algo][0] = avg_bias
-                data[idx_dataset][idx_metric][idx_algo][0] = avg_var
+                data[idx_dataset][idx_metric][idx_algo][1] = avg_bias
+                data[idx_dataset][idx_metric][idx_algo][2] = avg_var
 
     progress_bar.bar_style = "success"
 
