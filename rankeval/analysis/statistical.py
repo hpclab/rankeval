@@ -182,7 +182,7 @@ def _kfold_scoring(dataset, k, algo, progress_bar=None):
         
     return scores
             
-def _multi_kfold_scoring(dataset, algo, L=10, k=2):
+def _multi_kfold_scoring(dataset, algo, L=10, k=2, progress_bar=None):
     """
     Performs multiple scorings of the given dataset.
 
@@ -202,19 +202,15 @@ def _multi_kfold_scoring(dataset, algo, L=10, k=2):
     score : numpy.ndarray
         A matrix num_instances x L.
     """
-    progress_bar = IntProgress(min=0, max=k*l, description="Progress")
-    display(progress_bar)    
-    
     scores = np.zeros( (dataset.n_instances, L), dtype=np.float32)
 
     for l in range(L):
         scores[:,l] = _kfold_scoring(dataset, k, algo, progress_bar)
-#    progress_bar.value += 1
     
     return scores
 
 
-def bias_variance(dataset, algo, metric="mse", L=10, k=2):
+def bias_variance(datasets, algos, metrics=["MSE"], L=10, k=2):
     """
     This method computes the bias vs. variance decomposition of the error.
     The approach used here is based on the works of [Webb05]_ and [Dom05]_.
@@ -224,7 +220,7 @@ def bias_variance(dataset, algo, metric="mse", L=10, k=2):
     `k` folds. Each fold is scored by the model `M` trained on the remainder folds.
     [Webb05]_ recommends the use of 2 folds.
 
-    If metric="mse" then the standard decomposition is used.
+    If metric="MSE" then the standard decomposition is used.
     The Bias for and instance `x` is defined as mean squared error of the `L` trained models
     w.r.t. the true label `y`, denoted with :math:`{\\sf E}_{L} [M(x) - y]^2`. 
     The Variance for an instance `x` is measured across the `L` trained models: 
@@ -260,8 +256,9 @@ def bias_variance(dataset, algo, metric="mse", L=10, k=2):
 
     Returns
     -------
-    (error, bias, variance) : (float, float float)
-        Returns the bias variance decomposition of the error.
+    bias_variance : xarray.DataArray
+        A DataArray containing the bias/variance decomposition of the error
+        for any given dataset, algorithm and metric.
 
     References
     ----------
@@ -270,28 +267,48 @@ def bias_variance(dataset, algo, metric="mse", L=10, k=2):
     .. [Dom05] Domingos P. A unified bias-variance decomposition. 
             In Proceedings of 17th International Conference on Machine Learning 2000 (pp. 231-238).
     """
-    assert (isinstance(metric, str) and metric=="mse") or isinstance(metric, Metric)
+    for metric in metrics:
+        assert (isinstance(metric, str) and metric=="MSE") or isinstance(metric, Metric)
+
+    progress_bar = IntProgress(min=0, max=len(datasets)*len(metrics)*len(algos)*k*L, description="Progress")
+    display(progress_bar)    
     
-    scores = _multi_kfold_scoring(dataset, algo=algo, L=L, k=k)
-    
-    avg_error = 0.
-    avg_bias = 0.
-    avg_var = 0.
-    if isinstance(metric, Metric):
-        # mse over metric, assume error is 1-metric
-        # not exactly domingos paper
-        q_scores = np.empty((dataset.n_queries, L), dtype=np.float32) 
-        for i in range(L):
-            q_scores[:,i] = metric.eval(dataset=dataset, y_pred=scores[:,i])[1]            
-        avg_error = np.mean( (q_scores-1.)**2. )
-        avg_pred  = np.mean(q_scores, axis=1)
-        avg_bias  = np.mean((avg_pred - 1.)**2.)
-        avg_var   = np.mean( (q_scores-avg_pred.reshape((-1,1)))**2. )
-    else:
-        # mse
-        avg_error = np.mean( (scores-dataset.y.reshape((-1,1)))**2. )
-        avg_pred  = np.mean(scores, axis=1)
-        avg_bias  = np.mean((avg_pred - dataset.y)**2.)
-        avg_var   = np.mean( (scores-avg_pred.reshape((-1,1)))**2. )
-    
-    return avg_error, avg_bias, avg_var
+    data = np.zeros(shape=(len(datasets), len(metrics), len(algos), 3), dtype=np.float32)
+    for idx_dataset, dataset in enumerate(datasets):
+        for idx_algo, algo in enumerate(algos):
+            for idx_metric, metric in enumerate(metrics):
+                scores = _multi_kfold_scoring(dataset, algo=algo, L=L, k=k, progress_bar=progress_bar)
+                
+                avg_error = 0.
+                avg_bias = 0.
+                avg_var = 0.
+                if isinstance(metric, Metric):
+                    # mse over metric, assume error is 1-metric
+                    # not exactly domingos paper
+                    q_scores = np.empty((dataset.n_queries, L), dtype=np.float32) 
+                    for i in range(L):
+                        q_scores[:,i] = metric.eval(dataset=dataset, y_pred=scores[:,i])[1]            
+                    avg_error = np.mean( (q_scores-1.)**2. )
+                    avg_pred  = np.mean(q_scores, axis=1)
+                    avg_bias  = np.mean((avg_pred - 1.)**2.)
+                    avg_var   = np.mean( (q_scores-avg_pred.reshape((-1,1)))**2. )
+                else:
+                    # mse
+                    avg_error = np.mean( (scores-dataset.y.reshape((-1,1)))**2. )
+                    avg_pred  = np.mean(scores, axis=1)
+                    avg_bias  = np.mean((avg_pred - dataset.y)**2.)
+                    avg_var   = np.mean( (scores-avg_pred.reshape((-1,1)))**2. )
+
+                data[idx_dataset][idx_metric][idx_algo][0] = avg_error
+                data[idx_dataset][idx_metric][idx_algo][0] = avg_bias
+                data[idx_dataset][idx_metric][idx_algo][0] = avg_var
+
+    progress_bar.bar_style = "success"
+
+    performance = xr.DataArray(data,
+                               name='Bias/Variance Decomposition',
+                               coords=[datasets, metrics, [a.__name__ for a in algos], 
+                               ['Error', 'Bias', 'Variance']],
+                               dims=['dataset', 'metric', 'algo', 'error'])
+
+    return performance
