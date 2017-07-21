@@ -1,8 +1,9 @@
 import os
 import six
-import glob
 import json
+import shutil
 import tarfile
+import fnmatch
 from os import environ
 from os import makedirs
 from os.path import exists
@@ -44,17 +45,11 @@ def __get_data_home__(data_home=None):
     return data_home
 
 
-def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, subset='all', download_if_missing=True, with_models=True):
+def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, download_if_missing=True, with_models=True):
     """ Fetch and download a given dataset.
 
     Parameters
     ----------
-    subset : 'train' or 'test' or 'all', optional
-        Select a specific dataset to return:
-          'train' for the training set,
-          'test' for the test set,
-          'validation' for the validation set (if present),
-          'all' for both.
     data_home : optional, default: None
         Specify a data folder for the datasets. If None,
         all data is stored in the '~/rankeval_data' subfolder.
@@ -65,16 +60,17 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, subset='all
         When True, the method downloads the models generated with different
         tools (QuickRank, LightGBM, XGBoost, etc.) to ease the comparison.
     """
-    dataset_home = os.path.join(data_home, os.path.join(dataset_dictionary['DATASET_NAME'], "dataset"))
-    models_home = os.path.join(data_home, os.path.join(dataset_dictionary['DATASET_NAME'], "models"))
+    data_home = os.path.join(data_home, dataset_dictionary['DATASET_NAME'])
+    dataset_home = os.path.join(data_home, "dataset")
+    models_home = os.path.join(data_home, "models")
 
     # DATASET
-    if (not download_if_missing) and (not os.path.exists(dataset_home)):
+    if (not download_if_missing) and (not os.path.exists(data_home)):
         raise IOError('dataset not found')
 
     print "Downloading dataset. This may take a few minutes."
     archive_path = os.path.join(dataset_home, dataset_dictionary['DATASET_ARCHIVE_NAME'])
-    models_archive_path = os.path.join(dataset_home, dataset_dictionary['MODELS_ARCHIVE_NAME'])
+    models_archive_path = os.path.join(models_home, dataset_dictionary['MODELS_ARCHIVE_NAME'])
     train_path = os.path.join(dataset_home, dataset_dictionary['TRAIN_FILE'])
     test_path = os.path.join(dataset_home, dataset_dictionary['TEST_FILE'])
 
@@ -82,10 +78,12 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, subset='all
     data['train'] = train_path
     data['test'] = test_path
 
-    if dataset_dictionary['VALIDATION_FILE'] is not "None":
+    if dataset_dictionary['VALIDATION_FILE'] is not None:
         validation_path = os.path.join(dataset_home, dataset_dictionary['VALIDATION_FILE'])
         data['validation'] = validation_path
 
+    if os.path.exists(dataset_home):
+        shutil.rmtree(dataset_home)
     if not os.path.exists(dataset_home):
         os.makedirs(dataset_home)
 
@@ -94,24 +92,14 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, subset='all
         os.remove(archive_path)
 
     data_url = dataset_dictionary['DATASET_URL']
-    print "Downloading dataset from %s", data_url
+    print "Downloading dataset from %s " % data_url
     opener = urlopen(data_url)
     with open(archive_path, 'wb') as f:
         f.write(opener.read())
 
-    print "Decompressing %s", archive_path
+    print "Decompressing %s" % archive_path
     tarfile.open(archive_path, "r:gz").extractall(path=dataset_home)
     os.remove(archive_path)
-
-    if subset in ('train', 'test', 'validation'):
-        filter = dict()
-        filter[subset] = data[subset]
-        data = filter
-    elif subset == 'all':
-        pass
-    else:
-        raise ValueError(
-            "subset can only be 'train', 'test' or 'all', got '%s'" % subset)
 
     license_agreement = ""
     if dataset_dictionary.get('LICENSE_FILE') is not None:
@@ -120,27 +108,28 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, subset='all
     data['license_agreement'] = license_agreement
 
     # MODELS
-    if (with_models is True):
-        if (not download_if_missing) and (not os.path.exists(models_home)):
-            raise IOError('dataset not found')
-
+    if (with_models == True):
         if not os.path.exists(models_home):
-            os.makedirs(dataset_home)
+            os.makedirs(models_home)
 
         models_url = dataset_dictionary['MODELS_URL']
-        print "Downloading letor models from %s", models_url
+        print "Downloading letor models from %s" % models_url
         opener = urlopen(models_url)
-        with open(archive_path, 'wb') as f:
+        with open(models_archive_path, 'wb') as f:
             f.write(opener.read())
 
-        print "Decompressing %s", models_archive_path
+        print "Decompressing %s" % models_archive_path
         tarfile.open(models_archive_path, "r:gz").extractall(path=models_home)
         os.remove(models_archive_path)
 
-        available_models = glob.glob(models_home)
-        data['models'] = available_models
+        matches = []
+        for root, dirnames, filenames in os.walk(models_archive_path):
+            for filename in fnmatch.filter(filenames, '*.xml'):
+                matches.append([root, filename])
+        data['models'] = matches
 
     return data
+
 
 def load_dataset_and_models(dataset_name, download_if_missing=True, with_models=True):
     """
@@ -165,10 +154,10 @@ def load_dataset_and_models(dataset_name, download_if_missing=True, with_models=
 
     data_home = __get_data_home__()
 
-    if (with_models is True):
-        data = __fetch_dataset_and_models__(dataset_dictionary, data_home, subset='train')
+    if (with_models == True):
+        data = __fetch_dataset_and_models__(dataset_dictionary, data_home, download_if_missing=True, with_models=True)
     else:
-        data = __fetch_dataset_and_models__(dataset_dictionary, data_home, subset='train', with_models=False)
+        data = __fetch_dataset_and_models__(dataset_dictionary, data_home, download_if_missing=True, with_models=False)
 
     dataset_name = dataset_dictionary['DATASET_NAME']
     dataset_format = dataset_dictionary['DATASET_FORMAT']
@@ -176,20 +165,20 @@ def load_dataset_and_models(dataset_name, download_if_missing=True, with_models=
     container = DatasetContainer()
 
     if (data.get('train') is not None):
-        train_dataset = Dataset.load(data['train'], name=dataset_name, format=dataset_format)
-        container.train_dataset = train_dataset
+        #train_dataset = Dataset.load(data['train'], name=dataset_name, format=dataset_format)
+        container.train_dataset = "ciao"
 
     if (data.get('test') is not None):
-        test_dataset = Dataset.load(data['test'], name=dataset_name, format=dataset_format)
-        container.test_dataset = test_dataset
+        #test_dataset = Dataset.load(data['test'], name=dataset_name, format=dataset_format)
+        container.test_dataset = "ciao"
 
-    if (dataset_dictionary.get('VALIDATION_FILE') is not None):
-        validation_dataset = Dataset.load(data['validation'], name=dataset_name, format=dataset_format)
-        container.validation_dataset = validation_dataset
+    if (data.get('validation') is not None):
+        #validation_dataset = Dataset.load(data['validation'], name=dataset_name, format=dataset_format)
+        container.validation_dataset = "ciao"
 
     container.license_agreement = data['license_agreement']
 
-    if (with_models is True):
+    if (with_models == True):
         container.models = data['models']
 
     return container
