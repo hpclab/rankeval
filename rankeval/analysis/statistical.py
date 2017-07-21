@@ -210,7 +210,7 @@ def _multi_kfold_scoring(dataset, algo, L=10, k=2, progress_bar=None):
     return scores
 
 
-def bias_variance(datasets, algos, metrics=["MSE"], L=10, k=2):
+def bias_variance(datasets=[], algos=[], metrics=["MSE"], L=10, k=2):
     """
     This method computes the bias vs. variance decomposition of the error.
     The approach used here is based on the works of [Webb05]_ and [Dom05]_.
@@ -267,6 +267,10 @@ def bias_variance(datasets, algos, metrics=["MSE"], L=10, k=2):
     .. [Dom05] Domingos P. A unified bias-variance decomposition. 
             In Proceedings of 17th International Conference on Machine Learning 2000 (pp. 231-238).
     """
+    assert(k>=2)
+    assert(L>=2)
+    assert(len(datasets)>0)
+    assert(len(metrics)>0)
     for metric in metrics:
         assert (isinstance(metric, str) and metric=="MSE") or isinstance(metric, Metric)
 
