@@ -10,7 +10,7 @@ This module implements the generic class for loading/dumping a dataset from/to f
 """
 import numpy as np
 
-from ..dataset.svmlight_format import load_svmlight_file, dump_svmlight_file
+from .svmlight_format import load_svmlight_file, dump_svmlight_file
 
 
 class Dataset(object):
