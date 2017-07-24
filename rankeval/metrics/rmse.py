@@ -7,7 +7,7 @@
 
 import numpy as np
 
-from rankeval.metrics import Metric
+from rankeval.metrics import Metric, MSE
 
 
 class RMSE(Metric):
@@ -32,8 +32,9 @@ class RMSE(Metric):
         name : string
         cutoff : int
         """
-        super(RMSE, self).__init__(name)
+        super(self.__class__, self).__init__(name)
         self.cutoff = cutoff
+        self._mse = MSE(cutoff=cutoff)
 
     def eval(self, dataset, y_pred):
         """
@@ -53,7 +54,7 @@ class RMSE(Metric):
         detailed_scores: numpy 1d array of floats
             The detailed RMSE@k scores for each query, an array of length of the number of queries.
         """
-        return super(RMSE, self).eval(dataset, y_pred)
+        return super(self.__class__, self).eval(dataset, y_pred)
 
     def eval_per_query(self, y, y_pred):
         """
@@ -72,11 +73,7 @@ class RMSE(Metric):
         rmse: float
             Represents the RMSE score for one query.
         """
-        idx_y_pred_sorted = np.argsort(y_pred)[::-1]
-        if self.cutoff is not None:
-            idx_y_pred_sorted = idx_y_pred_sorted[:self.cutoff]
-
-        mse = ((y[idx_y_pred_sorted] - y_pred[idx_y_pred_sorted]) ** 2).mean()
+        mse = self._mse.eval_per_query(y, y_pred)
         return np.sqrt(mse)
 
     def __str__(self):

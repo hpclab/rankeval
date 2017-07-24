@@ -21,6 +21,7 @@ from .map import MAP
 from .mrr import MRR
 from .pfound import Pfound
 from .rbp import RBP
+from .mse import MSE
 from .rmse import RMSE
 from .spearman_rho import SpearmanRho
 
@@ -35,5 +36,6 @@ __all__ = ['Metric',
            'MRR',
            'Pfound',
            'RBP',
+           'MSE',
            'RMSE',
            'SpearmanRho']

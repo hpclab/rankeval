@@ -33,6 +33,7 @@ class Metric(six.with_metaclass(ABCMeta)):
             Represents the name of that metric instance.
         """
         self.name = name
+        self.detailed_scores = None
 
     @abstractmethod
     def eval(self, dataset, y_pred):
@@ -43,40 +44,45 @@ class Metric(six.with_metaclass(ABCMeta)):
         Parameters
         ----------
         dataset : Dataset
-            Represents the Dataset object on which to apply the metric.
+            Represents the Dataset object on which we want to apply the metric.
         y_pred : numpy 1d array of float
-            Represents the predicted document scores for each instance in the dataset.
+            Represents the predicted document scores for each instance in the
+            dataset.
 
         Returns
         -------
         avg_score: float
-            Represents the average values of a metric over all metric scores per query.
+            Represents the average values of a metric over all metric scores
+            per query.
         detailed_scores: numpy 1d array of floats
-            Represents the detailed metric scores for each query. It has the length of n_queries.
-
+            Represents the detailed metric scores for each query. It has the
+            length of n_queries.
         """
         self.detailed_scores = np.zeros(dataset.n_queries, dtype=np.float32)
 
-        for query_id, query_y, query_y_pred in self.query_iterator(dataset, y_pred):
-            self.detailed_scores[query_id] = self.eval_per_query(query_y, query_y_pred)
+        for qid, q_y, q_y_pred in self.query_iterator(dataset, y_pred):
+            self.detailed_scores[qid] = self.eval_per_query(q_y, q_y_pred)
         return self.detailed_scores.mean(), self.detailed_scores
 
     @abstractmethod
     def eval_per_query(self, y, y_pred):
         """
-
-        This abstract methods helps to evaluate the predicted scores for a specific query within the dataset.
+        This methods helps to evaluate the predicted scores for a specific
+        query within the dataset.
 
         Parameters
         ----------
         y: numpy array
-            Represents the labels of instances corresponding to one query in the dataset (ground truth).
+            Represents the instance labels corresponding to the queries in the
+            dataset (ground truth).
         y_pred: numpy array.
-            Represents the predicted document scores obtained during the model scoring phase for that query.
+            Represents the predicted document scores obtained during the model
+            scoring phase for that query.
 
         Returns
         -------
-
+        dcg: float
+            Represents the metric score for one query.
         """
 
     def query_iterator(self, dataset, y_pred):
@@ -97,5 +103,8 @@ class Metric(six.with_metaclass(ABCMeta)):
         : numpy.array
             The predicted scores for the instances in the dataset belonging to the same query id.
         """
-        for query_id, (start_offset, end_offset) in enumerate(dataset.query_offset_iterator()):
-            yield query_id, dataset.y[start_offset:end_offset], y_pred[start_offset:end_offset]
+        for query_id, (start_offset, end_offset) in \
+                enumerate(dataset.query_offset_iterator()):
+            yield (query_id,
+                   dataset.y[start_offset:end_offset],
+                   y_pred[start_offset:end_offset])

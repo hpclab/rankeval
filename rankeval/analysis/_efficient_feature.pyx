@@ -1,3 +1,9 @@
+"""
+This file implements the feature importance analysis in an efficient way. The
+limit is that the metric used to compute the gain for each split is hardcoded
+in the source code and is the MSE.
+"""
+
 import cython
 cimport cython
 
@@ -46,7 +52,7 @@ cdef extern from "_efficient_feature_impl.h":
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def feature_importance(model, dataset):
+def eff_feature_importance(model, dataset):
 
     # initialize features importance
     feature_imp = np.zeros(dataset.n_features, dtype=np.float32)
@@ -74,7 +80,7 @@ def feature_importance(model, dataset):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def _feature_importance_tree(model, dataset, tree_id, y_pred,
+def eff_feature_importance_tree(model, dataset, tree_id, y_pred,
                              feature_imp, feature_count):
 
     y_pred_tree = np.zeros(dataset.n_instances, dtype=np.float32);

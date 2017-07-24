@@ -25,12 +25,8 @@ void c_feature_importance(
     }
 
     // default scores on the root node of the first tree
-    std::vector<float> y_pred(n_instances);
+    std::vector<float> y_pred(n_instances, 0);
     std::vector<float> y_pred_tree(n_instances);
-    #pragma omp parallel for
-    for (unsigned int instance = 0; instance < n_instances; ++instance) {
-        y_pred[instance] = 0;
-    }
 
     for (unsigned int tree_id=0; tree_id<n_trees; ++tree_id) {
         c_feature_importance_tree(X,
@@ -124,8 +120,10 @@ void c_feature_importance_tree(
         int right_docs = node.end_id - end_id;
 
         // we need to normalize the mean y_targets (left and right)
-        y_target_mean_left /= left_docs;
-        y_target_mean_right /= right_docs;
+        if (left_docs > 0)
+            y_target_mean_left *= trees_weight[tree_id] / left_docs;
+        if (right_docs > 0)
+            y_target_mean_right *= trees_weight[tree_id] / right_docs;
 
         // compute split gain
         double delta_mse = 0;
@@ -147,12 +145,13 @@ void c_feature_importance_tree(
         }
 
         // update feature importance
-        feature_imp[feature_id] += delta_mse / n_instances;
+        if (delta_mse > 0)
+            feature_imp[feature_id] += delta_mse / n_instances;
 
         // if children are not leaves, add in the queue of the nodes to visit
         if (!is_leaf_node(trees_left_child[node_id],
                           trees_left_child,
-                          trees_right_child)) {
+                          trees_right_child) && end_id > node.start_id) {
 
             TreeNode left(trees_left_child[node_id], node.start_id, end_id);
             queue.push_back(left);
@@ -160,7 +159,7 @@ void c_feature_importance_tree(
 
         if (!is_leaf_node(trees_right_child[node_id],
                           trees_left_child,
-                          trees_right_child)) {
+                          trees_right_child) && node.end_id > (end_id + 1) ) {
 
             TreeNode right(trees_right_child[node_id], end_id + 1, node.end_id);
             queue.push_back(right);
@@ -169,5 +168,5 @@ void c_feature_importance_tree(
 
     #pragma omp parallel for
     for (unsigned int instance = 0; instance < n_instances; ++instance)
-        y_pred[instance] += y_pred_tree[instance] * trees_weight[tree_id];
+        y_pred[instance] += y_pred_tree[instance];
 }
