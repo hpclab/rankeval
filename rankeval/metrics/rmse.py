@@ -12,45 +12,65 @@ from rankeval.metrics import Metric
 
 class RMSE(Metric):
     """
-    Root mean squared error
+    This class implements Root mean squared error (RMSE) with several parameters.
 
+    Attributes
+    ----------
+    name: string
+        RMSE
+    cutoff: int
+        The top k results to be considered at per query level (e.g. 10), otherwise the default value is None and
+        is computed on all the instances of a query.
     """
     def __init__(self, name='RMSE', cutoff=None):
         """
+        This is the constructor of RMSE, an object of type Metric, with the name RMSE.
+        The constructor also allows setting custom values in the following parameters.
 
         Parameters
         ----------
-        name
-        cutoff
+        name : string
+        cutoff : int
         """
         super(RMSE, self).__init__(name)
         self.cutoff = cutoff
 
     def eval(self, dataset, y_pred):
         """
+        This method takes the RMSE for each query and calculates the average RMSE.
 
         Parameters
         ----------
-        dataset
-        y_pred
+        dataset : Dataset
+            Represents the Dataset object on which to apply RMSE.
+        y_pred : numpy 1d array of float
+            Represents the predicted document scores for each instance in the dataset.
 
         Returns
         -------
-
+        avg_score: float
+            The overall RMSE score (averages over the detailed RMSE scores).
+        detailed_scores: numpy 1d array of floats
+            The detailed RMSE@k scores for each query, an array of length of the number of queries.
         """
         return super(RMSE, self).eval(dataset, y_pred)
 
     def eval_per_query(self, y, y_pred):
         """
+        This method helps compute the RMSE score per query. It is called by the eval function which averages and
+        aggregates the scores for each query.
 
         Parameters
         ----------
-        y
-        y_pred
+        y: numpy array
+            Represents the labels of instances corresponding to one query in the dataset (ground truth).
+        y_pred: numpy array.
+            Represents the predicted document scores obtained during the model scoring phase for that query.
 
         Returns
         -------
-
+        rmse: float
+            Represents the RMSE score for one query.
         """
         idx_y_pred_sorted = np.argsort(y_pred)[::-1]
         if self.cutoff is not None:
