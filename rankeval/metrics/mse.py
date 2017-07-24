@@ -7,15 +7,15 @@
 
 import numpy as np
 
-from rankeval.metrics import Metric, MSE
+from rankeval.metrics import Metric
 
 
-class RMSE(Metric):
+class MSE(Metric):
     """
-    Root mean squared error
+    Mean squared error
 
     """
-    def __init__(self, name='RMSE', cutoff=None):
+    def __init__(self, name='MSE', cutoff=None):
         """
 
         Parameters
@@ -25,7 +25,6 @@ class RMSE(Metric):
         """
         super(self.__class__, self).__init__(name)
         self.cutoff = cutoff
-        self._mse = MSE(cutoff=cutoff)
 
     def eval(self, dataset, y_pred):
         """
@@ -39,7 +38,14 @@ class RMSE(Metric):
         -------
 
         """
-        return super(self.__class__, self).eval(dataset, y_pred)
+        # return super(self.__class__, self).eval(dataset, y_pred)
+
+        self.detailed_scores = np.zeros(dataset.n_queries, dtype=np.float32)
+
+        for qid, q_y, q_y_pred in self.query_iterator(dataset, y_pred):
+            self.detailed_scores[qid] = \
+                self.eval_per_query(q_y, q_y_pred) / dataset.n_instances
+        return self.detailed_scores.sum(), self.detailed_scores
 
     def eval_per_query(self, y, y_pred):
         """
@@ -53,8 +59,11 @@ class RMSE(Metric):
         -------
 
         """
-        mse = self._mse.eval_per_query(y, y_pred)
-        return np.sqrt(mse)
+        if self.cutoff is not None:
+            idx = np.argsort(y_pred)[::-1][:self.cutoff]
+            return ((y[idx] - y_pred[idx]) ** 2).sum()
+        else:
+            return ((y - y_pred) ** 2.0).sum()
 
     def __str__(self):
         s = self.name
