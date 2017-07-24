@@ -1,8 +1,9 @@
 import os
 import six
-import glob
 import json
+import shutil
 import tarfile
+import fnmatch
 from os import environ
 from os import makedirs
 from os.path import exists
@@ -20,9 +21,10 @@ else:
 
 def __dataset_catalogue__():
     resource_path = "http://rankeval.isti.cnr.it/rankeval-datasets/dataset_dictionary.json"
-    file = urlopen(resource_path)
-    data = json.load(file)
+    json_file = urlopen(resource_path)
+    data = json.load(json_file)
     return data
+
 
 def __get_data_home__(data_home=None):
     """
@@ -44,17 +46,13 @@ def __get_data_home__(data_home=None):
     return data_home
 
 
-def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, subset='all', download_if_missing=True, with_models=True):
+def __fetch_dataset_and_models__(dataset_dictionary, data_home=None,
+                                 download_if_missing=True, force_download=True,
+                                 with_models=True):
     """ Fetch and download a given dataset.
 
     Parameters
     ----------
-    subset : 'train' or 'test' or 'all', optional
-        Select a specific dataset to return:
-          'train' for the training set,
-          'test' for the test set,
-          'validation' for the validation set (if present),
-          'all' for both.
     data_home : optional, default: None
         Specify a data folder for the datasets. If None,
         all data is stored in the '~/rankeval_data' subfolder.
@@ -65,87 +63,107 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None, subset='all
         When True, the method downloads the models generated with different
         tools (QuickRank, LightGBM, XGBoost, etc.) to ease the comparison.
     """
-    dataset_home = os.path.join(data_home, os.path.join(dataset_dictionary['DATASET_NAME'], "dataset"))
-    models_home = os.path.join(data_home, os.path.join(dataset_dictionary['DATASET_NAME'], "models"))
+    data_home = os.path.join(data_home, dataset_dictionary['DATASET_NAME'])
+    dataset_home = os.path.join(data_home, "dataset")
+    models_home = os.path.join(data_home, "models")
 
     # DATASET
-    if (not download_if_missing) and (not os.path.exists(dataset_home)):
+    if not download_if_missing and not os.path.exists(data_home):
         raise IOError('dataset not found')
 
-    print "Downloading dataset. This may take a few minutes."
-    archive_path = os.path.join(dataset_home, dataset_dictionary['DATASET_ARCHIVE_NAME'])
-    models_archive_path = os.path.join(dataset_home, dataset_dictionary['MODELS_ARCHIVE_NAME'])
-    train_path = os.path.join(dataset_home, dataset_dictionary['TRAIN_FILE'])
-    test_path = os.path.join(dataset_home, dataset_dictionary['TEST_FILE'])
+    # delete data_home if force_download is True, then re-create data_home dir
+    if force_download:
+        if os.path.exists(data_home):
+            shutil.rmtree(data_home)
+            os.makedirs(data_home)
 
+    # preparing file names...
+    archive_name = os.path.join(dataset_home,
+                                dataset_dictionary['DATASET_ARCHIVE_NAME'])
+    models_archive_name = os.path.join(models_home, dataset_dictionary[
+        'MODELS_ARCHIVE_NAME'])
+    train_file_path = os.path.join(dataset_home,
+                                   dataset_dictionary['TRAIN_FILE'])
+    test_file_path = os.path.join(dataset_home, dataset_dictionary['TEST_FILE'])
+
+    # everything will be stored in a dictionary to return
     data = dict()
-    data['train'] = train_path
-    data['test'] = test_path
 
-    if dataset_dictionary['VALIDATION_FILE'] is not "None":
-        validation_path = os.path.join(dataset_home, dataset_dictionary['VALIDATION_FILE'])
-        data['validation'] = validation_path
+    dataset_already_downloaded = False
+    if os.path.exists(dataset_home):
+        dataset_already_downloaded = True
 
-    if not os.path.exists(dataset_home):
+    if not dataset_already_downloaded:
         os.makedirs(dataset_home)
 
-    if os.path.exists(archive_path):
-        print "Download was not complete, downloading again."
-        os.remove(archive_path)
+        print "Downloading dataset. This may take a few minutes."
 
-    data_url = dataset_dictionary['DATASET_URL']
-    print "Downloading dataset from %s", data_url
-    opener = urlopen(data_url)
-    with open(archive_path, 'wb') as f:
-        f.write(opener.read())
+        data_url = dataset_dictionary['DATASET_URL']
+        print "Downloading dataset from %s " % data_url
+        opener = urlopen(data_url)
+        with open(archive_name, 'wb') as f:
+            f.write(opener.read())
 
-    print "Decompressing %s", archive_path
-    tarfile.open(archive_path, "r:gz").extractall(path=dataset_home)
-    os.remove(archive_path)
-
-    if subset in ('train', 'test', 'validation'):
-        filter = dict()
-        filter[subset] = data[subset]
-        data = filter
-    elif subset == 'all':
-        pass
-    else:
-        raise ValueError(
-            "subset can only be 'train', 'test' or 'all', got '%s'" % subset)
+        print "Decompressing %s" % archive_name
+        tarfile.open(archive_name, "r:gz").extractall(path=dataset_home)
+        os.remove(archive_name)
 
     license_agreement = ""
     if dataset_dictionary.get('LICENSE_FILE') is not None:
-        for line in open(os.path.join(dataset_home, dataset_dictionary['LICENSE_FILE']), 'r'):
+        for line in open(
+                os.path.join(dataset_home, dataset_dictionary['LICENSE_FILE']),
+                'r'):
             license_agreement += line
+
+    # filling data structure to return
+    data['train'] = train_file_path
+    data['test'] = test_file_path
+
+    if dataset_dictionary['VALIDATION_FILE'] is not None:
+        validation_file_path = os.path.join(dataset_home, dataset_dictionary[
+            'VALIDATION_FILE'])
+        data['validation'] = validation_file_path
+
     data['license_agreement'] = license_agreement
 
     # MODELS
-    if (with_models is True):
-        if (not download_if_missing) and (not os.path.exists(models_home)):
-            raise IOError('dataset not found')
+    if with_models == True:
+        models_already_downloaded = False
+        if os.path.exists(models_home):
+            models_already_downloaded = True
 
-        if not os.path.exists(models_home):
-            os.makedirs(dataset_home)
+        if not models_already_downloaded:
+            os.makedirs(models_home)
 
-        models_url = dataset_dictionary['MODELS_URL']
-        print "Downloading letor models from %s", models_url
-        opener = urlopen(models_url)
-        with open(archive_path, 'wb') as f:
-            f.write(opener.read())
+            models_url = dataset_dictionary['MODELS_URL']
+            print "Downloading letor models from %s" % models_url
+            opener = urlopen(models_url)
+            with open(models_archive_name, 'wb') as f:
+                f.write(opener.read())
 
-        print "Decompressing %s", models_archive_path
-        tarfile.open(models_archive_path, "r:gz").extractall(path=models_home)
-        os.remove(models_archive_path)
+            print "Decompressing %s" % models_archive_name
+            tarfile.open(models_archive_name, "r:gz").extractall(
+                path=models_home)
+            os.remove(models_archive_name)
 
-        available_models = glob.glob(models_home)
-        data['models'] = available_models
+        # filling data structure to return
+        matches = []
+        for root, dirnames, filenames in os.walk(models_home):
+            for filename in fnmatch.filter(filenames, '*.xml'):
+                matches.append([root, filename])
+        data['models'] = matches
 
     return data
 
-def load_dataset_and_models(dataset_name, download_if_missing=True, with_models=True):
+
+def load_dataset_and_models(dataset_name, download_if_missing=True,
+                            force_download=False, with_models=True):
     """
-    The method allow to download a given dataset (and available models) by providing its name.
-    Datasets and models are available here: http://rankeval.isti.cnr.it/rankeval-datasets/dataset_dictionary.json
+    The method allow to download a given dataset (and available models)
+    by providing its name.
+
+    Datasets and models are available at the following link:
+        http://rankeval.isti.cnr.it/rankeval-datasets/dataset_dictionary.json
 
     Parameters
     ----------
@@ -154,6 +172,8 @@ def load_dataset_and_models(dataset_name, download_if_missing=True, with_models=
     download_if_missing : optional, True by default
         If False, raise an IOError if the data is not locally available
         instead of trying to download the data from the source site.
+    force_download : optional, False by default
+        If True, download data even if it is on disk.
     with_models : optional, True by default
         When True, the method downloads the models generated with different
         tools (QuickRank, LightGBM, XGBoost, etc.) to ease the comparison.
@@ -164,32 +184,34 @@ def load_dataset_and_models(dataset_name, download_if_missing=True, with_models=
         return None
 
     data_home = __get_data_home__()
-
-    if (with_models is True):
-        data = __fetch_dataset_and_models__(dataset_dictionary, data_home, subset='train')
-    else:
-        data = __fetch_dataset_and_models__(dataset_dictionary, data_home, subset='train', with_models=False)
+    data = __fetch_dataset_and_models__(dataset_dictionary, data_home,
+                                        download_if_missing,
+                                        force_download,
+                                        with_models)
 
     dataset_name = dataset_dictionary['DATASET_NAME']
     dataset_format = dataset_dictionary['DATASET_FORMAT']
 
     container = DatasetContainer()
 
-    if (data.get('train') is not None):
-        train_dataset = Dataset.load(data['train'], name=dataset_name, format=dataset_format)
+    if data.get('train') is not None:
+        train_dataset = Dataset.load(data['train'], name=dataset_name,
+                                     format=dataset_format)
         container.train_dataset = train_dataset
 
-    if (data.get('test') is not None):
-        test_dataset = Dataset.load(data['test'], name=dataset_name, format=dataset_format)
+    if data.get('test') is not None:
+        test_dataset = Dataset.load(data['test'], name=dataset_name,
+                                    format=dataset_format)
         container.test_dataset = test_dataset
 
-    if (dataset_dictionary.get('VALIDATION_FILE') is not None):
-        validation_dataset = Dataset.load(data['validation'], name=dataset_name, format=dataset_format)
+    if data.get('validation') is not None:
+        validation_dataset = Dataset.load(data['validation'], name=dataset_name,
+                                          format=dataset_format)
         container.validation_dataset = validation_dataset
 
     container.license_agreement = data['license_agreement']
 
-    if (with_models is True):
+    if with_models:
         container.models = data['models']
 
     return container

@@ -32,3 +32,4 @@ doc/src/conf.py
 # auto compiled files
 rankeval/scoring/_efficient_scoring.c
 rankeval/analysis/_efficient_topological.c
+rankeval/analysis/_efficient_feature.cpp
