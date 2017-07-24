@@ -25,11 +25,11 @@ class NDCG(Metric):
     no_relevant_results: float
         Float indicating how to treat the cases where then are no relevant results (e.g. 0.5)
     implementation: string
-        Indicates whether to consider the flat or the exponential DCG formula (e.g.  {"flat", "exp"})
+        Indicates whether to consider the flat or the exponential DCG formula: "flat" or "exp" (default).
     """
 
     def __init__(self, name='NDCG', cutoff=None, no_relevant_results=0.0,
-                 ties=True, implementation="flat"):
+                 implementation="exp"):
         """
         This is the constructor of NDCG, an object of type Metric, with the
         name NDCG.
