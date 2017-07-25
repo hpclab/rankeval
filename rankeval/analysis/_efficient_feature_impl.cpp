@@ -167,6 +167,8 @@ void c_feature_importance_tree(
     }
 
     #pragma omp parallel for
-    for (unsigned int instance = 0; instance < n_instances; ++instance)
-        y_pred[instance] += y_pred_tree[instance] * trees_weight[tree_id];
+    for (unsigned int instance = 0; instance < n_instances; ++instance) {
+        y_pred_tree[instance] *= trees_weight[tree_id];
+        y_pred[instance] += y_pred_tree[instance];
+    }
 }
