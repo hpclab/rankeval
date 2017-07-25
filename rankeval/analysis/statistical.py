@@ -52,13 +52,13 @@ def statistical_significance(datasets, model_a, model_b, metrics, n_perm=100000)
 
     data = np.zeros(shape=(len(datasets), len(metrics), 2), dtype=np.float32)
     for idx_dataset, dataset in enumerate(datasets):
-        scorer_a = model_a.score(dataset, detailed=False)
-        scorer_b = model_b.score(dataset, detailed=False)
+        y_pred_a = model_a.score(dataset, detailed=False)
+        y_pred_b = model_b.score(dataset, detailed=False)
         for idx_metric, metric in enumerate(metrics):
-            progress_bar.value+=1
+            progress_bar.value += 1
 
-            metrics_a = metric.eval(dataset, scorer_a.y_pred)[1]
-            metrics_b = metric.eval(dataset, scorer_b.y_pred)[1]
+            metrics_a = metric.eval(dataset, y_pred_a)[1]
+            metrics_b = metric.eval(dataset, y_pred_b)[1]
 
             p1, p2 = _randomization(metrics_a, metrics_b, n_perm=n_perm)
 

@@ -74,11 +74,11 @@ class ProxyLightGBMTestCase(unittest.TestCase):
                              "Leaf node not detected as a leaf")
 
     def test_prediction(self):
-        scorer = self.model.score(self.dataset)
-        assert_array_almost_equal(scorer.y_pred[:5],
+        y_pred = self.model.score(self.dataset)
+        assert_array_almost_equal(y_pred[:5],
                                   [-0.00474655, -0.00474655, -0.00474655,
                                    -0.00474655, -0.00474655])
-        assert_array_almost_equal(scorer.y_pred[-5:],
+        assert_array_almost_equal(y_pred[-5:],
                                   [0.01775758, -0.00474655, -0.00474655,
                                    -0.00474655, -0.00474655])
 

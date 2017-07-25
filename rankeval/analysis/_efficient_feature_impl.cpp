@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <vector>
+#include <iostream>
 
 void c_feature_importance(
         const float* X,
@@ -121,16 +122,16 @@ void c_feature_importance_tree(
 
         // we need to normalize the mean y_targets (left and right)
         if (left_docs > 0)
-            y_target_mean_left *= trees_weight[tree_id] / left_docs;
+            y_target_mean_left /= left_docs;
         if (right_docs > 0)
-            y_target_mean_right *= trees_weight[tree_id] / right_docs;
+            y_target_mean_right /= right_docs;
 
         // compute split gain
-        double delta_mse = 0;
+        float delta_mse = 0;
         #pragma omp parallel for reduction( + : delta_mse )
         for (unsigned int i = node.start_id; i <= node.end_id; ++i) {
             unsigned int instance = split_instance[i];
-            double pre_split_mse =
+            float pre_split_mse =
                 pow(y_target[instance] - y_pred_tree[instance], 2);
 
             if (i <= end_id)
@@ -138,15 +139,14 @@ void c_feature_importance_tree(
             else
                 y_pred_tree[instance] = y_target_mean_right;
 
-            double post_split_mse =
+            float post_split_mse =
                 pow(y_target[instance] - y_pred_tree[instance], 2);
 
             delta_mse += pre_split_mse - post_split_mse;
         }
 
         // update feature importance
-        if (delta_mse > 0)
-            feature_imp[feature_id] += delta_mse / n_instances;
+        feature_imp[feature_id] += delta_mse / n_instances;
 
         // if children are not leaves, add in the queue of the nodes to visit
         if (!is_leaf_node(trees_left_child[node_id],
@@ -168,5 +168,5 @@ void c_feature_importance_tree(
 
     #pragma omp parallel for
     for (unsigned int instance = 0; instance < n_instances; ++instance)
-        y_pred[instance] += y_pred_tree[instance];
+        y_pred[instance] += y_pred_tree[instance] * trees_weight[tree_id];
 }

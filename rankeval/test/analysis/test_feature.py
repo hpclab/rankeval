@@ -9,6 +9,7 @@ from numpy.testing import assert_array_almost_equal, assert_allclose, \
 from rankeval.analysis.feature import feature_importance, \
     _feature_importance_tree
 from rankeval.dataset import Dataset
+from rankeval.metrics import MSE
 from rankeval.model import RTEnsemble
 from ..base import data_dir
 
@@ -34,12 +35,14 @@ class FeatureImportanceTestCase(unittest.TestCase):
     def test_feature_importance(self):
         feature_imp, feature_cnt = feature_importance(self.model, self.dataset)
 
-        assert_allclose(feature_imp[[7, 105, 107, 114]],
+        features = [7, 105, 107, 114]
+        assert_allclose(feature_imp[features],
                         [0.0405271754093, 0.0215954124466,
                          0.0478155618964, 0.018661751695],
                         atol=1e-6)
 
-        assert_array_equal(feature_cnt[[7, 105, 107, 114]], [1, 1, 1, 1])
+        assert_array_equal(feature_cnt[features],
+                           [1, 1, 1, 1])
         assert(feature_cnt.sum(), 4)
 
     def test_scoring_feature_importance(self):
@@ -53,23 +56,25 @@ class FeatureImportanceTestCase(unittest.TestCase):
         # initialize features count
         feature_count = np.zeros(self.dataset.n_features, dtype=np.uint16)
 
-        scorer = self.model.score(self.dataset, detailed=True)
+        y_pred_m, partial_y_pred = self.model.score(self.dataset, detailed=True)
+
+        metric = MSE()
 
         for tree_id in np.arange(self.model.n_trees):
             y_pred_tree = _feature_importance_tree(self.model, self.dataset,
-                                                   tree_id, y_pred, feature_imp,
-                                                   feature_count)
-            y_pred_tree *= self.model.trees_weight[tree_id]
+                                                   tree_id, y_pred, metric,
+                                                   feature_imp, feature_count)
+            # y_pred_tree *= self.model.trees_weight[tree_id]
 
             # Check the partial scores of each tree are compatible with
             # traditional scoring
             assert_allclose(y_pred_tree,
-                            scorer.partial_y_pred[:, tree_id],
+                            partial_y_pred[:, tree_id],
                             atol=1e-6)
 
         # Check the usual scoring and the scoring performed by analyzing also
         # the feature importance compute the same predictions
-        assert_array_almost_equal(scorer.y_pred, y_pred)
+        assert_array_almost_equal(y_pred, y_pred_m)
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.DEBUG)

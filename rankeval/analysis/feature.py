@@ -53,11 +53,11 @@ def feature_importance(model, dataset, metric=None):
     if metric is None:
         metric = MSE()
 
-    if isinstance(metric, RMSE) or isinstance(metric, MSE):
-        feature_imp = eff_feature_importance(model, dataset)
-        if isinstance(metric, RMSE):
-            feature_imp[0] = np.sqrt(feature_imp[0])
-        return feature_imp
+    # if isinstance(metric, RMSE) or isinstance(metric, MSE):
+    #     feature_imp = eff_feature_importance(model, dataset)
+    #     if isinstance(metric, RMSE):
+    #         feature_imp[0] = np.sqrt(feature_imp[0])
+    #     return feature_imp
 
     # initialize features importance
     feature_imp = np.zeros(dataset.n_features, dtype=np.float32)
@@ -108,12 +108,12 @@ def _feature_importance_tree(model, dataset, tree_id, y_pred, metric,
     y_pred_tree : numpy.array
         A vector of delta instance scores relative to the current tree.
     """
-    if isinstance(metric, RMSE) or isinstance(metric, MSE):
-        y_pred_tree = eff_feature_importance_tree(
-            model, dataset, tree_id, y_pred, feature_imp, feature_count)
-        if isinstance(metric, RMSE):
-            map(np.math.sqrt, feature_imp)
-        return y_pred_tree
+    # if isinstance(metric, RMSE) or isinstance(metric, MSE):
+    #     y_pred_tree = eff_feature_importance_tree(
+    #         model, dataset, tree_id, y_pred, feature_imp, feature_count)
+    #     if isinstance(metric, RMSE):
+    #         map(np.math.sqrt, feature_imp)
+    #     return y_pred_tree
 
     # The residual scores to fit
     y_target = dataset.y - y_pred
@@ -153,20 +153,19 @@ def _feature_importance_tree(model, dataset, tree_id, y_pred, metric,
             left_docs = np.where(dataset.X[:, feature_id] <= threshold)[0]
             right_docs = np.where(dataset.X[:, feature_id] > threshold)[0]
 
-        # before updating leaves
-        pre_slit_metric, _ = metric.eval(dataset, y_pred_tree_depth[depth])
-        #     ((y_target[doc_list] - y_pred_tree[doc_list]) ** 2.0).sum()
-
         # copy parent predictions inside y_pred_mod
         y_pred_mod[:] = y_pred_tree_depth[depth]
 
+        # before updating leaves
+        # dataset_y = y_target + y_pred
+        pre_slit_metric, _ = metric.eval(dataset, y_pred_mod + y_pred)
+        # ((y_target[doc_list] - y_pred_mod[doc_list]) ** 2.0).sum()
+
         # update y_pred including the weight of the current tree
         if left_docs.size > 0:
-            y_pred_mod[left_docs] = \
-                y_target[left_docs].mean() * model.trees_weight[tree_id]
+            y_pred_mod[left_docs] = y_target[left_docs].mean()
         if right_docs.size > 0:
-            y_pred_mod[right_docs] = \
-                y_target[right_docs].mean() * model.trees_weight[tree_id]
+            y_pred_mod[right_docs] = y_target[right_docs].mean()
 
         # update the y_pred of the next level
         if depth + 1 > len(y_pred_tree_depth) - 1:
@@ -174,7 +173,7 @@ def _feature_importance_tree(model, dataset, tree_id, y_pred, metric,
         y_pred_tree_depth[depth + 1][doc_list] = y_pred_mod[doc_list]
 
         # after updating leaves
-        post_split_metric, _ = metric.eval(dataset, y_pred_mod)
+        post_split_metric, _ = metric.eval(dataset, y_pred_mod + y_pred)
 
         # compute the new metric score
         delta_metric = pre_slit_metric - post_split_metric
@@ -187,6 +186,9 @@ def _feature_importance_tree(model, dataset, tree_id, y_pred, metric,
             deq.append((model.trees_left_child[node_id], depth+1, left_docs))
         if not model.is_leaf_node(model.trees_right_child[node_id]):
             deq.append((model.trees_right_child[node_id], depth+1, right_docs))
+
+    # update the leaves output including the tree weight
+    y_pred_tree_depth[-1] *= model.trees_weight[tree_id]
 
     # update y_pred with the predictions made by the last level of the tree
     y_pred += y_pred_tree_depth[-1]

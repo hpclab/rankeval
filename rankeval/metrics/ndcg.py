@@ -123,10 +123,13 @@ class NDCG(Metric):
             Represents the DCG score for one query.
         """
         dcg_score = self.dcg.eval_per_query(y, y_pred)
-        idcg_score = \
-            self._cache_idcg_score[self._current_dataset][self._current_qid]
 
-        self._current_qid += 1
+        if self._current_qid is not None:
+            idcg_score = \
+                self._cache_idcg_score[self._current_dataset][self._current_qid]
+            self._current_qid += 1
+        else:
+            idcg_score = self.dcg.eval_per_query(y, y)
 
         if idcg_score != 0:
             ndcg = dcg_score / idcg_score

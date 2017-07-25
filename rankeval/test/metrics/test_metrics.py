@@ -9,9 +9,6 @@ from rankeval.dataset import Dataset
 from rankeval.metrics import MAP, Precision, Recall, NDCG, DCG, RBP, MRR, ERR
 from rankeval.test.base import data_dir
 
-from rankeval.model import RTEnsemble, ProxyQuickRank
-from rankeval.scoring import Scorer
-
 model_file = os.path.join(data_dir, "quickrank.model.xml")
 data_file = os.path.join(data_dir, "msn1.fold1.test.5k.txt")
 
@@ -20,10 +17,6 @@ class MetricsTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-
-        # cls.model = RTEnsemble(model_file, format="QuickRank")
-        # cls.dataset = Dataset.load(os.path.join(data_file), format="svmlight")
-        # cls.scorer = Scorer(cls.model, cls.dataset)
 
         # setup document scores and predicted scored
         cls.y_pred_query1 = np.array([2.3, 0.0, 0.1, 5.5, 1.0])
@@ -191,7 +184,7 @@ class MetricsTestCase(unittest.TestCase):
     def test_NDCG_eval_per_query(self):
         p = NDCG()
         result = p.eval_per_query(self.y_query1, self.y_pred_query1)
-        assert_almost_equal(result, 0.718, decimal=3)
+        assert_almost_equal(result, 0.596, decimal=3)
 
     def test_NDCG_eval(self):
         p = NDCG()

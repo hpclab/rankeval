@@ -225,9 +225,11 @@ class RTEnsemble(object):
 
         Returns
         -------
-        scorer : Scorer
-            The scorer object resulting from scoring the model on the given
-            dataset
+        y_pred : numpy 1d array (n_instances)
+            The predictions made by scoring the model on the given dataset
+        partial_y_pred : numpy 2d array (n_instances x n_trees)
+            The predictions made by scoring the model on the given dataset, on a
+            tree basis (i.e., tree by tree and instance by instance)
         """
 
         # check that the features used by the model are "compatible" with the
@@ -253,10 +255,12 @@ class RTEnsemble(object):
                 scorer.y_pred += self.base_score
                 if detailed:
                     scorer.partial_y_pred[:, :1] += self.base_score
-        else:
-            scorer = self._cache_scorer[dataset]
 
-        return scorer
+        scorer = self._cache_scorer[dataset]
+        if detailed:
+            return scorer.y_pred, scorer.partial_y_pred
+        else:
+            return scorer.y_pred
 
     def clear_cache(self):
         """
@@ -284,7 +288,8 @@ class RTEnsemble(object):
             number of trees chosen
         """
         new_model = copy.deepcopy(self)
-        new_model._prune_model(n_trees=n_trees)
+        if n_trees is not None:
+            new_model._prune_model(n_trees=n_trees)
         return new_model
 
     def _prune_model(self, n_trees):
