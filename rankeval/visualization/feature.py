@@ -100,7 +100,7 @@ def plot_feature_importance(feature_importance, feature_count, max_features=10,
 
     ax1.set_xlim(-bar_width/2 - bar_width, max_features - 1 + bar_width*5/2)
 
-    align_y_axis(ax1, ax2, 0.05, 100)
+    align_y_axis(ax1, ax2, 0.001, 100, num_ticks=6)
 
     ax1.set_ylabel("Importance Gain")
     ax2.set_ylabel("Usage Count")
