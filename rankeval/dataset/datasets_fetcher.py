@@ -194,14 +194,14 @@ def load_dataset_and_models(dataset_name, download_if_missing=True,
 
     container = DatasetContainer()
 
+    print "Loading files. This may takes few minutes..."
+
     if data.get('train') is not None:
-        train_dataset = Dataset.load(data['train'], name=dataset_name,
-                                     format=dataset_format)
+        train_dataset = Dataset.load(data['train'], name=dataset_name, format=dataset_format)
         container.train_dataset = train_dataset
 
     if data.get('test') is not None:
-        test_dataset = Dataset.load(data['test'], name=dataset_name,
-                                    format=dataset_format)
+        test_dataset = Dataset.load(data['test'], name=dataset_name, format=dataset_format)
         container.test_dataset = test_dataset
 
     if data.get('validation') is not None:
@@ -213,5 +213,7 @@ def load_dataset_and_models(dataset_name, download_if_missing=True,
 
     if with_models:
         container.models = data['models']
+
+    print "dataset/models loading DONE!"
 
     return container
