@@ -32,7 +32,7 @@ from rt_ensemble import RTEnsemble
 
 tree_reg = re.compile("^booster\[(\d+)\]")
 node_reg = re.compile("(\d+):\[f(\d+)<(.*)\]")
-leaf_reg = re.compile("(\d+):leaf=(.+)$")
+leaf_reg = re.compile("(\d+):leaf=(.+?)(,.*)?$")
 
 
 class ProxyXGBoost(object):
