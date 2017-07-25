@@ -16,8 +16,8 @@ except NameError:
     xrange = range
 
 
-def plot_feature_importance(feature_importance, feature_count,
-                            max_features=10, sort_by="gain"):
+def plot_feature_importance(feature_importance, feature_count, max_features=10,
+                            sort_by="gain", feature_names=None):
     """
     Shows the most important features as a bar plot.
 
@@ -35,6 +35,9 @@ def plot_feature_importance(feature_importance, feature_count,
         method selects the top features by importance, 'count' selects the top
         features by usage (i.e., number of times it has been used by a split
         node).
+    feature_names : list of string
+        The name of the features to use for plotting. If None, their index is
+        used in place of the name (starting from 1).
 
     Returns
     -------
@@ -68,40 +71,45 @@ def plot_feature_importance(feature_importance, feature_count,
     index = np.arange(max_features)
     bar_width = 0.35
 
-    opacity = 0.6
-    error_config = {'ecolor': '0.3'}
+    opacity = 0.7
 
     bar1 = ax1.bar(index, top_importances, bar_width,
                    alpha=opacity,
                    color='r',
-                   error_kw=error_config,
                    align='center',
-                   zorder=5)
+                   zorder=5,
+                   edgecolor='black')
     bar2 = ax2.bar(index + bar_width, top_counts, bar_width,
                    alpha=opacity,
                    color='b',
-                   error_kw=error_config,
                    align='center',
-                   zorder=5)
+                   zorder=5,
+                   edgecolor='black')
 
     ax1.set_title('Top-k Features by %s' % title_by)
 
     ax1.set_xlabel("Features")
-    ax1.set_xticks(index + bar_width / 2)
-    ax1.set_xticklabels(top_features + 1)
+    if feature_names is not None:
+        feature_names_f = np.array(["%16s" % f for f in feature_names])
+        ax1.set_xticks(index + bar_width / 2 + 0.15)
+        ax1.set_xticklabels(feature_names_f[idx_sorted], rotation=45,
+                            ha="right")
+    else:
+        ax1.set_xticks(index + bar_width / 2)
+        ax1.set_xticklabels(top_features + 1)
 
     ax1.set_xlim(-bar_width/2 - bar_width, max_features - 1 + bar_width*5/2)
 
     align_y_axis(ax1, ax2, 0.05, 100)
 
     ax1.set_ylabel("Importance Gain")
-    ax2.set_ylabel("Usage Count ")
+    ax2.set_ylabel("Usage Count")
 
     ax1.grid(True, ls='--', zorder=0)
     ax2.grid(False)
 
-    legend = ax1.legend((bar1, bar2), ("Importance", "Count"),
-                        loc='best', shadow=True, frameon=True, fancybox=True)
+    ax1.legend((bar1, bar2), ("Importance", "Count"),
+               loc='best', shadow=True, frameon=True, fancybox=True)
 
     return fig
 
