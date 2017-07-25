@@ -5,13 +5,12 @@ This package provides support for topological analysis visualizations.
 from __future__ import print_function
 
 import matplotlib.pyplot as plt
-import matplotlib.transforms as mtrans
 from matplotlib.colors import LinearSegmentedColormap
 
 from matplotlib.transforms import Affine2D
 import mpl_toolkits.axisartist.floating_axes as floating_axes
 from matplotlib.projections import PolarAxes
-from mpl_toolkits.axisartist.grid_finder import (FixedLocator, MaxNLocator, DictFormatter)
+from mpl_toolkits.axisartist.grid_finder import (FixedLocator, DictFormatter)
 
 import numpy as np
 

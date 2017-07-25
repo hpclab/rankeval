@@ -53,11 +53,11 @@ def feature_importance(model, dataset, metric=None):
     if metric is None:
         metric = MSE()
 
-    # if isinstance(metric, RMSE) or isinstance(metric, MSE):
-    #     feature_imp = eff_feature_importance(model, dataset)
-    #     if isinstance(metric, RMSE):
-    #         feature_imp[0] = np.sqrt(feature_imp[0])
-    #     return feature_imp
+    if isinstance(metric, RMSE) or isinstance(metric, MSE):
+        feature_imp = eff_feature_importance(model, dataset)
+        if isinstance(metric, RMSE):
+            feature_imp[0] = np.sqrt(feature_imp[0])
+        return feature_imp
 
     # initialize features importance
     feature_imp = np.zeros(dataset.n_features, dtype=np.float32)
@@ -108,12 +108,12 @@ def _feature_importance_tree(model, dataset, tree_id, y_pred, metric,
     y_pred_tree : numpy.array
         A vector of delta instance scores relative to the current tree.
     """
-    # if isinstance(metric, RMSE) or isinstance(metric, MSE):
-    #     y_pred_tree = eff_feature_importance_tree(
-    #         model, dataset, tree_id, y_pred, feature_imp, feature_count)
-    #     if isinstance(metric, RMSE):
-    #         map(np.math.sqrt, feature_imp)
-    #     return y_pred_tree
+    if isinstance(metric, RMSE) or isinstance(metric, MSE):
+        y_pred_tree = eff_feature_importance_tree(
+            model, dataset, tree_id, y_pred, feature_imp, feature_count)
+        if isinstance(metric, RMSE):
+            map(np.math.sqrt, feature_imp)
+        return y_pred_tree
 
     # The residual scores to fit
     y_target = dataset.y - y_pred
