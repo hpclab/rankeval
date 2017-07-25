@@ -23,12 +23,14 @@ from ..metrics import Metric
 
 def model_performance(datasets, models, metrics):
     """
-    This method implements the model performance analysis (part of the effectiveness analysis category).
+    This method implements the model performance analysis (part of the
+    effectiveness analysis category).
 
     Parameters
     ----------
     datasets : list of Dataset
-        The datasets to use for analyzing the behaviour of the model using the given metrics and models
+        The datasets to use for analyzing the behaviour of the model using
+        the given metrics and models
     models : list of RTEnsemble
         The models to analyze
     metrics : list of Metric
@@ -38,14 +40,17 @@ def model_performance(datasets, models, metrics):
     Returns
     -------
     metric_scores : xarray.DataArray
-        A DataArray containing the metric scores of the models using the given metrics on the given datasets.
+        A DataArray containing the metric scores of the models using
+        the given metrics on the given datasets.
     """
-    data = np.zeros(shape=(len(datasets), len(models), len(metrics)), dtype=np.float32)
+    data = np.zeros(shape=(len(datasets), len(models), len(metrics)),
+                    dtype=np.float32)
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            scorer = model.score(dataset, detailed=False)
+            y_pred = model.score(dataset, detailed=False)
             for idx_metric, metric in enumerate(metrics):
-                data[idx_dataset][idx_model][idx_metric] = metric.eval(dataset, scorer.y_pred)[0]
+                data[idx_dataset][idx_model][idx_metric] = metric.eval(dataset,
+                                                                       y_pred)[0]
 
     performance = xr.DataArray(data,
                                name='Model Performance',
@@ -57,27 +62,33 @@ def model_performance(datasets, models, metrics):
 
 def tree_wise_performance(datasets, models, metrics, step=10):
     """
-    This method implements the analysis of the model on a tree-wise basis (part of the effectiveness analysis category).
+    This method implements the analysis of the model on a tree-wise basis
+    (part of the effectiveness analysis category).
 
     Parameters
     ----------
     datasets : list of Dataset
-        The datasets to use for analyzing the behaviour of the model using the given metrics and models
+        The datasets to use for analyzing the behaviour of the model using
+        the given metrics and models
     models : list of RTEnsemble
         The models to analyze
     metrics : list of Metric
         The metrics to use for the analysis
     step : int
-        Step-size identifying evenly spaced number of trees for evaluating the top=k model performance.
-        (e.g., step=100 means the method will evaluate the model performance at 100, 200, 300, etc trees).
+        Step-size identifying evenly spaced number of trees for evaluating
+        the top=k model performance.
+        (e.g., step=100 means the method will evaluate the model performance
+        at 100, 200, 300, etc trees).
 
 
     Returns
     -------
     metric_scores : xarray.DataArray
-        A DataArray containing the metric scores of each model using the given metrics on the given datasets.
-        The metric scores are cumulatively reported tree by tree, i.e., top 10 trees, top 20, etc., with a step-size
-        between the number of trees as highlighted by the step parameter.
+        A DataArray containing the metric scores of each model using the given
+        metrics on the given datasets.
+        The metric scores are cumulatively reported tree by tree, i.e., top 10
+        trees, top 20, etc., with a step-size between the number of trees
+        as highlighted by the step parameter.
 
     """
     def get_tree_steps(model_trees):
@@ -94,23 +105,25 @@ def tree_wise_performance(datasets, models, metrics, step=10):
 
     tree_steps = get_tree_steps(max_num_trees)
 
-    data = np.full(shape=(len(datasets), len(models), len(tree_steps), len(metrics)),
-                   fill_value=np.nan, dtype=np.float32)
+    data = np.full(shape=(len(datasets), len(models), len(tree_steps),
+                          len(metrics)), fill_value=np.nan, dtype=np.float32)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            scorer = model.score(dataset, detailed=True)
+            y_pred, partial_y_pred = model.score(dataset, detailed=True)
 
-            # the document scores are accumulated along for the various top-k (in order to avoid useless re-scoring)
+            # the document scores are accumulated along for the various top-k
+            # (in order to avoid useless re-scoring)
             y_pred = np.zeros(dataset.n_instances)
 
             for idx_top_k, top_k in enumerate(get_tree_steps(model.n_trees)):
 
-                # compute the document scores using only top-k trees of the model on the given dataset
+                # compute the document scores using only top-k trees of
+                # the model on the given dataset
                 idx_tree_start = idx_top_k * step
                 idx_tree_stop = top_k + 1
 
-                y_pred += scorer.partial_y_pred[:, idx_tree_start:idx_tree_stop].sum(axis=1)
+                y_pred += partial_y_pred[:, idx_tree_start:idx_tree_stop].sum(axis=1)
 
                 # compute the metric score using the predicted document scores
                 for idx_metric, metric in enumerate(metrics):
@@ -126,12 +139,14 @@ def tree_wise_performance(datasets, models, metrics, step=10):
 
 def tree_wise_average_contribution(datasets, models):
     """
-    This method provides the average contribution given by each tree of each model to the scoring of the datasets.
+    This method provides the average contribution given by each tree of each
+    model to the scoring of the datasets.
 
     Parameters
     ----------
     datasets : list of Dataset
-        The datasets to use for analyzing the behaviour of the model using the given metrics and models
+        The datasets to use for analyzing the behaviour of the model using
+        the given metrics and models
     models : list of RTEnsemble
         The models to analyze
 
@@ -148,15 +163,17 @@ def tree_wise_average_contribution(datasets, models):
         if model.n_trees > max_num_trees:
             max_num_trees = model.n_trees
 
-    data = np.full(shape=(len(datasets), len(models), max_num_trees), fill_value=np.nan, dtype=np.float32)
+    data = np.full(shape=(len(datasets), len(models), max_num_trees),
+                   fill_value=np.nan, dtype=np.float32)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            scorer = model.score(dataset, detailed=True)
+            y_pred, partial_y_pred = model.score(dataset, detailed=True)
 
-            # the document scores are accumulated along for the various top-k (in order to avoid useless re-scoring)
+            # the document scores are accumulated along for the various top-k
+            # (in order to avoid useless re-scoring)
             y_contributes = np.full(max_num_trees, fill_value=np.nan, dtype=np.float32)
-            y_contributes[:model.n_trees] = np.average(np.abs(scorer.partial_y_pred), axis=0)
+            y_contributes[:model.n_trees] = np.average(np.abs(partial_y_pred), axis=0)
 
             data[idx_dataset][idx_model] = y_contributes
 
@@ -169,43 +186,50 @@ def tree_wise_average_contribution(datasets, models):
 
 def query_wise_performance(datasets, models, metrics, bins=None, start=None, end=None):
     """
-    This method implements the analysis of the model on a query-wise basis, i.e., it compute the cumulative distribution
-    of a given performance metric. For example, the fraction of queries with a NDCG score smaller that any given
-    threshold, over the set of queries described in the dataset.
+    This method implements the analysis of the model on a query-wise basis,
+    i.e., it compute the cumulative distribution of a given performance metric.
+    For example, the fraction of queries with a NDCG score smaller that any
+    given threshold, over the set of queries described in the dataset.
 
     Parameters
     ----------
     datasets : list of Dataset
-        The datasets to use for analyzing the behaviour of the model using the given metrics and models
+        The datasets to use for analyzing the behaviour of the model using
+        the given metrics and models
     models : list of RTEnsemble
         The models to analyze
     metrics : list of Metric
         The metrics to use for the analysis
     bins : int or None
-        Number of equi-spaced bins for which to computer the cumulative distribution of the given metric.
-        if bin is None, it will use the maximum number of queries across all the datasets as bins value.
+        Number of equi-spaced bins for which to computer the cumulative
+        distribution of the given metric. If bin is None, it will use
+        the maximum number of queries across all the datasets as bins value.
     start : int or None
-        The start point of the range for which we will compute the cumulative distribution of the given metric.
-        if start is None, it will use the minimum metric score as starting point for the range.
+        The start point of the range for which we will compute the cumulative
+        distribution of the given metric. If start is None, it will use
+        the minimum metric score as starting point for the range.
     end : int or None
-        The end point of the range for which we will compute the cumulative distribution of the given metric
-        if end is None, it will use the maximum metric score as starting point for the range.
+        The end point of the range for which we will compute the cumulative
+        distribution of the given metric. If end is None, it will use
+        the maximum metric score as starting point for the range.
 
     Returns
     -------
     metric_scores : xarray.DataArray
-        A DataArray containing the metric scores of each model using the given metrics on the given datasets.
-        The metric scores are cumulatively reported tree by tree, i.e., top 10 trees, top 20, etc., with a step-size
+        A DataArray containing the metric scores of each model using the given
+        metrics on the given datasets. The metric scores are cumulatively
+        reported tree by tree, i.e., top 10 trees, top 20, etc., with a step-size
         between the number of trees as highlighted by the step parameter.
     """
-    glob_metric_scores = np.full(shape=(len(datasets), len(models), len(metrics)), fill_value=np.nan, dtype=object)
+    glob_metric_scores = np.full(shape=(len(datasets), len(models), len(metrics)),
+                                 fill_value=np.nan, dtype=object)
 
     min_metric_score = max_metric_score = np.nan
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            scorer = model.score(dataset, detailed=False)
+            y_pred = model.score(dataset, detailed=False)
             for idx_metric, metric in enumerate(metrics):
-                _, metric_scores = metric.eval(dataset, scorer.y_pred)
+                _, metric_scores = metric.eval(dataset, y_pred)
                 glob_metric_scores[idx_dataset][idx_model][idx_metric] = metric_scores
                 min_metric_score = np.nanmin([min_metric_score, metric_scores.min()])
                 max_metric_score = np.nanmax([max_metric_score, metric_scores.max()])
@@ -219,7 +243,8 @@ def query_wise_performance(datasets, models, metrics, bins=None, start=None, end
 
     bin_values = np.linspace(start=start, stop=end, num=bins+1)
 
-    data = np.full(shape=(len(datasets), len(models), len(metrics), bins), fill_value=np.nan, dtype=np.float32)
+    data = np.full(shape=(len(datasets), len(models), len(metrics), bins),
+                   fill_value=np.nan, dtype=np.float32)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
@@ -234,45 +259,52 @@ def query_wise_performance(datasets, models, metrics, bins=None, start=None, end
 
     performance = xr.DataArray(data,
                                name='Query-Wise Performance',
-                               coords=[datasets, models, metrics, bin_values[:-1] + 1.0 / bins],
+                               coords=[datasets, models, metrics,
+                                       bin_values[:-1] + 1.0 / bins],
                                dims=['dataset', 'model', 'metric', 'bin'])
     return performance
 
 
 def query_class_performance(datasets, models, metrics, query_classes):
     """
-    This method implements the analysis of the effectiveness of a given model by providing a breakdown of the 
-    performance over query class. Whenever a query classification is provided, e.g., navigational, informational,
-    transactional, number of terms composing the query, etc., it provides the model effectiveness over such classes.
-    This analysis is important especially in a production environment, as it allows to calibrate the ranking
-    infrastructure w.r.t. a specific context.
+    This method implements the analysis of the effectiveness of a given model
+    by providing a breakdown of the performance over query class. Whenever
+    a query classification is provided, e.g., navigational, informational,
+    transactional, number of terms composing the query, etc., it provides
+    the model effectiveness over such classes. This analysis is important
+    especially in a production environment, as it allows to calibrate the
+    ranking infrastructure w.r.t. a specific context.
     
     
     Parameters
     ----------
     datasets : list of Dataset
-        The datasets to use for analyzing the behaviour of the model using the given metrics and models
+        The datasets to use for analyzing the behaviour of the model using
+        the given metrics and models
     models : list of RTEnsemble
         The models to analyze
     metrics : list of Metric
         The metrics to use for the analysis
     query_classes : list of lists
-        A list containing lists of classes each one for a specific Dataset. The i-th item in the j-th list identifies
-        the class of the i-th query of the j-th Dataset.
+        A list containing lists of classes each one for a specific Dataset.
+        The i-th item in the j-th list identifies the class of the i-th query
+        of the j-th Dataset.
     
     Returns
     -------
     query_class_performance : xarray.DataArray
-        A DataArray containing the per-class metric scores of each model using the given metrics on the given datasets.
+        A DataArray containing the per-class metric scores of each model using
+        the given metrics on the given datasets.
     """
 
-    glob_metric_scores = np.full(shape=(len(datasets), len(models), len(metrics)), fill_value=np.nan, dtype=object)
+    glob_metric_scores = np.full(shape=(len(datasets), len(models), len(metrics)),
+                                 fill_value=np.nan, dtype=object)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            scorer = model.score(dataset, detailed=False)
+            y_pred = model.score(dataset, detailed=False)
             for idx_metric, metric in enumerate(metrics):
-                _, metric_scores = metric.eval(dataset, scorer.y_pred)
+                _, metric_scores = metric.eval(dataset, y_pred)
                 glob_metric_scores[idx_dataset][idx_model][idx_metric] = metric_scores
 
     # computing unique elements for each list of query class
@@ -280,7 +312,8 @@ def query_class_performance(datasets, models, metrics, query_classes):
     unique_classes = np.unique([c for d in unique_query_classes for c in d])
 
     # defining destination array now saving values of the specific metric directly
-    query_class_metric_scores = np.full(shape=(len(datasets), len(models), len(metrics), len(unique_classes)),
+    query_class_metric_scores = np.full(shape=(len(datasets), len(models),
+                                               len(metrics), len(unique_classes)),
                                         fill_value=np.nan, dtype=np.float32)
 
     # computing the average metric over the specific categorization
@@ -318,18 +351,22 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None):
     Parameters
     ----------
     datasets : list of Dataset
-        The datasets to use for analyzing the behaviour of the model using the given models
+        The datasets to use for analyzing the behaviour of the model using
+        the given models
     models : list of RTEnsemble
         The models to analyze
     bins : int or None
-        Number of equi-spaced bins for which to computer the cumulative distribution of the predicted scores.
-        if bin is None, it will use the maximum number of queries across all the datasets as bins value.
+        Number of equi-spaced bins for which to computer the cumulative
+        distribution of the predicted scores. If bin is None, it will use
+        the maximum number of queries across all the datasets as bins value.
     start : int or None
-        The start point of the range for which we will compute the cumulative distribution of the predicted scores.
-        if start is None, it will use the minimum metric score as starting point for the range.
+        The start point of the range for which we will compute the cumulative
+        distribution of the predicted scores. If start is None, it will use
+        the minimum metric score as starting point for the range.
     end : int or None
-        The end point of the range for which we will compute the cumulative distribution of the predicted scores
-        if end is None, it will use the maximum metric score as starting point for the range.
+        The end point of the range for which we will compute the cumulative
+        distribution of the predicted scores. If end is None, it will use
+        the maximum metric score as starting point for the range.
 
     Returns
     -------
@@ -338,15 +375,16 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None):
         smaller than a given score, for each model and each dataset.
     """
 
-    glob_doc_scores = np.full(shape=(len(datasets), len(models)), fill_value=np.nan, dtype=object)
+    glob_doc_scores = np.full(shape=(len(datasets), len(models)),
+                              fill_value=np.nan, dtype=object)
 
     min_doc_score = max_doc_score = np.nan
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            scorer = model.score(dataset, detailed=True)
-            glob_doc_scores[idx_dataset][idx_model] = scorer.y_pred
-            min_doc_score = np.nanmin([min_doc_score, scorer.y_pred.min()])
-            max_doc_score = np.nanmax([max_doc_score, scorer.y_pred.max()])
+            y_pred = model.score(dataset, detailed=False)
+            glob_doc_scores[idx_dataset][idx_model] = y_pred
+            min_doc_score = np.nanmin([min_doc_score, y_pred.min()])
+            max_doc_score = np.nanmax([max_doc_score, y_pred.max()])
 
     if start is None:
         start = min_doc_score
@@ -357,7 +395,8 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None):
 
     rel_labels = np.sort(np.unique([dataset.y for dataset in datasets]))
 
-    data = np.full(shape=(len(datasets), len(models), len(rel_labels), bins), fill_value=np.nan, dtype=np.float32)
+    data = np.full(shape=(len(datasets), len(models), len(rel_labels), bins),
+                   fill_value=np.nan, dtype=np.float32)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
@@ -366,17 +405,18 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None):
                 # If this graded relevance is not present in this dataset, skip it
                 if not len(indices):
                     continue
-                scorer = model.score(dataset, detailed=False)
-                y_pred = scorer.y_pred[indices]
+                y_pred = model.score(dataset, detailed=False)
+                y_pred_curr = y_pred[indices]
                 # evaluate the histogram
-                values, base = np.histogram(y_pred, bins=bin_values)
+                values, base = np.histogram(y_pred_curr, bins=bin_values)
                 # evaluate the cumulative
-                cumulative = np.cumsum(values, dtype=float) / len(y_pred)
+                cumulative = np.cumsum(values, dtype=float) / len(y_pred_curr)
                 data[idx_dataset][idx_model][idx_label] = cumulative
 
     performance = xr.DataArray(data,
                                name='Document Graded Relevance',
-                               coords=[datasets, models, rel_labels, bin_values[:-1] + 1.0 / bins],
+                               coords=[datasets, models, rel_labels,
+                                       bin_values[:-1] + 1.0 / bins],
                                dims=['dataset', 'model', 'label', 'bin'])
     return performance
 
@@ -393,11 +433,13 @@ def rank_confusion_matrix(datasets, models, skip_same_label=False):
     Parameters
     ----------
     datasets : list of Dataset
-        The datasets to use for analyzing the behaviour of the model using the given models
+        The datasets to use for analyzing the behaviour of the model using
+        the given models
     models : list of RTEnsemble
         The models to analyze
     skip_same_label : bool
-        True if the method has to skip the pair with the same labels, False otherwise
+        True if the method has to skip the pair with the same labels,
+        False otherwise
 
     Returns
     -------
@@ -408,11 +450,12 @@ def rank_confusion_matrix(datasets, models, skip_same_label=False):
 
     rel_labels = np.sort(np.unique([dataset.y for dataset in datasets])).astype(np.int32)
 
-    data = np.zeros(shape=(len(datasets), len(models), len(rel_labels), len(rel_labels)), dtype=np.int32)
+    data = np.zeros(shape=(len(datasets), len(models), len(rel_labels),
+                           len(rel_labels)), dtype=np.int32)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            scorer = model.score(dataset, detailed=True)
+            y_pred = model.score(dataset, detailed=True)
             for query_id, (start_offset, end_offset) in enumerate(dataset.query_offset_iterator()):
                 for i in np.arange(start_offset, end_offset):
                     for j in np.arange(i, end_offset):
@@ -421,7 +464,7 @@ def rank_confusion_matrix(datasets, models, skip_same_label=False):
                             continue
                         y_i = dataset.y[i].astype(np.int32)
                         y_j = dataset.y[j].astype(np.int32)
-                        if scorer.y_pred[i] < scorer.y_pred[j]:
+                        if y_pred[i] < y_pred[j]:
                             data[idx_dataset][idx_model][y_i, y_j] += 1
                         else:
                             data[idx_dataset][idx_model][y_j, y_i] += 1
