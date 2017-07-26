@@ -180,8 +180,8 @@ def __fetch_dataset_and_models__(dataset_dictionary, fold=None, data_home=None,
     return data
 
 
-def load_dataset_and_models(dataset_name, fold=None, download_if_missing=True,
-                            force_download=False, with_models=True):
+def load_dataset(dataset_name, fold=None, download_if_missing=True,
+                 force_download=False, with_models=True):
     """
     The method allow to download a given dataset (and available models)
     by providing its name.
