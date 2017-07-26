@@ -180,7 +180,7 @@ epub_exclude_files = ['search.html']
 # custom
 extensions += ['sphinx.ext.todo']
 todo_include_todos = True
-extensions += ['numpydoc']
+#extensions += ['numpydoc']
 extensions += ['sphinx.ext.autosummary']
 extensions += ['sphinx.ext.imgmath']
 numpydoc_show_class_members = False
