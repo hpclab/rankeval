@@ -27,8 +27,8 @@ doc:
 	# customize themes
 	@echo "html_theme = \"sphinx_rtd_theme\"" >> $(DOCDIR)/conf.py
 
-	@echo "import sys" >> $(DOCDIR)/conf.py
-	@echo "sys.path.append('../../')" >> $(DOCDIR)/conf.py
+	@echo "import sys,os" >> $(DOCDIR)/conf.py
+	@echo "sys.path.append( os.path.abspath('../../') )" >> $(DOCDIR)/conf.py
 
 	# compile HTML files
 	make -C $(DOCDIR) html
