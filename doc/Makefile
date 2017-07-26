@@ -32,4 +32,4 @@ doc:
 
 
 sync:
-	rsync -avz --progress --exclude .git -e ssh src/_build/html/ claudio@pomino.isti.cnr.it:/data/websites/rankeval/docs
+	rsync -avz --progress --exclude .git -e ssh src/_build/html/ pomino.isti.cnr.it:/data/websites/rankeval/docs
