@@ -101,13 +101,15 @@ def plot_feature_importance(feature_perf, max_features=10, sort_by="gain",
 
     ax1.set_xlim(-bar_width/2 - bar_width, max_features - 1 + bar_width*5/2)
 
-    align_y_axis(ax1, ax2, 0.001, 100, num_ticks=6)
+    step_y = np.ceil(top_importances.max() * 10) / 100
+    align_y_axis(ax1, ax2, step_y, 100, num_ticks=6)
 
     ax1.set_ylabel("Importance Gain")
     ax2.set_ylabel("Usage Count")
 
-    ax1.grid(True, ls='--', zorder=0)
+    ax1.grid(False)
     ax2.grid(False)
+    ax1.yaxis.grid(True, ls='--', zorder=0)
 
     ax1.legend((bar1, bar2), ("Importance", "Count"),
                loc='best', shadow=True, frameon=True, fancybox=True)
