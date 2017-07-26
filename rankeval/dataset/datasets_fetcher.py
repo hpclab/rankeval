@@ -1,3 +1,10 @@
+# Copyright (c) 2017, All Contributors (see CONTRIBUTORS file)
+# Authors: Franco Maria Nardini <francomaria.nardini@isti.cnr.it>
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 import os
 import six
 import json
@@ -46,20 +53,29 @@ def __get_data_home__(data_home=None):
     return data_home
 
 
-def __fetch_dataset_and_models__(dataset_dictionary, data_home=None,
+def __fetch_dataset_and_models__(dataset_dictionary, fold=None, data_home=None,
                                  download_if_missing=True, force_download=True,
                                  with_models=True):
     """ Fetch and download a given dataset.
 
     Parameters
     ----------
-    data_home : optional, default: None
+    dataset_dictionary : mandatory.
+        the properties of the requested dataset (name, url, repo, license, etc.)
+    fold : optional, None by default.
+        If provided, an integer identifying the specific fold to load.
+        ex. dataset_name=msn10k, fold=1 will load train/validation/test files
+        from the 'Fold1' directory. This option holds when using datasets
+        that are already k-folded.
+    data_home : optional, default: None.
         Specify a data folder for the datasets. If None,
         all data is stored in the '~/rankeval_data' subfolder.
-    download_if_missing : optional, True by default
+    download_if_missing : optional, True by default.
         If False, raise an IOError if the data is not locally available
         instead of trying to download the data from the source site.
-    with_models : optional, True by default
+    force_download : optional, False by default.
+        If True, download data even if it is on disk.
+    with_models : optional, True by default.
         When True, the method downloads the models generated with different
         tools (QuickRank, LightGBM, XGBoost, etc.) to ease the comparison.
     """
@@ -71,6 +87,9 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None,
     if not download_if_missing and not os.path.exists(data_home):
         raise IOError('dataset not found')
 
+    if (fold is not None) and (dataset_dictionary.get('COMMON_SUBFOLDER_NAME') is None):
+        raise Exception('no k-fold available for the dataset')
+
     # delete data_home if force_download is True, then re-create data_home dir
     if force_download:
         if os.path.exists(data_home):
@@ -78,13 +97,20 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None,
             os.makedirs(data_home)
 
     # preparing file names...
-    archive_name = os.path.join(dataset_home,
-                                dataset_dictionary['DATASET_ARCHIVE_NAME'])
-    models_archive_name = os.path.join(models_home, dataset_dictionary[
-        'MODELS_ARCHIVE_NAME'])
-    train_file_path = os.path.join(dataset_home,
-                                   dataset_dictionary['TRAIN_FILE'])
-    test_file_path = os.path.join(dataset_home, dataset_dictionary['TEST_FILE'])
+    archive_name = os.path.join(dataset_home, dataset_dictionary['DATASET_ARCHIVE_NAME'])
+    models_archive_name = os.path.join(models_home, dataset_dictionary['MODELS_ARCHIVE_NAME'])
+
+    if fold is None:
+        train_file_path = os.path.join(dataset_home, dataset_dictionary['TRAIN_FILE'])
+        test_file_path = os.path.join(dataset_home, dataset_dictionary['TEST_FILE'])
+        if dataset_dictionary.get('VALIDATION_FILE') is not None:
+            validation_file_path = os.path.join(dataset_home, dataset_dictionary['VALIDATION_FILE'])
+    else:
+        subfolder_fold = os.path.join(dataset_home, dataset_dictionary['COMMON_SUBFOLDER_NAME'] + str(fold))
+        train_file_path = os.path.join(subfolder_fold, dataset_dictionary['TRAIN_FILE'])
+        test_file_path = os.path.join(subfolder_fold, dataset_dictionary['TEST_FILE'])
+        if dataset_dictionary.get('VALIDATION_FILE') is not None:
+            validation_file_path = os.path.join(subfolder_fold, dataset_dictionary['VALIDATION_FILE'])
 
     # everything will be stored in a dictionary to return
     data = dict()
@@ -110,24 +136,22 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None,
 
     license_agreement = ""
     if dataset_dictionary.get('LICENSE_FILE') is not None:
-        for line in open(
-                os.path.join(dataset_home, dataset_dictionary['LICENSE_FILE']),
-                'r'):
+        for line in open(os.path.join(dataset_home, dataset_dictionary['LICENSE_FILE']), 'r'):
             license_agreement += line
+    else:
+        license_agreement = "Please, check the terms of use before using the dataset. Here the link: %s" % dataset_dictionary['BLOG_POST_URL']
 
     # filling data structure to return
     data['train'] = train_file_path
     data['test'] = test_file_path
 
-    if dataset_dictionary['VALIDATION_FILE'] is not None:
-        validation_file_path = os.path.join(dataset_home, dataset_dictionary[
-            'VALIDATION_FILE'])
+    if dataset_dictionary.get('VALIDATION_FILE') is not None:
         data['validation'] = validation_file_path
 
     data['license_agreement'] = license_agreement
 
     # MODELS
-    if with_models == True:
+    if with_models is True:
         models_already_downloaded = False
         if os.path.exists(models_home):
             models_already_downloaded = True
@@ -149,14 +173,14 @@ def __fetch_dataset_and_models__(dataset_dictionary, data_home=None,
         # filling data structure to return
         matches = []
         for root, dirnames, filenames in os.walk(models_home):
-            for filename in fnmatch.filter(filenames, '*.xml'):
+            for filename in fnmatch.filter(filenames, '*'):
                 matches.append([root, filename])
         data['models'] = matches
 
     return data
 
 
-def load_dataset_and_models(dataset_name, download_if_missing=True,
+def load_dataset_and_models(dataset_name, fold=None, download_if_missing=True,
                             force_download=False, with_models=True):
     """
     The method allow to download a given dataset (and available models)
@@ -169,22 +193,27 @@ def load_dataset_and_models(dataset_name, download_if_missing=True,
     ----------
     dataset_name:
         The name of the dataset (and models) to download.
-    download_if_missing : optional, True by default
+    fold : optional, None by default.
+        If provided, an integer identifying the specific fold to load.
+        Example: dataset_name=msn10k, fold=1, will load train/validation/test
+        files from the 'Fold1' directory. This option holds when using datasets
+        that are already k-folded.
+    download_if_missing : optional, True by default.
         If False, raise an IOError if the data is not locally available
         instead of trying to download the data from the source site.
-    force_download : optional, False by default
+    force_download : optional, False by default.
         If True, download data even if it is on disk.
-    with_models : optional, True by default
+    with_models : optional, True by default.
         When True, the method downloads the models generated with different
         tools (QuickRank, LightGBM, XGBoost, etc.) to ease the comparison.
     """
     dataset_catalogue = __dataset_catalogue__()
     dataset_dictionary = dataset_catalogue.get(dataset_name)
-    if dataset_dictionary == None:
+    if dataset_dictionary is None:
         return None
 
     data_home = __get_data_home__()
-    data = __fetch_dataset_and_models__(dataset_dictionary, data_home,
+    data = __fetch_dataset_and_models__(dataset_dictionary, fold, data_home,
                                         download_if_missing,
                                         force_download,
                                         with_models)
@@ -194,7 +223,7 @@ def load_dataset_and_models(dataset_name, download_if_missing=True,
 
     container = DatasetContainer()
 
-    print "Loading files. This may takes few minutes..."
+    print "Loading files. This may takes few minutes."
 
     if data.get('train') is not None:
         train_dataset = Dataset.load(data['train'], name=dataset_name, format=dataset_format)
@@ -214,6 +243,6 @@ def load_dataset_and_models(dataset_name, download_if_missing=True,
     if with_models:
         container.models = data['models']
 
-    print "dataset/models loading DONE!"
+    print "loading DONE!"
 
     return container

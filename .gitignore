@@ -23,6 +23,7 @@ rankeval.egg-info
 
 # ignored files
 distribute-*
+*eggs
 
 # doc dirs and auto generated files
 doc/src/_build
