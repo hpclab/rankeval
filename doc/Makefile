@@ -29,7 +29,3 @@ doc:
 
 	# compile HTML files
 	make -C $(DOCDIR) html
-
-
-sync:
-	rsync -avz --progress --exclude .git -e ssh src/_build/html/ pomino.isti.cnr.it:/data/websites/rankeval/docs
