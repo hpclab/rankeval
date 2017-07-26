@@ -17,6 +17,14 @@ rankeval\.visualization\.effectiveness module
     :undoc-members:
     :show-inheritance:
 
+rankeval\.visualization\.feature module
+---------------------------------------
+
+.. automodule:: rankeval.visualization.feature
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 rankeval\.visualization\.topological module
 -------------------------------------------
 

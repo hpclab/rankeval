@@ -138,7 +138,6 @@ def plot_tree_wise_model_performance(performance, compare="models"):
 
     elif compare == "datasets":
         for model in performance.coords['model'].values:
-            print model
             fig, axes = plt.subplots(len(performance.coords['metric'].values), sharex=True, squeeze=False)
             for j, metric in enumerate(performance.coords['metric'].values):  
                 for k, dataset in enumerate(performance.coords['dataset'].values):
