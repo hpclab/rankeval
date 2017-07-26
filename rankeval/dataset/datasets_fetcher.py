@@ -223,7 +223,7 @@ def load_dataset(dataset_name, fold=None, download_if_missing=True,
 
     container = DatasetContainer()
 
-    print "Loading files. This may takes few minutes."
+    print "Loading files. This may take a few minutes."
 
     if data.get('train') is not None:
         train_dataset = Dataset.load(data['train'], name=dataset_name, format=dataset_format)
@@ -242,6 +242,6 @@ def load_dataset(dataset_name, fold=None, download_if_missing=True,
     if with_models:
         container.model_filenames = data['models']
 
-    print "DONE loading files!"
+    print "done loading dataset!"
 
     return container
