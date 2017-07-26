@@ -25,12 +25,13 @@ def plot_model_performance(performance, compare="models", show_values=False):
         fig, axes = plt.subplots()
         num_metrics = len(performance.coords['metric'].values)
         num_models = len(performance.coords['model'].values)
-        width = 1. / (num_metrics * num_models)
+        width = 0.35 #1. / (num_metrics * num_models)
 
         if num_metrics == 1 or num_models == 1:
             shrinkage = 0.5
         else:
             shrinkage = 1
+        shrinkage = 1
 
         if compare == "models":
             ind = np.arange(num_metrics)
