@@ -26,7 +26,7 @@ class Precision(Metric):
         label value of 1. It can be set to other values as well (e.g. 3), in the range of possible labels.
     """
 
-    def __init__(self, name='Precision', cutoff=None, threshold=1):
+    def __init__(self, name='P', cutoff=None, threshold=1):
         """
         This is the constructor of Precision, an object of type Metric, with the name Precision.
         The constructor also allows setting custom values for cutoff and threshold, otherwise it uses the default values.

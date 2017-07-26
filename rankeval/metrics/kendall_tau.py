@@ -22,7 +22,7 @@ class Kendalltau(Metric):
        Kendalltau
     """
 
-    def __init__(self, name='Kendalltau'):
+    def __init__(self, name='K'):
         """
         This is the constructor of Kendall Tau, an object of type Metric, with the name Kendalltau.
         The constructor also allows setting custom values in the following parameters.

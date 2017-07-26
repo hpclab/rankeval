@@ -24,7 +24,7 @@ class SpearmanRho(Metric):
        SpearmanRho
     """
 
-    def __init__(self, name='SpearmanRho'):
+    def __init__(self, name='Rho'):
         """
         This is the constructor of Spearman Rho, an object of type Metric, with the name SpearmanRho.
         The constructor also allows setting custom values in the following parameters.
