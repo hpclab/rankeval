@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # RankEval documentation build configuration file, created by
-# sphinx-quickstart on Wed Jul 26 10:45:45 2017.
+# sphinx-quickstart on Wed Jul 26 11:38:22 2017.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -180,7 +180,7 @@ epub_exclude_files = ['search.html']
 # custom
 extensions += ['sphinx.ext.todo']
 todo_include_todos = True
-#extensions += ['numpydoc']
+extensions += ['numpydoc']
 extensions += ['sphinx.ext.autosummary']
 extensions += ['sphinx.ext.imgmath']
 numpydoc_show_class_members = False

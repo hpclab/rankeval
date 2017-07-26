@@ -2,6 +2,10 @@ This is the README.md of RankEval project.
 
 copyright: HPCLab, ISTI-CNR, Pisa, Italy.
 
+## Documentation
+
+Api documentation is available here:
+http://rankeval.isti.cnr.it/docs/
 
 ## Installation
 
