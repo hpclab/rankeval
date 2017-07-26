@@ -28,7 +28,7 @@ class NDCG(Metric):
         Indicates whether to consider the flat or the exponential DCG formula: "flat" or "exp" (default).
     """
 
-    def __init__(self, name='NDCG', cutoff=None, no_relevant_results=0.0,
+    def __init__(self, name='NDCG', cutoff=None, no_relevant_results=1.0,
                  implementation="exp"):
         """
         This is the constructor of NDCG, an object of type Metric, with the

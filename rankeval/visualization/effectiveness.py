@@ -25,60 +25,56 @@ def plot_model_performance(performance, compare="models", show_values=False):
         fig, axes = plt.subplots()
         num_metrics = len(performance.coords['metric'].values)
         num_models = len(performance.coords['model'].values)
-        width = 1. / (num_metrics * num_models)
 
-        if num_metrics == 1 or num_models == 1:
-            shrinkage = 0.5
-        else:
-            shrinkage = 1
-
+        max_width = .95
         if compare == "models":
+            width = max_width / num_models
+
             ind = np.arange(num_metrics)
             for i, model in enumerate(performance.coords['model'].values):
                 metrics = performance.sel(dataset=dataset, model=model)
-                a = axes.bar(ind + (i * width), metrics.values, width * shrinkage, align="center")
+                a = axes.bar(ind + (i * width), metrics.values, width, align="center", zorder=3)
 
                 # add column values on the bars
                 if show_values:
                     for j, bar in enumerate(a):
                         coords = [bar.get_height(), bar.get_width()]
-                        axes.text(j + (i * width), 0.9 * coords[0], round(metrics.values[j],3),
-                                  ha='center', va='bottom', rotation=45)
+                        axes.text(j + (i * width), coords[0], round(metrics.values[j],3),
+                                  ha='center', va='bottom', zorder=3)
                         
-            axes.set_title(performance.name + " for " + dataset.name)
-            axes.set_xticks(ind + width*shrinkage / 2.)
+            axes.set_xticks(ind - width/2. + max_width / 2.)
             axes.set_xticklabels(performance.coords['metric'].values)
-            axes.set_ylim([0, 1])
 
             axes.legend(performance.coords['model'].values)
-
-            plt.tight_layout()
             
         elif compare == "metrics":
+            width = max_width / num_metrics
+            
             ind = np.arange(num_models)
             for i, metric in enumerate(performance.coords['metric'].values):
                 models = performance.sel(dataset=dataset, metric=metric)
-                a = axes.bar(ind + (i * width), models.values, width * shrinkage, align="center")
+                a = axes.bar(ind + (i * width), models.values, width, align="center", zorder=3)
 
                 # add column values on the bars
                 if show_values:
                     for j, bar in enumerate(a):
                         coords = [bar.get_height(), bar.get_width()]
-                        axes.text(j + (i * width), 0.9 * coords[0], round(models.values[j],3),
-                                  ha='center', va='bottom', rotation=45)
+                        axes.text(j + (i * width), coords[0], round(models.values[j],3),
+                                  ha='center', va='bottom', zorder=3)
                         
-            axes.set_title(performance.name + " for " + dataset.name)
-            if num_models > 1:
-                axes.set_xticks(ind + width*shrinkage / 2)
-                axes.set_xticklabels(performance.coords['model'].values)
-            else:
-                axes.set_xlabel(performance.coords['model'].values[0].name)
-                axes.get_xaxis().set_ticks([])
-            axes.set_ylim([0, 1])
+            axes.set_xticks(ind - width/2. + max_width / 2.)
+            axes.set_xticklabels(performance.coords['model'].values)
 
             axes.legend(performance.coords['metric'].values)
 
-            plt.tight_layout()
+        axes.set_ylabel("Metric Score")
+        axes.set_title(performance.name + " for " + dataset.name)
+        axes.yaxis.grid(True, zorder=0, ls="--")
+        
+        y_max = np.ceil(performance.values.max()*1.4*10.)/10.
+        axes.set_ylim([0,y_max])
+        
+        plt.tight_layout()
     return fig
 
 def resolvexticks(performance):
@@ -91,27 +87,27 @@ def resolvexticks(performance):
     xticks_labels.append(performance.coords['k'].values[-1])
     return xticks, xticks_labels
 
-def plot_tree_wise_model_performance(performance, compare="models"):
+def plot_tree_wise_performance(performance, compare="models"):
     if compare == "metrics":
         for dataset in performance.coords['dataset'].values:
             fig, axes = plt.subplots(len(performance.coords['model'].values), sharex=True, squeeze=False)
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
                     k_values = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[i,0].plot(k_values.values)
-
-                axes[i,0].legend(performance.coords['metric'].values)
+                    a = axes[i,0].plot(k_values.values, label = metric)
+                    max_k = np.argmax(k_values.values)
+                    axes[i,0].plot(max_k, k_values.values[max_k], "ok", fillstyle = "none", label=None)
+                    
                 axes[i,0].set_ylabel(model)
 
                 if len(performance.coords['k'].values) > 10:
                     xticks, xticks_labels = resolvexticks(performance)
                     axes[i,0].set_xticks(xticks)
                     axes[i,0].set_xticklabels(xticks_labels)
-
+            
+            axes[i,0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             axes[i,0].set_xlabel("Number of trees")
             fig.suptitle(performance.name + " for " + dataset.name)
-            #plt.tight_layout()
-            plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
     elif compare == "models":
         for dataset in performance.coords['dataset'].values:
@@ -119,22 +115,20 @@ def plot_tree_wise_model_performance(performance, compare="models"):
             for j, metric in enumerate(performance.coords['metric'].values):  
                 for i, model in enumerate(performance.coords['model'].values):
                     k_values = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[j,0].plot(k_values.values)
+                    a = axes[j,0].plot(k_values.values, label = model)
+                    max_k = np.argmax(k_values.values)
+                    axes[j,0].plot(max_k, k_values.values[max_k], "ok", fillstyle = "none", label=None)
 
-                axes[j,0].legend(performance.coords['model'].values)
+                axes[j,0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
                 axes[j,0].set_ylabel(metric)
 
                 if len(performance.coords['k'].values) > 10:
                     xticks, xticks_labels = resolvexticks(performance)
                     axes[j,0].set_xticks(xticks)
                     axes[j,0].set_xticklabels(xticks_labels)
-                #axes[j,0].set_xlim([0, len(k_values)])
-                #axes[j,0].set_ylim([0, 1])
 
             axes[j,0].set_xlabel("Number of trees")
             fig.suptitle(performance.name + " for " + dataset.name)
-            fig.subplots_adjust(top=0.88)
-            plt.tight_layout()
 
     elif compare == "datasets":
         for model in performance.coords['model'].values:
@@ -142,20 +136,21 @@ def plot_tree_wise_model_performance(performance, compare="models"):
             for j, metric in enumerate(performance.coords['metric'].values):  
                 for k, dataset in enumerate(performance.coords['dataset'].values):
                     k_values = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[j,0].plot(k_values.values)
-
-                axes[j,0].legend(performance.coords['dataset'].values)
+                    
+                    a = axes[j,0].plot(k_values.values, label = dataset.name)
+                    max_k = np.argmax(k_values.values)
+                    axes[j,0].plot(max_k, k_values.values[max_k], "ok", fillstyle = "none", label=None)
+         
                 axes[j,0].set_ylabel(metric)
-
+                
                 if len(performance.coords['k'].values) > 10:
                     xticks, xticks_labels = resolvexticks(performance)
                     axes[j,0].set_xticks(xticks)
                     axes[j,0].set_xticklabels(xticks_labels)
-
+                    
+            axes[j,0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             axes[j,0].set_xlabel("Number of trees")
             fig.suptitle(performance.name + " for " + model.name) 
-            fig.subplots_adjust(top=0.88)
-            plt.tight_layout()
     
     return fig
 

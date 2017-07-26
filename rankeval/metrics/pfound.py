@@ -32,7 +32,7 @@ class Pfound(Metric):
         not satisfied at a given position, he will examine the next url with probability y,
         but has a probability 1-y of abandoning.
     """
-    def __init__(self, name='Pfound', cutoff=None, p_abandonment=0.15):
+    def __init__(self, name='Pf', cutoff=None, p_abandonment=0.15):
         """
         This is the constructor of Pfound, an object of type Metric, with the name Pfound.
         The constructor also allows setting custom values in the following parameters.
