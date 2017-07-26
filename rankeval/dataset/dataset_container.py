@@ -17,4 +17,4 @@ class DatasetContainer(object):
 
     license_agreement = ''
 
-    models = None
+    model_filenames = None

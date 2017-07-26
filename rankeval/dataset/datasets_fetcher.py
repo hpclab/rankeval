@@ -174,7 +174,7 @@ def __fetch_dataset_and_models__(dataset_dictionary, fold=None, data_home=None,
         matches = []
         for root, dirnames, filenames in os.walk(models_home):
             for filename in fnmatch.filter(filenames, '*'):
-                matches.append([root, filename])
+                matches.append(os.path.join(root, filename))
         data['models'] = matches
 
     return data
@@ -234,15 +234,14 @@ def load_dataset(dataset_name, fold=None, download_if_missing=True,
         container.test_dataset = test_dataset
 
     if data.get('validation') is not None:
-        validation_dataset = Dataset.load(data['validation'], name=dataset_name,
-                                          format=dataset_format)
+        validation_dataset = Dataset.load(data['validation'], name=dataset_name, format=dataset_format)
         container.validation_dataset = validation_dataset
 
     container.license_agreement = data['license_agreement']
 
     if with_models:
-        container.models = data['models']
+        container.model_filenames = data['models']
 
-    print "loading DONE!"
+    print "DONE loading files!"
 
     return container
