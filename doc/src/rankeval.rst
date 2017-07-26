@@ -12,6 +12,9 @@ Subpackages
 .. toctree::
 
     rankeval.analysis
-    rankeval.core
+    rankeval.dataset
+    rankeval.metrics
+    rankeval.model
+    rankeval.scoring
     rankeval.visualization
 
