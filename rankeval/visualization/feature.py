@@ -16,17 +16,15 @@ except NameError:
     xrange = range
 
 
-def plot_feature_importance(feature_importance, feature_count, max_features=10,
-                            sort_by="gain", feature_names=None):
+def plot_feature_importance(feature_perf, max_features=10, sort_by="gain",
+                            feature_names=None):
     """
     Shows the most important features as a bar plot.
 
     Parameters
     ----------
-    feature_importance : numpy.array
+    feature_perf : xarray.DataArray
         Feature importance stats of the model to be visualized
-    feature_count : numpy.array
-        Feature count stats of the model to be visualized
     max_features : int or None
         Maximul number of features to be visualized. If None is passed, it will
         show all the features
@@ -44,6 +42,9 @@ def plot_feature_importance(feature_importance, feature_count, max_features=10,
     : matplotlib.figure.Figure
         The matpotlib Figure
     """
+
+    feature_importance = feature_perf.sel(type='importance').data
+    feature_count = feature_perf.sel(type='count').data.astype(np.uint16)
 
     # figure
     fig, ax1 = plt.subplots(figsize=(16, 5))

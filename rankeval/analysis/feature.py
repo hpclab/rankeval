@@ -12,6 +12,7 @@ This package implements feature importance analysis.
 
 import numpy as np
 from collections import deque
+import xarray as xr
 
 from ..model import RTEnsemble
 from ..metrics import MSE, RMSE
@@ -20,7 +21,7 @@ from _efficient_feature import eff_feature_importance, \
     eff_feature_importance_tree
 
 
-def feature_importance(model, dataset, metric=None):
+def feature_importance(model, dataset, metric=None, feature_names=None):
     """
     This method computes the feature importance relative to the given model
     and dataset.
@@ -54,26 +55,31 @@ def feature_importance(model, dataset, metric=None):
         metric = MSE()
 
     if isinstance(metric, RMSE) or isinstance(metric, MSE):
-        feature_imp = eff_feature_importance(model, dataset)
+        feature_imp, feature_count = eff_feature_importance(model, dataset)
         if isinstance(metric, RMSE):
             feature_imp[0] = np.sqrt(feature_imp[0])
-        return feature_imp
+    else:
+        # initialize features importance
+        feature_imp = np.zeros(dataset.n_features, dtype=np.float32)
 
-    # initialize features importance
-    feature_imp = np.zeros(dataset.n_features, dtype=np.float32)
+        # initialize features count
+        feature_count = np.zeros(dataset.n_features, dtype=np.uint16)
 
-    # initialize features count
-    feature_count = np.zeros(dataset.n_features, dtype=np.uint16)
+        # default scores on the root node of the first tree
+        y_pred = np.zeros(dataset.n_instances)
 
-    # default scores on the root node of the first tree
-    y_pred = np.zeros(dataset.n_instances)
+        # iterate trees of the model
+        for tree_id in np.arange(model.n_trees):
+            _feature_importance_tree(model, dataset, tree_id, y_pred, metric,
+                                     feature_imp, feature_count)
 
-    # iterate trees of the model
-    for tree_id in np.arange(model.n_trees):
-        _feature_importance_tree(model, dataset, tree_id, y_pred, metric,
-                                 feature_imp, feature_count)
+    performance = xr.DataArray([feature_imp, feature_count],
+                               name='Feature Importance Analysis',
+                               coords=[['importance', 'count'],
+                                       np.arange(dataset.n_features, dtype=np.uint16)],
+                               dims=['type', 'feature'])
 
-    return feature_imp, feature_count
+    return performance
 
 
 def _feature_importance_tree(model, dataset, tree_id, y_pred, metric,
