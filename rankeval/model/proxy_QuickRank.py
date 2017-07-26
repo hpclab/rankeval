@@ -5,18 +5,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-"""Class providing the implementation for loading/storing a QuickRank model
+"""
+Class providing the implementation for loading/storing a QuickRank model
 from/to file.
 
-The QuickRank project is described here:
-    http://quickrank.isti.cnr.it
+The QuickRank project is described here: http://quickrank.isti.cnr.it
 
 The QuickRank format adopts an XML representation. There is an header section,
 identified by the "info" tag, with the most important parameters adopted to
 learn such a model. It follows then the description of the ensemble, with a node
 for each tree, identified by the "tree" tag, followed by the description of the
 tree (with splitting and leaf nodes). The splitting nodes are described with two
- information: the feature id used for splitting, and the threshold value. Leaf
+information: the feature id used for splitting, and the threshold value. Leaf
 nodes on the other hand are described by an "output" tag with the value as
 content.
 """
