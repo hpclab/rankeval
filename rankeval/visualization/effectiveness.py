@@ -252,7 +252,7 @@ def plot_tree_wise_performance(performance, compare="models"):
     return fig_list
 
 
-def plot_tree_wise_average_contribution(performance):
+def plot_tree_wise_avg_contribution(performance):
     """
     This method plots the results obtained from the
     tree_wise_average_contribution analysis.
@@ -273,18 +273,17 @@ def plot_tree_wise_average_contribution(performance):
     for dataset in performance.coords['dataset'].values:
         fig, axes = plt.subplots(len(performance.coords['model'].values),
                                  sharex=True, squeeze=False)
+        fig.suptitle(performance.name + " for " + dataset.name)
+        
         for i, model in enumerate(performance.coords['model'].values):
 
             # check if more models. we need subplot
             k_values = performance.sel(dataset=dataset, model=model)
             axes[i, 0].plot(k_values.values)
+            axes[i, 0].legend((model,), loc='upper center')
 
-        axes[i, 0].set_title(performance.name + " for " + dataset.name)
         axes[i, 0].set_xlabel("Number of trees")
-        axes[i, 0].legend((model,), loc='upper center')
-
-        plt.tight_layout()
-
+   
         fig_list.append(fig)
     
     return fig_list
