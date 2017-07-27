@@ -170,7 +170,7 @@ def plot_tree_wise_performance(performance, compare="models"):
     if compare == "metrics":
         for dataset in performance.coords['dataset'].values:
             fig, axes = plt.subplots(len(performance.coords['model'].values),
-                                     sharex=True, squeeze=False)
+                                     sharex=True, squeeze=False, figsize=(8, 8))
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
                     k_values = performance.sel(dataset=dataset,
@@ -181,8 +181,9 @@ def plot_tree_wise_performance(performance, compare="models"):
                     axes[i, 0].plot(max_k, k_values.values[max_k], "ok",
                                    fillstyle="none", label=None)
                 
-                axes[j, 0].plot([], [], "ok", fillstyle="none", label="Max")
+                axes[i, 0].plot([], [], "ok", fillstyle="none", label="Max")
                 axes[i, 0].set_ylabel(model)
+                axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
 
                 if len(performance.coords['k'].values) > 10:
                     xticks, xticks_labels = resolvexticks(performance)
@@ -198,7 +199,7 @@ def plot_tree_wise_performance(performance, compare="models"):
     elif compare == "models":
         for dataset in performance.coords['dataset'].values:
             fig, axes = plt.subplots(len(performance.coords['metric'].values),
-                                     sharex=True, squeeze=False)
+                                     sharex=True, squeeze=False, figsize=(8, 8))
             for j, metric in enumerate(performance.coords['metric'].values):  
                 for i, model in enumerate(performance.coords['model'].values):
                     k_values = performance.sel(dataset=dataset,
@@ -211,6 +212,7 @@ def plot_tree_wise_performance(performance, compare="models"):
 
                 axes[j, 0].plot([], [], "ok", fillstyle="none", label="Max")
                 axes[j,0].set_ylabel(metric)
+                axes[j, 0].yaxis.grid(True, zorder=0, ls="--")
 
                 if len(performance.coords['k'].values) > 10:
                     xticks, xticks_labels = resolvexticks(performance)
@@ -226,7 +228,7 @@ def plot_tree_wise_performance(performance, compare="models"):
     elif compare == "datasets":
         for model in performance.coords['model'].values:
             fig, axes = plt.subplots(len(performance.coords['metric'].values),
-                                     sharex=True, squeeze=False)
+                                     sharex=True, squeeze=False, figsize=(8, 8))
             for j, metric in enumerate(performance.coords['metric'].values):  
                 for k, dataset in enumerate(performance.coords['dataset'].values):
                     k_values = performance.sel(dataset=dataset,
@@ -238,6 +240,7 @@ def plot_tree_wise_performance(performance, compare="models"):
                                    fillstyle = "none", label=None)
                 axes[j, 0].plot([], [], "ok", fillstyle="none", label="Max")
                 axes[j, 0].set_ylabel(metric)
+                axes[j, 0].yaxis.grid(True, zorder=0, ls="--")
                 
                 if len(performance.coords['k'].values) > 10:
                     xticks, xticks_labels = resolvexticks(performance)
@@ -273,13 +276,14 @@ def plot_tree_wise_average_contribution(performance):
 
     for dataset in performance.coords['dataset'].values:
         fig, axes = plt.subplots(len(performance.coords['model'].values),
-                                 sharex=True, squeeze=False)
+                                 sharex=True, squeeze=False, figsize=(8, 8))
         fig.suptitle(performance.name + " for " + dataset.name)
         
         for i, model in enumerate(performance.coords['model'].values):
             k_values = performance.sel(dataset=dataset, model=model)
             axes[i, 0].plot(k_values.values)
             axes[i, 0].legend((model,), loc='upper center')
+            axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
 
         axes[i, 0].set_xlabel("Number of trees")
    
@@ -314,43 +318,45 @@ def plot_query_wise_performance(performance, compare="models"):
     fig_list = []
 
     for dataset in performance.coords['dataset'].values:
-        if compare == "models":
+        if compare == "metrics":
             fig, axes = plt.subplots(len(performance.coords['model'].values),
-                                     sharex=True, squeeze=False)
+                                     sharex=True, squeeze=False, figsize=(8, 8))
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
                     k_values = performance.sel(dataset=dataset,
                                                model=model,
                                                metric=metric)
-                    axes[i, 0].plot(k_values.values*100, label = metric)
+                    axes[i, 0].plot(performance.coords['bin'].values,
+                                    k_values.values*100, label = metric)
 
                 axes[i, 0].set_title(performance.name + " for " +
                                      dataset.name + " and model " + model.name)
                 axes[i, 0].set_ylabel("Query %")
                 axes[i, 0].yaxis.set_ticks(np.arange(0, 101, 25))
                 axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
-            axes[i, 0].set_xlabel("Bins")
+            axes[i, 0].set_xlabel("Metric Score")
             axes[i, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             
             fig.tight_layout(rect=[0, 0.03, 1, 0.95])
             fig_list.append(fig)
 
-        elif compare == "metrics":
+        elif compare == "models":
             fig, axes = plt.subplots(len(performance.coords['metric'].values),
-                                     sharex=True, squeeze=False)
+                                     sharex=True, squeeze=False, figsize=(8, 8))
             for j, metric in enumerate(performance.coords['metric'].values):
                 for i, model in enumerate(performance.coords['model'].values):
                     k_values = performance.sel(dataset=dataset,
                                                model=model,
                                                metric=metric)
-                    axes[j, 0].plot(k_values.values*100, label = metric)
+                    axes[j, 0].plot(performance.coords['bin'].values,
+                                    k_values.values*100, label = model)
 
                 axes[j, 0].set_title(performance.name + " for " +
                                      dataset.name + "and metric " + str(metric))
                 axes[j, 0].set_ylabel("Query %")
                 axes[j, 0].yaxis.set_ticks(np.arange(0, 101, 25))
                 axes[j, 0].yaxis.grid(True, zorder=0, ls="--")
-            axes[j, 0].set_xlabel("Bins")
+            axes[j, 0].set_xlabel("Metric Score")
             axes[j, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             fig.tight_layout(rect=[0, 0.03, 1, 0.95])
             fig_list.append(fig)
