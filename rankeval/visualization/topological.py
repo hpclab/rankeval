@@ -23,7 +23,7 @@ except NameError:
     xrange = range
 
 
-def plot_tree_shape(topological, max_level=10):
+def plot_shape(topological, max_level=10):
     '''
     Shows the average tree shape as a bullseye plot.
 
@@ -38,8 +38,6 @@ def plot_tree_shape(topological, max_level=10):
     -------
     : matplotlib.figure.Figure
         The matpotlib Figure
-    : matplotlib.axes.Axes
-        The matplotlib Axes
     '''
 
     ts = topological.avg_tree_shape()
@@ -125,6 +123,4 @@ def plot_tree_shape(topological, max_level=10):
 
     ax3.set_title("Average Tree Shape: " + str(topological.model), fontsize=16, y=1.2)
 
-    plt.show()
-
-    return fig, ax3
+    return fig

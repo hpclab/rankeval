@@ -365,16 +365,18 @@ def plot_query_wise_performance(performance, compare="models"):
 
 def plot_document_graded_relevance(performance):
     for dataset in performance.coords['dataset'].values:
-        fig, axes = plt.subplots(len(performance.coords['model'].values), squeeze=False)
+        fig, axes = plt.subplots(len(performance.coords['model'].values),
+                                 sharex=True, squeeze=False, figsize=(8, 8))
         for i, model in enumerate(performance.coords['model'].values):
             for label in performance.coords['label'].values:
                 values = performance.sel(dataset=dataset, model=model, label=label).values
-                a = axes[i,0].plot(values)
+                a = axes[i,0].plot(performance.coords['bin'].values, values)
+            axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
             axes[i,0].set_title(performance.name + " for " + dataset.name + " and model " + model.name)
             axes[i,0].set_ylabel("Relevance")
-            axes[i,0].set_xlabel("Bins")
-            axes[i,0].legend(["Label "+str(int(l)) for l in performance.coords['label'].values])
-            plt.tight_layout()
+        axes[i,0].set_xlabel("Predicted score")
+        axes[i,0].legend(["Label "+str(int(l)) for l in performance.coords['label'].values])
+        
 
 
 def is_log_scale_matrix(matrix):
