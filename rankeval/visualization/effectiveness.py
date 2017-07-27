@@ -1,6 +1,7 @@
 """
 This package provides visualizations for several effectiveness analysis focused on assessing
-the performance of the models in terms of accuracy. 
+the performance of the models in terms of accuracy.
+
 """
 
 from __future__ import print_function
