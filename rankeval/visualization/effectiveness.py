@@ -276,8 +276,6 @@ def plot_tree_wise_avg_contribution(performance):
         fig.suptitle(performance.name + " for " + dataset.name)
         
         for i, model in enumerate(performance.coords['model'].values):
-
-            # check if more models. we need subplot
             k_values = performance.sel(dataset=dataset, model=model)
             axes[i, 0].plot(k_values.values)
             axes[i, 0].legend((model,), loc='upper center')
@@ -288,37 +286,70 @@ def plot_tree_wise_avg_contribution(performance):
     
     return fig_list
 
-def plot_query_wise_performance(performance, compare_by="Model"):
-    #     fig = plt.Figure(figsize=(20, 3))
-    #     gs = gridspec.GridSpec(2, 1, width_ratios=[20,10], height_ratios=[10,5])
+
+def plot_query_wise_performance(performance, compare="models"):
+    """
+    This method plots the results obtained from the query_wise_performance
+    analysis.
+
+    Parameters
+    ----------
+    performance: xarray
+        The xarray obtained after computing query_wise_performance.
+    compare: string
+        The compare parameter indicates what elements to compare between
+        each other.
+        Accepted values are 'models' or 'metrics'.
+
+    Returns
+    -------
+    fig_list : list
+        The list of figures.
+    """
+
+    if compare not in ["models", "metrics"]:
+        raise RuntimeError("Please select compare method from ['models', 'metrics']")
+
+    fig_list = []
+
     for dataset in performance.coords['dataset'].values:
-        if compare_by == "Model":
-            fig, axes = plt.subplots(len(performance.coords['model'].values), sharex=True)
+        if compare == "models":
+            fig, axes = plt.subplots(len(performance.coords['model'].values),
+                                     sharex=True, queeze=False)
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
-                    k_values = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[i].plot(k_values.values)
+                    k_values = performance.sel(dataset=dataset,
+                                               model=model,
+                                               metric=metric)
+                    axes[i, 0].plot(k_values.values)
 
-                axes[i].set_title(performance.name + " for " + dataset.name + " and model " + model.name)
-                axes[i].set_ylabel("Number of queries")
-                axes[i].set_xlabel("Bins")
-                axes[i].legend(performance.coords['metric'].values)
-                axes[i].yaxis.set_ticks(np.arange(0, 1, 0.1))
-            plt.tight_layout()
+                axes[i, 0].set_title(performance.name + " for " +
+                                     dataset.name + " and model " + model.name)
+                axes[i, 0].set_ylabel("Number of queries")
+                axes[i, 0].set_xlabel("Bins")
+                axes[i, 0].legend(performance.coords['metric'].values)
+                axes[i, 0].yaxis.set_ticks(np.arange(0, 1, 0.1))
 
-        else:
-            fig, axes = plt.subplots(len(performance.coords['metric'].values))
-            for j, metric in enumerate(performance.coords['metric'].values):  # we need to change figure!!!!
+        elif compare == "metics":
+            fig, axes = plt.subplots(len(performance.coords['metric'].values),
+                                     sharex=True, queeze=False)
+            for j, metric in enumerate(performance.coords['metric'].values):
                 for i, model in enumerate(performance.coords['model'].values):
-                    k_values = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[j].plot(k_values.values)
+                    k_values = performance.sel(dataset=dataset,
+                                               model=model,
+                                               metric=metric)
+                    axes[j, 0].plot(k_values.values)
 
-                axes[j].set_title(performance.name + " for " + dataset.name + "and metric " + str(metric))
-                axes[j].set_ylabel("Number of queries")
-                axes[j].set_xlabel("Bins")
-                axes[j].legend(performance.coords['model'].values)
-                axes[j].yaxis.set_ticks(np.arange(0, 1, 0.1))
-            plt.tight_layout()
+                axes[j, 0].set_title(performance.name + " for " +
+                                     dataset.name + "and metric " + str(metric))
+                axes[j, 0].set_ylabel("Number of queries")
+                axes[j, 0].set_xlabel("Bins")
+                axes[j, 0].legend(performance.coords['model'].values)
+                axes[j, 0].yaxis.set_ticks(np.arange(0, 1, 0.1))
+
+        fig_list.append(fig)
+
+    return fig_list
 
 
 def plot_document_graded_relevance(performance):
