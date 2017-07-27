@@ -5,12 +5,13 @@ clean:
 	$(PYTHON) setup.py clean
 	rm -rf dist
 	rm -rf rankeval.egg-info
-	rm -rf build *.so *.pyc *.egg *.so
-	rm -rf **/**/*.so
+	rm -rf build
+	find . -name "*.so" -delete
+	find . -name "*.pyc" -delete
+	find . -name "*.egg" -delete
 
 test:
 	$(NOSETESTS)
-
 
 DOCDIR=./doc/src
 SRCDIR=./rankeval
