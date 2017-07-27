@@ -353,8 +353,6 @@ def plot_query_wise_performance(performance, compare="models"):
             axes[j, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             fig.tight_layout(rect=[0, 0.03, 1, 0.95])
             fig_list.append(fig)
-        
-
     return fig_list
 
 

@@ -18,7 +18,7 @@ import xarray as xr
 
 from ..dataset import Dataset
 from ..metrics.metric import Metric
-from ..metrics.metric import MSE
+from rankeval.metrics import MSE
 
 from ipywidgets import IntProgress
 from IPython.display import display
@@ -329,7 +329,6 @@ def bias_variance(datasets=[], algos=[], metrics=[], L=10, k=2):
                     avg_bias  = np.mean((avg_pred - 1.)**2.)
                     avg_var   = np.mean( (q_scores-avg_pred.reshape((-1,1)))**2. )
                 else:
-                    print ("MSE")
                     # mse
                     avg_error = np.mean( (scores-dataset.y.reshape((-1,1)))**2. )
                     avg_pred  = np.mean(scores, axis=1)
