@@ -411,10 +411,11 @@ def plot_query_class_performance(performance, show_values=False, compare="models
         num_classes = len(performance.coords['classes'].values)
         max_width = .95
 
-        if compare == "models":
+        if compare == "metrics":
             fig, axes = plt.subplots(num_models, squeeze=False, figsize=(8, 8))
             width = max_width / num_metrics
             ind = np.arange(num_classes)
+            
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
                     classes = performance.sel(dataset=dataset, model=model, metric=metric)
@@ -431,39 +432,46 @@ def plot_query_class_performance(performance, show_values=False, compare="models
 
                 # add some text for labels, title and axes ticks
                 axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
-                
+                axes[i, 0].set_ylabel("Metric Score")
                 axes[i, 0].set_xticks(ind - width/2. + max_width / 2.)
                 axes[i, 0].set_xticklabels(performance.coords['classes'].values)
+                y_max = np.ceil(performance.values.max()*1.4*10.)/10.
+                axes[i, 0].set_ylim([0,y_max])
 
             axes[i, 0].legend(performance.coords['metric'].values, 
                              bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             fig.suptitle(performance.name + " for " + dataset.name + " and model " + model.name)
-            
 
-        elif compare == "metrics":
+        elif compare == "models":
             fig, axes = plt.subplots(num_metrics, squeeze=False, figsize=(8, 8))
             width = max_width / num_models
             ind = np.arange(num_classes)
+            
             for i, metric in enumerate(performance.coords['metric'].values):
                 for j, model in enumerate(performance.coords['model'].values):
                     classes = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[i, 0].bar(ind + (j * width), classes.values, width)
+                    a = axes[i, 0].bar(ind + (j * width), classes.values, width,
+                                       align="center", zorder=3)
 
                     # add column values on the bars
                     if show_values:
                         for k, bar in enumerate(a):
                             coords = [bar.get_height(), bar.get_width()]
-                            axes[i, 0].text(k + (j * width), 0.5 * coords[0], classes.values[k],
-                                            ha='center', va='bottom', rotation=65)
-
+                            axes[i, 0].text(k + (j * width), coords[0], 
+                                            round(classes.values[k], 3),
+                                            ha='center', va='bottom', zorder=3)
+                            
                 # add some text for labels, title and axes ticks
-                axes[i, 0].set_title(performance.name + " for " + dataset.name + " and metric " + metric.name)
-                axes[i, 0].set_xticks(ind + width / 2)
+                axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
+                axes[i, 0].set_ylabel(metric)
+                axes[i, 0].set_xticks(ind - width / 2 + max_width / 2.)
                 axes[i, 0].set_xticklabels(performance.coords['classes'].values)
+                y_max = np.ceil(performance.values.max()*1.4*10.)/10.
+                axes[i, 0].set_ylim([0,y_max])
 
-                axes[i, 0].legend(performance.coords['model'].values)
-
-                plt.tight_layout()
+            axes[i, 0].legend(performance.coords['model'].values,
+                             bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            plt.suptitle(performance.name + " for " + dataset.name)
 
 
 
