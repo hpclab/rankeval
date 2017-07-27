@@ -315,39 +315,45 @@ def plot_query_wise_performance(performance, compare="models"):
     for dataset in performance.coords['dataset'].values:
         if compare == "models":
             fig, axes = plt.subplots(len(performance.coords['model'].values),
-                                     sharex=True, queeze=False)
+                                     sharex=True, squeeze=False)
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
                     k_values = performance.sel(dataset=dataset,
                                                model=model,
                                                metric=metric)
-                    axes[i, 0].plot(k_values.values)
+                    axes[i, 0].plot(k_values.values*100, label = metric)
 
                 axes[i, 0].set_title(performance.name + " for " +
                                      dataset.name + " and model " + model.name)
-                axes[i, 0].set_ylabel("Number of queries")
-                axes[i, 0].set_xlabel("Bins")
-                axes[i, 0].legend(performance.coords['metric'].values)
-                axes[i, 0].yaxis.set_ticks(np.arange(0, 1, 0.1))
+                axes[i, 0].set_ylabel("Query %")
+                axes[i, 0].yaxis.set_ticks(np.arange(0, 101, 25))
+                axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
+            axes[i, 0].set_xlabel("Bins")
+            axes[i, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            
+            fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+            fig_list.append(fig)
 
-        elif compare == "metics":
+        elif compare == "metrics":
             fig, axes = plt.subplots(len(performance.coords['metric'].values),
-                                     sharex=True, queeze=False)
+                                     sharex=True, squeeze=False)
             for j, metric in enumerate(performance.coords['metric'].values):
                 for i, model in enumerate(performance.coords['model'].values):
                     k_values = performance.sel(dataset=dataset,
                                                model=model,
                                                metric=metric)
-                    axes[j, 0].plot(k_values.values)
+                    axes[j, 0].plot(k_values.values*100, label = metric)
 
                 axes[j, 0].set_title(performance.name + " for " +
                                      dataset.name + "and metric " + str(metric))
-                axes[j, 0].set_ylabel("Number of queries")
-                axes[j, 0].set_xlabel("Bins")
-                axes[j, 0].legend(performance.coords['model'].values)
-                axes[j, 0].yaxis.set_ticks(np.arange(0, 1, 0.1))
-
-        fig_list.append(fig)
+                axes[j, 0].set_ylabel("Query %")
+                axes[j, 0].yaxis.set_ticks(np.arange(0, 101, 25))
+                axes[j, 0].yaxis.grid(True, zorder=0, ls="--")
+            axes[j, 0].set_xlabel("Bins")
+            axes[j, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+            fig_list.append(fig)
+        
 
     return fig_list
 

@@ -18,6 +18,7 @@ import xarray as xr
 
 from ..dataset import Dataset
 from ..metrics.metric import Metric
+from ..metrics.metric import MSE
 
 from ipywidgets import IntProgress
 from IPython.display import display
@@ -238,7 +239,7 @@ def _multi_kfold_scoring(dataset, algo, L=10, k=2):
     return scores
 
 
-def bias_variance(datasets=[], algos=[], metrics=["MSE"], L=10, k=2):
+def bias_variance(datasets=[], algos=[], metrics=[], L=10, k=2):
     """
     This method computes the bias vs. variance decomposition of the error.
     The approach used here is based on the works of [Webb05]_ and [Dom05]_.
@@ -248,7 +249,7 @@ def bias_variance(datasets=[], algos=[], metrics=["MSE"], L=10, k=2):
     `k` folds. Each fold is scored by the model `M` trained on the remainder folds.
     [Webb05]_ recommends the use of 2 folds.
 
-    If metric="MSE" then the standard decomposition is used.
+    If metric is MSE then the standard decomposition is used.
     The Bias for and instance `x` is defined as mean squared error of the `L` trained models
     w.r.t. the true label `y`, denoted with :math:`{\\sf E}_{L} [M(x) - y]^2`. 
     The Variance for an instance `x` is measured across the `L` trained models: 
@@ -300,7 +301,7 @@ def bias_variance(datasets=[], algos=[], metrics=["MSE"], L=10, k=2):
     assert(len(datasets)>0)
     assert(len(metrics)>0)
     for metric in metrics:
-        assert (isinstance(metric, str) and metric=="MSE") or isinstance(metric, Metric)
+        assert isinstance(metric, Metric)
 
     progress_bar = IntProgress(min=0, max=len(datasets)*len(metrics)*len(algos),
                                description="Iterating datasets and metrics")
@@ -317,7 +318,7 @@ def bias_variance(datasets=[], algos=[], metrics=["MSE"], L=10, k=2):
                 avg_error = 0.
                 avg_bias = 0.
                 avg_var = 0.
-                if isinstance(metric, Metric):
+                if not isinstance(metric, MSE):
                     # mse over metric, assume error is 1-metric
                     # not exactly domingos paper
                     q_scores = np.empty((dataset.n_queries, L), dtype=np.float32) 
@@ -328,6 +329,7 @@ def bias_variance(datasets=[], algos=[], metrics=["MSE"], L=10, k=2):
                     avg_bias  = np.mean((avg_pred - 1.)**2.)
                     avg_var   = np.mean( (q_scores-avg_pred.reshape((-1,1)))**2. )
                 else:
+                    print ("MSE")
                     # mse
                     avg_error = np.mean( (scores-dataset.y.reshape((-1,1)))**2. )
                     avg_pred  = np.mean(scores, axis=1)
