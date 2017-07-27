@@ -97,7 +97,8 @@ def plot_tree_wise_performance(performance, compare="models"):
                     a = axes[i,0].plot(k_values.values, label = metric)
                     max_k = np.argmax(k_values.values)
                     axes[i,0].plot(max_k, k_values.values[max_k], "ok", fillstyle = "none", label=None)
-                    
+                
+                axes[j,0].plot([], [], "ok", fillstyle = "none", label="Max")
                 axes[i,0].set_ylabel(model)
 
                 if len(performance.coords['k'].values) > 10:
@@ -119,14 +120,15 @@ def plot_tree_wise_performance(performance, compare="models"):
                     max_k = np.argmax(k_values.values)
                     axes[j,0].plot(max_k, k_values.values[max_k], "ok", fillstyle = "none", label=None)
 
-                axes[j,0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+                axes[j,0].plot([], [], "ok", fillstyle = "none", label="Max")
                 axes[j,0].set_ylabel(metric)
 
                 if len(performance.coords['k'].values) > 10:
                     xticks, xticks_labels = resolvexticks(performance)
                     axes[j,0].set_xticks(xticks)
                     axes[j,0].set_xticklabels(xticks_labels)
-
+            
+            axes[j,0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             axes[j,0].set_xlabel("Number of trees")
             fig.suptitle(performance.name + " for " + dataset.name)
 
@@ -136,11 +138,10 @@ def plot_tree_wise_performance(performance, compare="models"):
             for j, metric in enumerate(performance.coords['metric'].values):  
                 for k, dataset in enumerate(performance.coords['dataset'].values):
                     k_values = performance.sel(dataset=dataset, model=model, metric=metric)
-                    
                     a = axes[j,0].plot(k_values.values, label = dataset.name)
                     max_k = np.argmax(k_values.values)
                     axes[j,0].plot(max_k, k_values.values[max_k], "ok", fillstyle = "none", label=None)
-         
+                axes[j,0].plot([], [], "ok", fillstyle = "none", label="Max")
                 axes[j,0].set_ylabel(metric)
                 
                 if len(performance.coords['k'].values) > 10:
@@ -155,32 +156,17 @@ def plot_tree_wise_performance(performance, compare="models"):
     return fig
 
 def plot_tree_wise_average_contribution(performance):
-    for dataset in performance.coords['dataset'].values:
-        if len(performance.coords['model'].values) > 1:
-            # we can either plot this together on in different subfigs
-            fig, axes = plt.subplots(len(performance.coords['model'].values), sharex=True)
-            for i, model in enumerate(performance.coords['model'].values):
-
-                # check if more models. we need subplot
-                k_values = performance.sel(dataset=dataset, model=model)
-                a = axes[i].plot(k_values.values)
-
-                axes[i].set_title(performance.name + " for " + dataset.name)
-                axes[i].set_xlabel("Number of trees")
-                axes[i].legend((model,), loc='upper center')
-
-            plt.tight_layout()
-
-        else:
-            fig, axes = plt.subplots()
-            model = performance.coords['model'].values[0]
+    for i, dataset in enumerate(performance.coords['dataset'].values):
+        fig, axes = plt.subplots(len(performance.coords['model'].values), sharex=True, squeeze=False)
+        for j, model in enumerate(performance.coords['model'].values):
             k_values = performance.sel(dataset=dataset, model=model)
-            a = axes.plot(k_values.values)
-
-            axes.set_title(performance.name + " for " + dataset.name)
-            axes.set_xlabel("Number of trees")
-            axes.legend(performance.coords['model'].values)
-
+            a = axes[i,0].plot(k_values.values, label = model)
+        break
+    fig.title("")
+    #fig.xlabel("Number of trees")
+    #fig.legend((model,), loc='upper center')
+    
+    return fig 
 
 def plot_query_wise_performance(performance, compare_by="Model"):
     #     fig = plt.Figure(figsize=(20, 3))
