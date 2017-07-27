@@ -390,46 +390,42 @@ def is_log_scale_matrix(matrix):
 
 def plot_rank_confusion_matrix(performance):
     for dataset in performance.coords['dataset'].values:
-        fig, axes = plt.subplots(len(performance.coords['model'].values), squeeze=False)
+        fig, axes = plt.subplots(len(performance.coords['model'].values),
+                                 squeeze=False, figsize=(8, 8))
         for i, model in enumerate(performance.coords['model'].values):
             matrix = performance.sel(dataset=dataset, model=model)
-            #if scale of very off -> take log
             if is_log_scale_matrix(matrix):
                 matrix = np.log(matrix)
-#             axes[i,0]= matrix.plot()
             axes[i,0].pcolormesh(matrix)
-#             axes[i,0].set_title(performance.name + " for " + dataset.name + " and model " + model.name)
+            axes[i,0].set_title(performance.name + " for " + dataset.name + " and model " + model.name)
             axes[i,0].set_ylabel("Label j")
             axes[i,0].set_xlabel("Label i")
             #axes[i,0].legend(["Label "+str(int(l)) for l in performance.coords['label'].values])
             plt.tight_layout()
 
 
-def plot_query_class_performance(performance, show_values=False, compare="model"):
+def plot_query_class_performance(performance, show_values=False, compare="models"):
     for dataset in performance.coords['dataset'].values:
         num_metrics = len(performance.coords['metric'].values)
         num_models = len(performance.coords['model'].values)
         num_classes = len(performance.coords['classes'].values)
+        max_width = .95
 
-        if num_metrics == 1 or num_models == 1:
-            shrinkage = 2
-
-        if compare == "metric":
-
+        if compare == "models":
             fig, axes = plt.subplots(num_models, squeeze=False)
-            width = 1. / (num_classes * num_models)
-
+            width = max_width / num_metrics
             ind = np.arange(num_classes)
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
                     classes = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[i, 0].bar(ind + (j * width), classes.values, width)
+                    a = axes[i, 0].bar(ind + (j * width), classes.values, width
+                                      align="center", zorder=3)
 
                     # add column values on the bars
                     if show_values:
                         for k, bar in enumerate(a):
                             coords = [bar.get_height(), bar.get_width()]
-                            axes[i, 0].text(k + (j * width), 0.5 * coords[0], classes.values[k],
+                            axes[i, 0].text(k + (j * width), coords[0], classes.values[k],
                                             ha='center', va='bottom', rotation=65)
 
                 # add some text for labels, title and axes ticks
@@ -441,15 +437,14 @@ def plot_query_class_performance(performance, show_values=False, compare="model"
 
                 plt.tight_layout()
 
-        elif compare == "model":
+        elif compare == "metrics":
             fig, axes = plt.subplots(num_metrics, squeeze=False, figsize=(8, 8))
-            width = 1. / (num_classes * num_metrics)
-
+            width = max_width / num_models
             ind = np.arange(num_classes)
             for i, metric in enumerate(performance.coords['metric'].values):
                 for j, model in enumerate(performance.coords['model'].values):
                     classes = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[i, 0].bar(ind + (j * width), classes.values, width * shrinkage)
+                    a = axes[i, 0].bar(ind + (j * width), classes.values, width)
 
                     # add column values on the bars
                     if show_values:

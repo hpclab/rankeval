@@ -455,7 +455,7 @@ def rank_confusion_matrix(datasets, models, skip_same_label=False):
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            y_pred = model.score(dataset, detailed=True)
+            y_pred = model.score(dataset, detailed=False)
             for query_id, (start_offset, end_offset) in enumerate(dataset.query_offset_iterator()):
                 for i in np.arange(start_offset, end_offset):
                     for j in np.arange(i, end_offset):
