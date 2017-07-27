@@ -4,67 +4,97 @@ the performance of the models in terms of accuracy.
 """
 
 from __future__ import print_function
-
 from itertools import islice
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 
 def init_plot_style():
-    '''
-    Initilize plot style for RankEval visualization utilities.
-    '''
+    """
+    Initialize plot style for RankEval visualization utilities.
+    Returns
+    -------
+
+    """
     plt.style.use("seaborn-notebook")
     sns.set_palette("deep")
 
+
 def plot_model_performance(performance, compare="models", show_values=False):
+    """
+    This method plots the results obtained from the model_performance analysis.
+
+    Parameters
+    ----------
+    performance: xarray
+        The xarray obtained after computing model_performance.
+    compare: string
+        The compare parameter indicates what elements to compare between
+        each other.
+        Accepted values are 'models' or 'metrics'.
+    show_values: bool
+        If show values is True, we add numeric labels on each bar in the plot
+        with the rounded value to which the bar corresponds. The default is
+        False and shows no values on the bars.
+
+    Returns
+    -------
+    fig_list : list
+        The list of figures.
+    """
+
+    if compare not in ["models", "metrics"]:
+        raise RuntimeError("Please select compare method from ['models', 'metrics']")
+
+    fig_list = []
+
     for dataset in performance.coords['dataset'].values:
         fig, axes = plt.subplots()
         num_metrics = len(performance.coords['metric'].values)
         num_models = len(performance.coords['model'].values)
-
         max_width = .95
+
         if compare == "models":
             width = max_width / num_models
-
             ind = np.arange(num_metrics)
+
             for i, model in enumerate(performance.coords['model'].values):
                 metrics = performance.sel(dataset=dataset, model=model)
-                a = axes.bar(ind + (i * width), metrics.values, width, align="center", zorder=3)
+                a = axes.bar(ind + (i * width), metrics.values, width,
+                             align="center", zorder=3)
 
                 # add column values on the bars
                 if show_values:
                     for j, bar in enumerate(a):
                         coords = [bar.get_height(), bar.get_width()]
-                        axes.text(j + (i * width), coords[0], round(metrics.values[j],3),
+                        axes.text(j + (i * width), coords[0],
+                                  round(metrics.values[j], 3),
                                   ha='center', va='bottom', zorder=3)
                         
             axes.set_xticks(ind - width/2. + max_width / 2.)
             axes.set_xticklabels(performance.coords['metric'].values)
-
             axes.legend(performance.coords['model'].values)
             
         elif compare == "metrics":
             width = max_width / num_metrics
-            
             ind = np.arange(num_models)
+
             for i, metric in enumerate(performance.coords['metric'].values):
                 models = performance.sel(dataset=dataset, metric=metric)
-                a = axes.bar(ind + (i * width), models.values, width, align="center", zorder=3)
+                a = axes.bar(ind + (i * width), models.values, width,
+                             align="center", zorder=3)
 
                 # add column values on the bars
                 if show_values:
                     for j, bar in enumerate(a):
                         coords = [bar.get_height(), bar.get_width()]
-                        axes.text(j + (i * width), coords[0], round(models.values[j],3),
+                        axes.text(j + (i * width), coords[0],
+                                  round(models.values[j],3),
                                   ha='center', va='bottom', zorder=3)
                         
             axes.set_xticks(ind - width/2. + max_width / 2.)
             axes.set_xticklabels(performance.coords['model'].values)
-
             axes.legend(performance.coords['metric'].values)
 
         axes.set_ylabel("Metric Score")
@@ -73,100 +103,191 @@ def plot_model_performance(performance, compare="models", show_values=False):
         
         y_max = np.ceil(performance.values.max()*1.4*10.)/10.
         axes.set_ylim([0,y_max])
-        
         plt.tight_layout()
-    return fig
+
+        fig_list.append(fig)
+
+    return fig_list
+
 
 def resolvexticks(performance):
+    """
+    This methods subsamples xticks uniformly when too many xticks on x axes.
+    It is called by plot_tree_wise_performance, when the number of trees (xticks)
+    is too large to be nicely displayed.
+
+    Parameters
+    ----------
+    performance : xarray
+        The
+
+    Returns
+    -------
+    xticks : list
+        The list of indeces for xticks.
+    xticks_labels : list
+        The corresponding labels for each xtick.
+
+    """
     sampling_factor = len(performance.coords['k'].values) / 10.
-    new_xtick = islice(np.arange(len(performance.coords['k'].values)), 0, None, sampling_factor)
-    new_xticklabel = islice(performance.coords['k'].values, 0, None, sampling_factor)
+    new_xtick = islice(np.arange(len(performance.coords['k'].values)),0,
+                       None, sampling_factor)
+    new_xticklabel = islice(performance.coords['k'].values, 0,
+                            None, sampling_factor)
     xticks = list(new_xtick)
     xticks.append(np.arange(len(performance.coords['k'].values))[-1])
     xticks_labels = list(new_xticklabel)
     xticks_labels.append(performance.coords['k'].values[-1])
     return xticks, xticks_labels
 
+
 def plot_tree_wise_performance(performance, compare="models"):
+    """
+    This method plots the results obtained from the tree_wise_performance analysis.
+
+    Parameters
+    ----------
+    performance: xarray
+        The xarray obtained after computing tree_wise_performance.
+    compare: string
+        The compare parameter indicates what elements to compare between
+        each other. The default is 'models'.
+        Accepted values are 'models' or 'metrics' or 'datasets'.
+
+    Returns
+    -------
+    fig_list : list
+        The list of figures.
+    """
+
+    if compare not in ["models", "metrics", "datasets"]:
+        raise RuntimeError("Please select compare method from " +
+                           "['models', 'metrics', 'datasets']")
+
+    fig_list = []
+
     if compare == "metrics":
         for dataset in performance.coords['dataset'].values:
-            fig, axes = plt.subplots(len(performance.coords['model'].values), sharex=True, squeeze=False)
+            fig, axes = plt.subplots(len(performance.coords['model'].values),
+                                     sharex=True, squeeze=False)
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
-                    k_values = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[i,0].plot(k_values.values, label = metric)
+                    k_values = performance.sel(dataset=dataset,
+                                               model=model,
+                                               metric=metric)
+                    axes[i, 0].plot(k_values.values, label=metric)
                     max_k = np.argmax(k_values.values)
-                    axes[i,0].plot(max_k, k_values.values[max_k], "ok", fillstyle = "none", label=None)
+                    axes[i, 0].plot(max_k, k_values.values[max_k], "ok",
+                                   fillstyle="none", label=None)
                 
-                axes[j,0].plot([], [], "ok", fillstyle = "none", label="Max")
-                axes[i,0].set_ylabel(model)
+                axes[j, 0].plot([], [], "ok", fillstyle="none", label="Max")
+                axes[i, 0].set_ylabel(model)
 
                 if len(performance.coords['k'].values) > 10:
                     xticks, xticks_labels = resolvexticks(performance)
-                    axes[i,0].set_xticks(xticks)
-                    axes[i,0].set_xticklabels(xticks_labels)
+                    axes[i, 0].set_xticks(xticks)
+                    axes[i, 0].set_xticklabels(xticks_labels)
             
             axes[i,0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             axes[i,0].set_xlabel("Number of trees")
             fig.suptitle(performance.name + " for " + dataset.name)
 
+            fig_list.append(fig)
+
     elif compare == "models":
         for dataset in performance.coords['dataset'].values:
-            fig, axes = plt.subplots(len(performance.coords['metric'].values), sharex=True, squeeze=False)
+            fig, axes = plt.subplots(len(performance.coords['metric'].values),
+                                     sharex=True, squeeze=False)
             for j, metric in enumerate(performance.coords['metric'].values):  
                 for i, model in enumerate(performance.coords['model'].values):
-                    k_values = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[j,0].plot(k_values.values, label = model)
+                    k_values = performance.sel(dataset=dataset,
+                                               model=model,
+                                               metric=metric)
+                    axes[j, 0].plot(k_values.values, label=model)
                     max_k = np.argmax(k_values.values)
-                    axes[j,0].plot(max_k, k_values.values[max_k], "ok", fillstyle = "none", label=None)
+                    axes[j, 0].plot(max_k, k_values.values[max_k], "ok",
+                                   fillstyle = "none", label=None)
 
-                axes[j,0].plot([], [], "ok", fillstyle = "none", label="Max")
+                axes[j, 0].plot([], [], "ok", fillstyle="none", label="Max")
                 axes[j,0].set_ylabel(metric)
 
                 if len(performance.coords['k'].values) > 10:
                     xticks, xticks_labels = resolvexticks(performance)
-                    axes[j,0].set_xticks(xticks)
-                    axes[j,0].set_xticklabels(xticks_labels)
+                    axes[j, 0].set_xticks(xticks)
+                    axes[j, 0].set_xticklabels(xticks_labels)
             
-            axes[j,0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-            axes[j,0].set_xlabel("Number of trees")
+            axes[j, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            axes[j, 0].set_xlabel("Number of trees")
             fig.suptitle(performance.name + " for " + dataset.name)
+
+            fig_list.append(fig)
 
     elif compare == "datasets":
         for model in performance.coords['model'].values:
-            fig, axes = plt.subplots(len(performance.coords['metric'].values), sharex=True, squeeze=False)
+            fig, axes = plt.subplots(len(performance.coords['metric'].values),
+                                     sharex=True, squeeze=False)
             for j, metric in enumerate(performance.coords['metric'].values):  
                 for k, dataset in enumerate(performance.coords['dataset'].values):
-                    k_values = performance.sel(dataset=dataset, model=model, metric=metric)
-                    a = axes[j,0].plot(k_values.values, label = dataset.name)
+                    k_values = performance.sel(dataset=dataset,
+                                               model=model,
+                                               metric=metric)
+                    axes[j, 0].plot(k_values.values, label=dataset.name)
                     max_k = np.argmax(k_values.values)
-                    axes[j,0].plot(max_k, k_values.values[max_k], "ok", fillstyle = "none", label=None)
-                axes[j,0].plot([], [], "ok", fillstyle = "none", label="Max")
-                axes[j,0].set_ylabel(metric)
+                    axes[j, 0].plot(max_k, k_values.values[max_k], "ok",
+                                   fillstyle = "none", label=None)
+                axes[j, 0].plot([], [], "ok", fillstyle="none", label="Max")
+                axes[j, 0].set_ylabel(metric)
                 
                 if len(performance.coords['k'].values) > 10:
                     xticks, xticks_labels = resolvexticks(performance)
                     axes[j,0].set_xticks(xticks)
                     axes[j,0].set_xticklabels(xticks_labels)
                     
-            axes[j,0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-            axes[j,0].set_xlabel("Number of trees")
-            fig.suptitle(performance.name + " for " + model.name) 
+            axes[j, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            axes[j, 0].set_xlabel("Number of trees")
+            fig.suptitle(performance.name + " for " + model.name)
+
+            fig_list.append(fig)
     
-    return fig
+    return fig_list
+
 
 def plot_tree_wise_average_contribution(performance):
-    for i, dataset in enumerate(performance.coords['dataset'].values):
-        fig, axes = plt.subplots(len(performance.coords['model'].values), sharex=True, squeeze=False)
-        for j, model in enumerate(performance.coords['model'].values):
+    """
+    This method plots the results obtained from the
+    tree_wise_average_contribution analysis.
+
+    Parameters
+    ----------
+    performance: xarray
+        The xarray obtained after computing tree_wise_average_contribution.
+
+    Returns
+    -------
+    fig_list : list
+        The list of figures.
+    """
+
+    fig_list = []
+
+    for dataset in performance.coords['dataset'].values:
+        fig, axes = plt.subplots(len(performance.coords['model'].values),
+                                 sharex=True, squeeze=False)
+        for i, model in enumerate(performance.coords['model'].values):
+
+            # check if more models. we need subplot
             k_values = performance.sel(dataset=dataset, model=model)
-            a = axes[i,0].plot(k_values.values, label = model)
-        break
-    fig.title("")
-    #fig.xlabel("Number of trees")
-    #fig.legend((model,), loc='upper center')
+            axes[i, 0].plot(k_values.values)
+
+        axes[i, 0].set_title(performance.name + " for " + dataset.name)
+        axes[i, 0].set_xlabel("Number of trees")
+        axes[i, 0].legend((model,), loc='upper center')
+
+        plt.tight_layout()
+
+        fig_list.append(fig)
     
-    return fig 
+    return fig_list
 
 def plot_query_wise_performance(performance, compare_by="Model"):
     #     fig = plt.Figure(figsize=(20, 3))
