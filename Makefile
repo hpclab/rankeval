@@ -6,6 +6,7 @@ clean:
 	rm -rf dist
 	rm -rf rankeval.egg-info
 	rm -rf build *.so *.pyc *.egg *.so
+	rm -rf **/**/*.so
 
 test:
 	$(NOSETESTS)

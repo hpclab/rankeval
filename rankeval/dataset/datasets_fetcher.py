@@ -226,15 +226,15 @@ def load_dataset(dataset_name, fold=None, download_if_missing=True,
     print "Loading files. This may take a few minutes."
 
     if data.get('train') is not None:
-        train_dataset = Dataset.load(data['train'], name=dataset_name, format=dataset_format)
+        train_dataset = Dataset.load(data['train'], name=dataset_name + "_train", format=dataset_format)
         container.train_dataset = train_dataset
 
     if data.get('test') is not None:
-        test_dataset = Dataset.load(data['test'], name=dataset_name, format=dataset_format)
+        test_dataset = Dataset.load(data['test'], name=dataset_name + "_test", format=dataset_format)
         container.test_dataset = test_dataset
 
     if data.get('validation') is not None:
-        validation_dataset = Dataset.load(data['validation'], name=dataset_name, format=dataset_format)
+        validation_dataset = Dataset.load(data['validation'], name=dataset_name + "_validation", format=dataset_format)
         container.validation_dataset = validation_dataset
 
     container.license_agreement = data['license_agreement']
