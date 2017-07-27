@@ -16,16 +16,19 @@ import six
 class Metric(six.with_metaclass(ABCMeta)):
     """
     Metric is an abstract class which provides an interface for specific metrics.
-    It also offers 2 methods, one for iterating over the indeces for a certain query 
-    and another for iterating over the entire dataset based on those indeces.
+    It also offers 2 methods, one for iterating over the indeces for a certain
+    query and another for iterating over the entire dataset based on those
+    indices.
 
-    Some intuitions: https://stats.stackexchange.com/questions/159657/metrics-for-evaluating-ranking-algorithms
+    Some intuitions:
+    https://stats.stackexchange.com/questions/159657/metrics-for-evaluating-ranking-algorithms
     """
 
     @abstractmethod
     def __init__(self, name):
         """
-        The constructor for any metric; it initializes that metric with the proper name.
+        The constructor for any metric; it initializes that metric with the
+        proper name.
         
         Parameters
         ----------
@@ -38,8 +41,9 @@ class Metric(six.with_metaclass(ABCMeta)):
     @abstractmethod
     def eval(self, dataset, y_pred):
         """
-        This abstract method computes a specific metric over the predicted scores for a test dataset. It calls the
-        eval_per query method for each query in order to get the detailed metric score.
+        This abstract method computes a specific metric over the predicted
+        scores for a test dataset. It calls the eval_per query method for each
+        query in order to get the detailed metric score.
 
         Parameters
         ----------
@@ -87,8 +91,8 @@ class Metric(six.with_metaclass(ABCMeta)):
 
     def query_iterator(self, dataset, y_pred):
         """
-        This method iterates over dataset document scores and predicted scores in blocks of instances
-        which belong to the same query.
+        This method iterates over dataset document scores and predicted scores
+        in blocks of instances which belong to the same query.
         Parameters
         ----------
         dataset :  Datatset
@@ -99,9 +103,11 @@ class Metric(six.with_metaclass(ABCMeta)):
         : int
             The query id.
         : numpy.array
-            The document scores of the instances in the labeled dataset (instance labels) belonging to the same query id.
+            The document scores of the instances in the labeled dataset
+            (instance labels) belonging to the same query id.
         : numpy.array
-            The predicted scores for the instances in the dataset belonging to the same query id.
+            The predicted scores for the instances in the dataset belonging to
+            the same query id.
         """
         for query_id, (start_offset, end_offset) in \
                 enumerate(dataset.query_offset_iterator()):

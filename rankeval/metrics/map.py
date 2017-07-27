@@ -14,62 +14,62 @@ class MAP(Metric):
     """
     This class implements MAP with several parameters. We implemented MAP as in
     https://www.kaggle.com/wiki/MeanAveragePrecision, adapted from:
-        http://en.wikipedia.org/wiki/Information_retrieval
-        http://sas.uwaterloo.ca/stats_navigation/techreports/04WorkingPapers/2004-09.pdf
-
-    Attributes
-    ----------
-    name: string
-        MAP
-    cutoff: int
-        The top k results to be considered at per query level (e.g. 10), otherwise the default value is None and
-        is computed on all the instances of a query.
+    http://en.wikipedia.org/wiki/Information_retrieval
+    http://sas.uwaterloo.ca/stats_navigation/techreports/04WorkingPapers/2004-09.pdf
 
     """
 
     def __init__(self, name='MAP', cutoff=None):
         """
-        This is the constructor of MAP, an object of type Metric, with the name MAP.
-        The constructor also allows setting custom values in the following parameters.
+        This is the constructor of MAP, an object of type Metric, with
+        the name MAP. The constructor also allows setting custom values in the
+        following parameters.
 
         Parameters
         ----------
         name: string
+            MAP
         cutoff: int
+            The top k results to be considered at per query level (e.g. 10),
+            otherwise the default value is None and is computed on all the
+            instances of a query.
         """
         super(MAP, self).__init__(name)
         self.cutoff = cutoff
 
     def eval(self, dataset, y_pred):
         """
-        This method takes the AP@k for each query and calculates the average, thus MAP@k.
+        This method takes the AP@k for each query and calculates the average,
+        thus MAP@k.
 
         Parameters
         ----------
         dataset : Dataset
             Represents the Dataset object on which to apply MAP.
         y_pred : numpy 1d array of float
-            Represents the predicted document scores for each instance in the dataset.
+            Represents the predicted document scores for each instance in
+            the dataset.
 
         Returns
         -------
         avg_score: float
             The overall MAP@k score (averages over the detailed MAP scores).
         detailed_scores: numpy 1d array of floats
-            The detailed AP@k scores for each query, an array of length of the number of queries.
+            The detailed AP@k scores for each query, an array of length of
+            the number of queries.
         """
         return super(MAP, self).eval(dataset, y_pred)
 
     def eval_per_query(self, y, y_pred):
         """
-        This methods computes AP@k at per query level (on the instances belonging to a specific query).
-        The AP@k per query is calculated as
+        This methods computes AP@k at per query level (on the instances
+        belonging to a specific query). The AP@k per query is calculated as
 
         ap@k = sum( P(k) / min(m,n) ), for k=1,n
 
         where:
-            - P(k) means the precision at cut-off k in the item list. P(k) equals 0 when the
-                k-th item is not followed upon recommendation
+            - P(k) means the precision at cut-off k in the item list. P(k)
+            equals 0 when the k-th item is not followed upon recommendation
             - m is the number of relevant documents
             - n is the number of predicted documents
 
@@ -78,9 +78,11 @@ class MAP(Metric):
         Parameters
         ----------
         y: numpy array
-            Represents the labels of instances corresponding to one query in the dataset (ground truth).
+            Represents the labels of instances corresponding to one query in
+            the dataset (ground truth).
         y_pred: numpy array.
-            Represents the predicted document scores obtained during the model scoring phase for that query.
+            Represents the predicted document scores obtained during the model
+            scoring phase for that query.
 
         Returns
         -------
