@@ -46,12 +46,13 @@ def plot_model_performance(performance, compare="models", show_values=False):
     """
 
     if compare not in ["models", "metrics"]:
-        raise RuntimeError("Please select compare method from ['models', 'metrics']")
+        raise RuntimeError("Please select compare method from "
+                           "['models', 'metrics']")
 
     fig_list = []
 
     for dataset in performance.coords['dataset'].values:
-        fig, axes = plt.subplots()
+        fig, axes = plt.subplots(figsize=(8, 8))
         num_metrics = len(performance.coords['metric'].values)
         num_models = len(performance.coords['model'].values)
         max_width = .95
@@ -103,7 +104,7 @@ def plot_model_performance(performance, compare="models", show_values=False):
         axes.yaxis.grid(True, zorder=0, ls="--")
         
         y_max = np.ceil(performance.values.max()*1.4*10.)/10.
-        axes.set_ylim([0,y_max])
+        axes.set_ylim([0, y_max])
         plt.tight_layout()
 
         fig_list.append(fig)
@@ -114,8 +115,8 @@ def plot_model_performance(performance, compare="models", show_values=False):
 def resolvexticks(performance):
     """
     This methods subsamples xticks uniformly when too many xticks on x axes.
-    It is called by plot_tree_wise_performance, when the number of trees (xticks)
-    is too large to be nicely displayed.
+    It is called by plot_tree_wise_performance, when the number of trees
+    (xticks) is too large to be nicely displayed.
 
     Parameters
     ----------
@@ -131,7 +132,7 @@ def resolvexticks(performance):
 
     """
     sampling_factor = len(performance.coords['k'].values) / 10.
-    new_xtick = islice(np.arange(len(performance.coords['k'].values)),0,
+    new_xtick = islice(np.arange(len(performance.coords['k'].values)), 0,
                        None, sampling_factor)
     new_xticklabel = islice(performance.coords['k'].values, 0,
                             None, sampling_factor)
@@ -144,7 +145,8 @@ def resolvexticks(performance):
 
 def plot_tree_wise_performance(performance, compare="models"):
     """
-    This method plots the results obtained from the tree_wise_performance analysis.
+    This method plots the results obtained from the tree_wise_performance
+    analysis.
 
     Parameters
     ----------
@@ -190,8 +192,8 @@ def plot_tree_wise_performance(performance, compare="models"):
                     axes[i, 0].set_xticks(xticks)
                     axes[i, 0].set_xticklabels(xticks_labels)
             
-            axes[i,0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-            axes[i,0].set_xlabel("Number of trees")
+            axes[i, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            axes[i, 0].set_xlabel("Number of trees")
             fig.suptitle(performance.name + " for " + dataset.name)
 
             fig_list.append(fig)
@@ -211,7 +213,7 @@ def plot_tree_wise_performance(performance, compare="models"):
                                    fillstyle = "none", label=None)
 
                 axes[j, 0].plot([], [], "ok", fillstyle="none", label="Max")
-                axes[j,0].set_ylabel(metric)
+                axes[j, 0].set_ylabel(metric)
                 axes[j, 0].yaxis.grid(True, zorder=0, ls="--")
 
                 if len(performance.coords['k'].values) > 10:
@@ -244,8 +246,8 @@ def plot_tree_wise_performance(performance, compare="models"):
                 
                 if len(performance.coords['k'].values) > 10:
                     xticks, xticks_labels = resolvexticks(performance)
-                    axes[j,0].set_xticks(xticks)
-                    axes[j,0].set_xticklabels(xticks_labels)
+                    axes[j, 0].set_xticks(xticks)
+                    axes[j, 0].set_xticklabels(xticks_labels)
                     
             axes[j, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             axes[j, 0].set_xlabel("Number of trees")
@@ -313,7 +315,8 @@ def plot_query_wise_performance(performance, compare="models"):
     """
 
     if compare not in ["models", "metrics"]:
-        raise RuntimeError("Please select compare method from ['models', 'metrics']")
+        raise RuntimeError("Please select compare method from "
+                           "['models', 'metrics']")
     
     fig_list = []
 
@@ -321,16 +324,15 @@ def plot_query_wise_performance(performance, compare="models"):
         if compare == "metrics":
             fig, axes = plt.subplots(len(performance.coords['model'].values),
                                      sharex=True, squeeze=False, figsize=(8, 8))
+            fig.suptitle(performance.name + " for " + dataset.name)
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
                     k_values = performance.sel(dataset=dataset,
                                                model=model,
                                                metric=metric)
                     axes[i, 0].plot(performance.coords['bin'].values,
-                                    k_values.values*100, label = metric)
+                                    k_values.values*100, label=metric)
 
-                axes[i, 0].set_title(performance.name + " for " +
-                                     dataset.name + " and model " + model.name)
                 axes[i, 0].set_ylabel("Query %")
                 axes[i, 0].yaxis.set_ticks(np.arange(0, 101, 25))
                 axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
@@ -343,6 +345,7 @@ def plot_query_wise_performance(performance, compare="models"):
         elif compare == "models":
             fig, axes = plt.subplots(len(performance.coords['metric'].values),
                                      sharex=True, squeeze=False, figsize=(8, 8))
+            fig.suptitle(performance.name + " for " + dataset.name)
             for j, metric in enumerate(performance.coords['metric'].values):
                 for i, model in enumerate(performance.coords['model'].values):
                     k_values = performance.sel(dataset=dataset,
@@ -351,12 +354,10 @@ def plot_query_wise_performance(performance, compare="models"):
                     axes[j, 0].plot(performance.coords['bin'].values,
                                     k_values.values*100, label = model)
 
-                axes[j, 0].set_title(performance.name + " for " +
-                                     dataset.name + "and metric " + str(metric))
                 axes[j, 0].set_ylabel("Query %")
                 axes[j, 0].yaxis.set_ticks(np.arange(0, 101, 25))
                 axes[j, 0].yaxis.grid(True, zorder=0, ls="--")
-            axes[j, 0].set_xlabel("Metric Score")
+            axes[j, 0].set_xlabel(metric)
             axes[j, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             fig.tight_layout(rect=[0, 0.03, 1, 0.95])
             fig_list.append(fig)
@@ -364,22 +365,66 @@ def plot_query_wise_performance(performance, compare="models"):
 
 
 def plot_document_graded_relevance(performance):
+    """
+    This method plots the results obtained from the document_graded_relevance
+    analysis.
+
+    Parameters
+    ----------
+    performance: xarray
+        The xarray obtained after computing document_graded_relevance.
+
+    Returns
+    -------
+    fig_list : list
+        The list of figures.
+    """
+
+    fig_list = []
+
     for dataset in performance.coords['dataset'].values:
         fig, axes = plt.subplots(len(performance.coords['model'].values),
                                  sharex=True, squeeze=False, figsize=(8, 8))
         for i, model in enumerate(performance.coords['model'].values):
             for label in performance.coords['label'].values:
-                values = performance.sel(dataset=dataset, model=model, label=label).values
-                a = axes[i,0].plot(performance.coords['bin'].values, values)
+                values = performance.sel(dataset=dataset,
+                                         model=model,
+                                         label=label).values
+                a = axes[i, 0].plot(performance.coords['bin'].values, values)
             axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
-            axes[i,0].set_title(performance.name + " for " + dataset.name + " and model " + model.name)
-            axes[i,0].set_ylabel("Relevance")
-        axes[i,0].set_xlabel("Predicted score")
-        axes[i,0].legend(["Label "+str(int(l)) for l in performance.coords['label'].values])
-        
+            axes[i, 0].set_title(performance.name + " for " + dataset.name +
+                                 " and model " + model.name)
+            axes[i, 0].set_ylabel("Relevance")
+        axes[i, 0].set_xlabel("Predicted score")
+        axes[i, 0].legend(["Label "+str(int(l)) for l in
+                           performance.coords['label'].values])
+
+        fig_list.append(fig)
+
+    return fig_list
 
 
 def is_log_scale_matrix(matrix):
+    """
+    This method receives in input a matrix created as
+    performance.sel(dataset=X, model=Y) with li and lj as axes.
+
+    In case the first values is at least 2 times bigger than the second values,
+    we return True and the matrix will be rescaled in
+    plot_rank_confusion_matrix by applying log2; otherwise we return False
+    and nothing happens.
+
+    Parameters
+    ----------
+    matrix : xarray
+         created as performance.sel(dataset=X, model=Y) with li and lj as axes
+
+    Returns
+    -------
+    : bool
+        True or False
+
+    """
     flat = matrix.values.flatten()
     flat.sort()
     if flat[-1]/flat[-2] > 2:
@@ -389,6 +434,23 @@ def is_log_scale_matrix(matrix):
 
 
 def plot_rank_confusion_matrix(performance):
+    """
+    This method plots the results obtained from the rank_confusion_matrix
+    analysis.
+
+    Parameters
+    ----------
+    performance: xarray
+        The xarray obtained after computing rank_confusion_matrix.
+
+    Returns
+    -------
+    fig_list : list
+        The list of figures.
+    """
+
+    fig_list = []
+
     for dataset in performance.coords['dataset'].values:
         fig, axes = plt.subplots(len(performance.coords['model'].values),
                                  squeeze=False, figsize=(8, 8))
@@ -396,15 +458,50 @@ def plot_rank_confusion_matrix(performance):
             matrix = performance.sel(dataset=dataset, model=model)
             if is_log_scale_matrix(matrix):
                 matrix = np.log(matrix)
-            axes[i,0].pcolormesh(matrix)
-            axes[i,0].set_title(performance.name + " for " + dataset.name + " and model " + model.name)
-            axes[i,0].set_ylabel("Label j")
-            axes[i,0].set_xlabel("Label i")
-            #axes[i,0].legend(["Label "+str(int(l)) for l in performance.coords['label'].values])
-            plt.tight_layout()
+            axes[i, 0].pcolormesh(matrix)
+            axes[i, 0].set_title(performance.name + " for " + dataset.name +
+                                " and model " + model.name)
+            axes[i, 0].set_ylabel("Label j")
+            axes[i, 0].set_xlabel("Label i")
+            # axes[i,0].legend(["Label "+str(int(l)) for l in
+            # performance.coords['label'].values])
+
+        fig_list.append(fig)
+
+    return fig_list
 
 
 def plot_query_class_performance(performance, show_values=False, compare="models"):
+    """
+    This method plots the results obtained from the query_class_performance
+    analysis.
+
+    Parameters
+    ----------
+    performance: xarray
+        The xarray obtained after computing query_class_performance.
+    compare: string
+        The compare parameter indicates what elements to compare between
+        each other.
+        Accepted values are 'models' or 'metrics'.
+    show_values: bool
+        If show values is True, we add numeric labels on each bar in the plot
+        with the rounded value to which the bar corresponds. The default is
+        False and shows no values on the bars.
+
+    Returns
+    -------
+    fig_list : list
+        The list of figures.
+
+    """
+
+    if compare not in ["models", "metrics"]:
+        raise RuntimeError("Please select compare method from "
+                           "['models', 'metrics']")
+
+    fig_list = []
+
     for dataset in performance.coords['dataset'].values:
         num_metrics = len(performance.coords['metric'].values)
         num_models = len(performance.coords['model'].values)
@@ -418,7 +515,9 @@ def plot_query_class_performance(performance, show_values=False, compare="models
             
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
-                    classes = performance.sel(dataset=dataset, model=model, metric=metric)
+                    classes = performance.sel(dataset=dataset,
+                                              model=model,
+                                              metric=metric)
                     a = axes[i, 0].bar(ind + (j * width), classes.values, width, 
                                       align="center", zorder=3)
 
@@ -436,11 +535,15 @@ def plot_query_class_performance(performance, show_values=False, compare="models
                 axes[i, 0].set_xticks(ind - width/2. + max_width / 2.)
                 axes[i, 0].set_xticklabels(performance.coords['classes'].values)
                 y_max = np.ceil(performance.values.max()*1.4*10.)/10.
-                axes[i, 0].set_ylim([0,y_max])
+                axes[i, 0].set_ylim([0, y_max])
 
-            axes[i, 0].legend(performance.coords['metric'].values, 
-                             bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-            fig.suptitle(performance.name + " for " + dataset.name + " and model " + model.name)
+            axes[i, 0].legend(performance.coords['metric'].values,
+                              bbox_to_anchor=(1.05, 1),
+                              loc=2, borderaxespad=0.)
+            fig.suptitle(performance.name + " for " + dataset.name +
+                         " and model " + model.name)
+
+            fig_list.append(fig)
 
         elif compare == "models":
             fig, axes = plt.subplots(num_metrics, squeeze=False, figsize=(8, 8))
@@ -449,7 +552,9 @@ def plot_query_class_performance(performance, show_values=False, compare="models
             
             for i, metric in enumerate(performance.coords['metric'].values):
                 for j, model in enumerate(performance.coords['model'].values):
-                    classes = performance.sel(dataset=dataset, model=model, metric=metric)
+                    classes = performance.sel(dataset=dataset,
+                                              model=model,
+                                              metric=metric)
                     a = axes[i, 0].bar(ind + (j * width), classes.values, width,
                                        align="center", zorder=3)
 
@@ -460,18 +565,20 @@ def plot_query_class_performance(performance, show_values=False, compare="models
                             axes[i, 0].text(k + (j * width), coords[0], 
                                             round(classes.values[k], 3),
                                             ha='center', va='bottom', zorder=3)
-                            
-                # add some text for labels, title and axes ticks
+
                 axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
                 axes[i, 0].set_ylabel(metric)
                 axes[i, 0].set_xticks(ind - width / 2 + max_width / 2.)
                 axes[i, 0].set_xticklabels(performance.coords['classes'].values)
                 y_max = np.ceil(performance.values.max()*1.4*10.)/10.
-                axes[i, 0].set_ylim([0,y_max])
+                axes[i, 0].set_ylim([0, y_max])
 
             axes[i, 0].legend(performance.coords['model'].values,
-                             bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+                              bbox_to_anchor=(1.05, 1),
+                              loc=2, borderaxespad=0.)
             plt.suptitle(performance.name + " for " + dataset.name)
 
+            fig_list.append(fig)
 
+    return fig_list
 
