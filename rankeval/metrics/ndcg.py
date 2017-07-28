@@ -16,16 +16,6 @@ class NDCG(Metric):
     """
     This class implements NDCG with several parameters.
 
-    Attributes
-    ----------
-    name: string
-        NDCG
-    cutoff: int
-        The top k results to be considered at per query level (e.g. 10)
-    no_relevant_results: float
-        Float indicating how to treat the cases where then are no relevant results (e.g. 0.5)
-    implementation: string
-        Indicates whether to consider the flat or the exponential DCG formula: "flat" or "exp" (default).
     """
 
     def __init__(self, name='NDCG', cutoff=None, no_relevant_results=1.0,
@@ -43,12 +33,18 @@ class NDCG(Metric):
 
         Parameters
         ----------
-        name : string
+        name: string
+            NDCG
         cutoff: int
+            The top k results to be considered at per query level (e.g. 10)
         no_relevant_results: float
+            Float indicating how to treat the cases where then are no relevant
+            results (e.g. 0.5). Default is 1.0.
         implementation: string
-            it can range between {"flat", "exp"}
+            Indicates whether to consider the flat or the exponential DCG
+            formula: "flat" or "exp" (default).
         """
+
         super(self.__class__, self).__init__(name)
         self.cutoff = cutoff
         self.no_relevant_results = no_relevant_results
@@ -141,8 +137,6 @@ class NDCG(Metric):
         s = self.name
         if self.cutoff is not None:
             s += "@{}".format(self.cutoff)
-        # s += "[no-rel:{}, ties:{}, impl={}]".format(
-        #     self.no_relevant_results, self.ties, self.implementation)
         return s
 
 

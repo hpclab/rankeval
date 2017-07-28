@@ -13,35 +13,38 @@ from rankeval.metrics import Metric
 class Pfound(Metric):
     """
     This class implements Pfound with several parameters.
-    The ERR metric is very similar to the pFound metric used by Yandex (Segalovich, 2010)
-    [http://proceedings.mlr.press/v14/chapelle11a/chapelle11a.pdf].
-    In fact pFound is identical to the ERR variant described in (Chapelle et al., 2009, Section 7.2).
-    We implemented pFound similar to ERR in section 7.2 of http://olivier.chapelle.cc/pub/err.pdf.
 
-    Attributes
-    ----------
-    name: string
-        Pfound
-    cutoff: int
-        The top k results to be considered at per query level (e.g. 10), otherwise the default value is None and
-        is computed on all the instances of a query.
-    p_abandonment: float
-        This parameter indicates the probability of abandonment, i.e. the user stops looking a the ranked list due
-        to an external reason.
-        The original cascade model of ERR has later been extended to include an abandonment probability: if the user is
-        not satisfied at a given position, he will examine the next url with probability y,
-        but has a probability 1-y of abandoning.
+    The ERR metric is very similar to the pFound metric used by
+    Yandex (Segalovich, 2010).
+    [http://proceedings.mlr.press/v14/chapelle11a/chapelle11a.pdf].
+
+    In fact pFound is identical to the ERR variant described in
+    (Chapelle et al., 2009, Section 7.2). We implemented pFound similar
+    to ERR in section 7.2 of http://olivier.chapelle.cc/pub/err.pdf.
+
     """
     def __init__(self, name='Pf', cutoff=None, p_abandonment=0.15):
         """
-        This is the constructor of Pfound, an object of type Metric, with the name Pfound.
-        The constructor also allows setting custom values in the following parameters.
+        This is the constructor of Pfound, an object of type Metric, with
+        the name Pf. The constructor also allows setting custom values in
+        the following parameters.
 
         Parameters
         ----------
-        name : string
-        cutoff : int
-        p_abandonment : float
+        name: string
+            Pf
+        cutoff: int
+            The top k results to be considered at per query level (e.g. 10),
+            otherwise the default value is None and is computed on all the
+            instances of a query.
+        p_abandonment: float
+            This parameter indicates the probability of abandonment, i.e.
+            the user stops looking a the ranked list due to an external reason.
+            The original cascade model of ERR has later been extended to include
+            an abandonment probability: if the user is not satisfied at a given
+            position, he will examine the next url with probability y, but has
+            a probability 1-y of abandoning.
+
         """
         super(Pfound, self).__init__(name)
         self.cutoff = cutoff
@@ -49,41 +52,48 @@ class Pfound(Metric):
 
     def eval(self, dataset, y_pred):
         """
-        The method computes Pfound by taking as input the dataset and the predicted document scores.
-        It returns the averaged Pfound score over the entire dataset and the detailed Pfound scores per query.
+        The method computes Pfound by taking as input the dataset and the
+        predicted document scores. It returns the averaged Pfound score over
+        the entire dataset and the detailed Pfound scores per query.
 
         Parameters
         ----------
         dataset : Dataset
             Represents the Dataset object on which to apply Pfound.
         y_pred : numpy 1d array of float
-            Represents the predicted document scores for each instance in the dataset.
+            Represents the predicted document scores for each instance in
+            the dataset.
 
         Returns
         -------
         avg_score: float
             Represents the average Pfound over all Pfound scores per query.
         detailed_scores: numpy 1d array of floats
-            Represents the detailed Pfound scores for each query. It has the length of n_queries.
+            Represents the detailed Pfound scores for each query. It has the
+            length of n_queries.
         """
         return super(Pfound, self).eval(dataset, y_pred)
 
     def eval_per_query(self, y, y_pred):
         """
-        This method helps compute the Pfound score per query. It is called by the eval function which averages and
-        aggregates the scores for each query.
+        This method helps compute the Pfound score per query. It is called by
+        the eval function which averages and aggregates the scores for each
+        query.
 
         Parameters
         ----------
         y: numpy array
-            Represents the labels of instances corresponding to one query in the dataset (ground truth).
-        y_pred: numpy array.
-            Represents the predicted document scores obtained during the model scoring phase for that query.
+            Represents the labels of instances corresponding to one query in
+            the dataset (ground truth).
+        y_pred: numpy array
+            Represents the predicted document scores obtained during the model
+            scoring phase for that query.
 
         Returns
         -------
         pfound: float
-            Represents the DCG score for one query.
+            Represents the Pfound score for one query.
+
         """
         idx_y_pred_sorted = np.argsort(y_pred)[::-1]
         if self.cutoff is not None:

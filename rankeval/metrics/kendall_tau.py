@@ -26,7 +26,7 @@ class Kendalltau(Metric):
         Parameters
         ----------
         name: string
-            Kendalltau
+            K
 
         """
         super(Kendalltau, self).__init__(name)
