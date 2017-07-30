@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # RankEval documentation build configuration file, created by
-# sphinx-quickstart on Wed Jul 26 14:23:17 2017.
+# sphinx-quickstart on Sun Jul 30 21:58:41 2017.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -185,5 +185,6 @@ extensions += ['sphinx.ext.imgmath']
 numpydoc_show_class_members = False
 html_theme = "sphinx_rtd_theme"
 import sys,os
-sys.path.append( os.path.abspath('../../') )
-print sys.path
+sys.path.insert(0, os.path.abspath('../../') )
+from setuptools import sandbox
+sandbox.run_setup(os.path.abspath('../../setup.py'),  ['build_ext','-i'])

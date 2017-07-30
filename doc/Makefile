@@ -27,8 +27,12 @@ doc:
 	# customize themes
 	@echo "html_theme = \"sphinx_rtd_theme\"" >> $(DOCDIR)/conf.py
 
-	#@echo "import sys,os" >> $(DOCDIR)/conf.py
-	#@echo "sys.path.append( os.path.abspath('../../') )" >> $(DOCDIR)/conf.py
+	@echo "import sys,os" >> $(DOCDIR)/conf.py
+	@echo "sys.path.insert(0, os.path.abspath('../../') )" >> $(DOCDIR)/conf.py
+	#@echo "print (sys.path)" >> $(DOCDIR)/conf.py
+
+	@echo "from setuptools import sandbox" >> $(DOCDIR)/conf.py
+	@echo "sandbox.run_setup(os.path.abspath('../../setup.py'),  ['build_ext','-i'])" >> $(DOCDIR)/conf.py
 
 	# compile HTML files
 	make -C $(DOCDIR) html
