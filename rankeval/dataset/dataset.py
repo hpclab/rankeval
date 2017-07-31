@@ -9,6 +9,7 @@
 This module implements the generic class for loading/dumping a dataset from/to file.
 """
 import numpy as np
+import copy
 
 from .svmlight_format import load_svmlight_file, dump_svmlight_file
 
@@ -89,6 +90,25 @@ class Dataset(object):
         else:
             raise TypeError("Dataset format %s is not yet supported!" % format)
         return Dataset(X, y, query_ids, name)
+
+    def subset_features(self, features):
+        """
+        Create a new Dataset with only the features identified by the given
+        features parameters (indices). It is useful for performing feature
+        selection.
+
+        Parameters
+        ----------
+        features : numpy array or list
+            The indices of the features to select in the resulting dataset
+
+        Returns
+        -------
+        dataset : rankeval.dataset.Dataset
+            The resulting dataset with the given subset of features
+        """
+        new_dataset = copy.deepcopy(self)
+        return new_dataset.X[:, features]
 
     def dump(self, f, format):
         """

@@ -175,7 +175,7 @@ class RTEnsemble(object):
         return self.trees_left_child[index] == -1 and \
                self.trees_right_child[index] == -1
 
-    def save(self, f, format="quickrank"):
+    def save(self, f, format="QuickRank"):
         """
         Save the model onto the file identified by file_path, using the given
         model format.

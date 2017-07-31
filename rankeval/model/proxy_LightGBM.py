@@ -20,6 +20,13 @@ NOTE: the leaves output of the regression trees already take into account the
 weight of the tree (i.e., the learning rate or shrinkage factor). In order to
 maintain the scoring made by rankeval (that multiply the leaf output by the tree
 weight), the weight of the trees have been set equals to 1.
+
+NOTE: currently rankeval support the loading of LightGBM models only if they
+have been trained by disabling missing values, i.e., when setting the relative
+parameter of the training method to False (`'use_missing'=False`). This is
+required because LtR datasets do not have missing values, but have feature
+values equals to zero (while LightGBM consider zero valued feature as missing
+values).
 """
 
 import re
@@ -33,6 +40,7 @@ num_leaves_reg = re.compile("^num_leaves=(\d+)")
 split_feature_reg = re.compile("^split_feature=(.*)")
 threshold_reg = re.compile("^threshold=(.*)")
 decision_type_reg = re.compile("^decision_type=(.*)")
+default_value_reg = re.compile("^default_value=(.*)")
 left_child_reg = re.compile("^left_child=(.*)")
 right_child_reg = re.compile("^right_child=(.*)")
 leaf_parent_reg = re.compile("^leaf_parent=(.*)")
@@ -138,6 +146,14 @@ class ProxyLightGBM(object):
                     types = np.array(match.group(1).strip().split(), dtype=int)
                     if types.any():
                         raise AssertionError("Decision Tree not supported")
+                    continue
+
+                match = default_value_reg.match(line)
+                if match:
+                    values = np.array(match.group(1).strip().split(),
+                                      dtype=np.float64)
+                    if values.any():
+                        raise AssertionError("Missing Values not supported!")
                     continue
 
                 match = has_categorical_reg.match(line)
