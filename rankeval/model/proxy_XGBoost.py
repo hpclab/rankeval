@@ -22,6 +22,16 @@ represent a single split node or a leaf node, with several attributes describing
 the feature and the threshold involved (in case of a split node) or the output
 (in case of a leaf). Each node is identified by a unique integer as well as
 additional information not usefull for rankeval and thus ignored.
+
+NOTE: the XGBoost version 0.6 does not properly dump the model. Indeed, as
+reported in the issue here:
+
+- https://github.com/dmlc/xgboost/issues/2077
+
+The precision of the dumping is not sufficient and cause inconsistencies with
+the XGBoost model. This inconsistencies cause rankeval scoring to return
+different predictions with respect to the original model. Without a fix by
+XGBoost authors, DO NOT USE this proxy.
 """
 
 import re
