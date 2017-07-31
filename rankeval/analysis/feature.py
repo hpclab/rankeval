@@ -21,7 +21,7 @@ from _efficient_feature import eff_feature_importance, \
     eff_feature_importance_tree
 
 
-def feature_importance(model, dataset, metric=None, feature_names=None):
+def feature_importance(model, dataset, metric=None):
     """
     This method computes the feature importance relative to the given model
     and dataset.
@@ -39,17 +39,20 @@ def feature_importance(model, dataset, metric=None, feature_names=None):
 
     Returns
     -------
-    feature_importance : numpy.array
-        A vector of importance values, one for each feature in the given
-        model. The importance values reported are the sum of the
-        improvements, in terms of MSE, of each feature, evaluated on the
-        given dataset. The improvements are computed as the delta MSE before
-        a split node and after, evaluating how much the MSE is improved as a
-        result of the split.
-    feature_count : numpy.array
-        A vector of count values, one for each feature in the given
-        model. The count values reported highlights the number of times each
-        feature is used in a split node, i.e., to improve the MSE.
+    feature_importance : xarray.DataArray
+        A DataArray containing the feature importance scores, one for each
+        feature of the given model scored on the given dataset. Two main
+        information are stored in the DataArray:
+            - feature_importance: A vector of importance values, one for each
+                feature in the given model. The importance values reported are
+                the sum of the improvements, in terms of MSE, of each feature,
+                evaluated on the given dataset. The improvements are computed as
+                the delta MSE before a split node and after, evaluating how much
+                the MSE is improved as a result of the split.
+            - feature_count: A vector of count values, one for each feature in
+                the given model. The count values reported highlights the number
+                of times each feature is used in a split node, i.e., to improve
+                the MSE.
     """
     if metric is None:
         metric = MSE()

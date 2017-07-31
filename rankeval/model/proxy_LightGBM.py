@@ -43,7 +43,8 @@ has_categorical_reg = re.compile("^has_categorical=(.*)")
 
 class ProxyLightGBM(object):
     """
-    Class providing the implementation for loading/storing a QuickRank model from/to file.
+    Class providing the implementation for loading/storing a LightGBM model
+    from/to file.
     """
 
     @staticmethod

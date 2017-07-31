@@ -39,7 +39,8 @@ leaf_reg = re.compile("(\d+):leaf=(.+)$")
 
 class ProxyScikitLearn(object):
     """
-    Class providing the implementation for loading/storing a QuickRank model from/to file.
+    Class providing the implementation for loading/storing a Scikit-Learn model
+    from/to file.
     """
 
     @staticmethod

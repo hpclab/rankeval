@@ -55,8 +55,12 @@ def load_svmlight_file(file_path, buffer_mb=40, query_id=False):
         del data
         data = new_data
 
-    # X_train = data.reshape((len(qids), len(data)/len(qids)))
-    # X_train = np.ndarray(data, dtype=dtype)
+    # Convert infinite values to max_float representation (SVM reader problem)
+    # This patch is needed because some dataset have infinite values and because
+    # the split condition is <=, while sole software uses <. In order to
+    # reconduct the former condition to the latter, we slightly decrease the
+    # split. However, slightly decreasing inf does not have any effect.
+    data[data == np.inf] = np.finfo(data.dtype).max
 
     if not query_id:
         return data, labels

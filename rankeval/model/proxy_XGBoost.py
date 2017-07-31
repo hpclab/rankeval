@@ -25,7 +25,7 @@ additional information not usefull for rankeval and thus ignored.
 """
 
 import re
-
+import sys
 import numpy as np
 
 from rt_ensemble import RTEnsemble
@@ -37,7 +37,8 @@ leaf_reg = re.compile("(\d+):leaf=(.+?)(,.*)?$")
 
 class ProxyXGBoost(object):
     """
-    Class providing the implementation for loading/storing a QuickRank model from/to file.
+    Class providing the implementation for loading/storing a XGBoost model
+    from/to file.
     """
 
     @staticmethod
@@ -77,9 +78,13 @@ class ProxyXGBoost(object):
                 if match_node:
                     node_id = int(match_node.group(1).strip()) + root_node
                     feature_id = int(match_node.group(2).strip())
-                    threshold = float(match_node.group(3).strip())
+                    threshold = np.float32(match_node.group(3).strip())
 
-                    threshold = np.nextafter(threshold, threshold + 1)
+                    # Needed because XGBoost use as split condition
+                    # < in place of <=
+                    threshold = np.nextafter(
+                        threshold, threshold - 1,
+                        dtype=model.trees_nodes_value.dtype)
 
                     model.trees_nodes_feature[node_id] = feature_id
                     model.trees_nodes_value[node_id] = threshold
