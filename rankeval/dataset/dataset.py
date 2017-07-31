@@ -108,7 +108,7 @@ class Dataset(object):
             The resulting dataset with the given subset of features
         """
         new_dataset = copy.deepcopy(self)
-        new_dataset.X[:, features]
+        new_dataset.X = new_dataset.X[:, features]
         return new_dataset
 
     def dump(self, f, format):
