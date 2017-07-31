@@ -13,13 +13,6 @@ clean:
 test:
 	$(NOSETESTS)
 
-DOCDIR=./doc/src
-SRCDIR=./rankeval
-
-# documentation is compiled by using shpinx
-# exclude from documentation
-DOCEXCLUDED=./rankeval/test
-
 ### Handling Sphinx for generating documentation
 .PHONY: doc
 doc: 
