@@ -47,7 +47,7 @@ def plot_shape(topological, max_level=10):
     max_nodes = max(128, 2**max_levels)
 
     # custom color map
-    cm = LinearSegmentedColormap.from_list('w2r', [(1,1,1),(1,0,0)], N=256)
+    cm = LinearSegmentedColormap.from_list('w2r', [(1,1,1),(23./255.,118./255.,182./255.)], N=256)
 
     # figure
     fig = plt.figure(1, figsize=(12, 6))
