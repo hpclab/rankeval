@@ -34,5 +34,7 @@ doc:
 	@echo "from setuptools import sandbox" >> $(DOCDIR)/conf.py
 	@echo "sandbox.run_setup(os.path.abspath('../../setup.py'),  ['build_ext','-i'])" >> $(DOCDIR)/conf.py
 
+	@echo "autoclass_content = 'both'" >> $(DOCDIR)/conf.py
+
 	# compile HTML files
 	make -C $(DOCDIR) html
