@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # RankEval documentation build configuration file, created by
-# sphinx-quickstart on Mon Jul 31 07:44:25 2017.
+# sphinx-quickstart on Thu Aug  3 17:54:20 2017.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -18,7 +18,7 @@
 #
 # import os
 # import sys
-# sys.path.insert(0, u'/Users/claudio/Documents/claudio/docs/LAVORO/coding/ltr/rankeval/rankeval')
+# sys.path.insert(0, u'/Users/nardini/Docs-WORK/Workspaces/Python/rankeval/rankeval')
 
 
 # -- General configuration ------------------------------------------------
@@ -96,6 +96,21 @@ html_theme = 'alabaster'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# Custom sidebar templates, must be a dictionary that maps document names
+# to template names.
+#
+# This is required for the alabaster theme
+# refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'relations.html',  # needs 'show_related': True theme option to display
+        'searchbox.html',
+        'donate.html',
+    ]
+}
 
 
 # -- Options for HTMLHelp output ------------------------------------------
@@ -188,3 +203,4 @@ import sys,os
 sys.path.insert(0, os.path.abspath('../../') )
 from setuptools import sandbox
 sandbox.run_setup(os.path.abspath('../../setup.py'),  ['build_ext','-i'])
+autoclass_content = 'both'
