@@ -56,7 +56,7 @@ def __get_data_home__(data_home=None):
 def __fetch_dataset_and_models__(dataset_dictionary, fold=None, data_home=None,
                                  download_if_missing=True, force_download=True,
                                  with_models=True):
-    """ Fetch and download a given dataset.
+    """ Download a given dataset (and models, if needed).
 
     Parameters
     ----------
@@ -111,6 +111,7 @@ def __fetch_dataset_and_models__(dataset_dictionary, fold=None, data_home=None,
         test_file_path = os.path.join(subfolder_fold, dataset_dictionary['TEST_FILE'])
         if dataset_dictionary.get('VALIDATION_FILE') is not None:
             validation_file_path = os.path.join(subfolder_fold, dataset_dictionary['VALIDATION_FILE'])
+        model_subfolder = os.path.join(models_home, dataset_dictionary['COMMON_SUBFOLDER_NAME'] + str(fold))
 
     # everything will be stored in a dictionary to return
     data = dict()
@@ -172,9 +173,15 @@ def __fetch_dataset_and_models__(dataset_dictionary, fold=None, data_home=None,
 
         # filling data structure to return
         matches = []
-        for root, dirnames, filenames in os.walk(models_home):
-            for filename in fnmatch.filter(filenames, '*'):
-                matches.append(os.path.join(root, filename))
+        if fold is None:
+            for root, dirnames, filenames in os.walk(models_home):
+                for filename in fnmatch.filter(filenames, '*'):
+                    matches.append(os.path.join(root, filename))
+        else:
+            for root, dirnames, filenames in os.walk(model_subfolder):
+                for filename in fnmatch.filter(filenames, '*'):
+                    matches.append(os.path.join(root, filename))
+
         data['models'] = matches
 
     return data
