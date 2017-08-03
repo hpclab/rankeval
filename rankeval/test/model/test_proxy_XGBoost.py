@@ -57,6 +57,7 @@ class ProxyXGBoostTestCase(unittest.TestCase):
              6.771300e-02, 3.554500e-03, 2.095000e+02,
              4.446650e-02, -1.829400e-03, -4.251890e-02,
              2.092780e-03, 3.061710e-02],
+            decimal=4,
             err_msg="Split thresholds or leaf outputs value are not correct")
 
     def test_left_children(self):

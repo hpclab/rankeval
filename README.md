@@ -35,6 +35,13 @@ export CC=gcc-5
 export CXX=g++-5
 ```
 
+Moreover, RankEval needs the following libraries to be installed before the 
+installation process begin:
+  - numpy >= 1.13
+  - scipy >= 0.7
+  - cython >= 0.25
+  - matplotlib >= 2.0.2
+
 Below an example of installation.
 
 ```python setup.py install```

@@ -114,7 +114,8 @@ class MetricsTestCase(unittest.TestCase):
         recall_q1 = p.eval_per_query(self.y_query1, self.y_pred_query1)
         recall_q2 = p.eval_per_query(self.y_query2, self.y_pred_query2)
         recall_dataset = p.eval(self.dataset, self.y_pred)
-        assert_almost_equal(recall_dataset[0], np.mean([recall_q1, recall_q2]), decimal=9)
+        assert_almost_equal(recall_dataset[0], np.mean([recall_q1, recall_q2]),
+                            decimal=9)
 
     def test_DCG_eval_per_query_flat(self):
         idx_y_pred_sorted = np.argsort(self.y_pred_query1)[::-1]
