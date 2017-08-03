@@ -17,7 +17,7 @@ RankEval is available under Mozilla Public License 2.0.
 
 The official GitHub repository is: [here](https://github.com/hpclab/rankeval).
 
-For questions/suggestions on how to improve RankEval, send us an email: [here](rankeval@isti.cnr.it).
+For questions/suggestions on how to improve RankEval, send us an email: rankeval@isti.cnr.it
 
 ## Documentation
 
