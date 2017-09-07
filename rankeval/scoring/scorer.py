@@ -55,7 +55,7 @@ class Scorer(object):
 
         # Save the leaf id of each tree for each dataset instance
         # (if detailed scoring is True)
-        self.partial_y_leaves = None
+        self.y_leaves = None
 
     def score(self, detailed):
         """
@@ -78,11 +78,11 @@ class Scorer(object):
 
         # Skip the scoring if it has already been done (return cached results)
         if not detailed and self.y_pred is not None or \
-                        detailed and self.partial_y_leaves is not None:
+                        detailed and self.y_leaves is not None:
             return self.y_pred
 
         if detailed:
-            self.partial_y_leaves, self.partial_y_pred = \
+            self.y_leaves, self.partial_y_pred = \
                 detailed_scoring(self.model, self.dataset.X)
             self.y_pred = self.partial_y_pred.sum(axis=1)
         else:
@@ -139,7 +139,7 @@ class Scorer(object):
             each dataset instance.
 
         """
-        if self.self.partial_y_leaves is None:
+        if self.self.y_leaves is None:
             self.score(detailed=True)
-        return self.self.partial_y_leaves
+        return self.self.y_leaves
 
