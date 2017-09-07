@@ -230,6 +230,9 @@ class RTEnsemble(object):
         partial_y_pred : numpy 2d array (n_instances x n_trees)
             The predictions made by scoring the model on the given dataset, on a
             tree basis (i.e., tree by tree and instance by instance)
+        partial_y_leaves : numpy 2d array (n_instances x n_trees)
+            The leaf nodes predicted by scoring the model on the given dataset,
+            on a tree basis (i.e., tree by tree and instance by instance)
         """
 
         # check that the features used by the model are "compatible" with the
@@ -258,7 +261,7 @@ class RTEnsemble(object):
 
         scorer = self._cache_scorer[dataset]
         if detailed:
-            return scorer.y_pred, scorer.partial_y_pred
+            return scorer.y_pred, scorer.partial_y_pred, scorer.partial_y_leaves
         else:
             return scorer.y_pred
 
