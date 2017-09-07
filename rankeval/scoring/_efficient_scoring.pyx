@@ -43,12 +43,12 @@ def basic_scoring(model, X):
     cdef int[:] trees_left_child = model.trees_left_child
     cdef int[:] trees_right_child  = model.trees_right_child
 
-    cdef float predicted_score
+    cdef int leaf_node
     cdef np.intp_t idx_tree, idx_instance
     with nogil, parallel():
         for idx_instance in prange(n_instances):
             for idx_tree in xrange(n_trees):
-                predicted_score = _score_single_instance_single_tree(
+                leaf_node = _score_single_instance_single_tree(
                     X_view,
                     idx_instance,
                     idx_tree,
@@ -60,7 +60,8 @@ def basic_scoring(model, X):
                     trees_right_child
                 )
 
-                y_view[idx_instance] += predicted_score * trees_weight[idx_tree]
+                y_view[idx_instance] += \
+                    trees_nodes_value[leaf_node] * trees_weight[idx_tree]
     return y
 
 @cython.boundscheck(False)
@@ -71,6 +72,9 @@ def detailed_scoring(model, X):
     cdef np.intp_t n_trees = model.n_trees
 
     cdef float[:, :] X_view = X
+    y_leaves = np.zeros((X.shape[0], model.n_trees), dtype=np.int32)
+    cdef int[:, :] y_leaves_view = y_leaves
+
     partial_y = np.zeros((X.shape[0], model.n_trees), dtype=np.float32)
     cdef float[:, :] partial_y_view = partial_y
 
@@ -81,12 +85,12 @@ def detailed_scoring(model, X):
     cdef int[:] trees_left_child = model.trees_left_child
     cdef int[:] trees_right_child  = model.trees_right_child
 
-    cdef float predicted_score
+    cdef int leaf_node
     cdef np.intp_t idx_tree, idx_instance
     with nogil, parallel():
         for idx_tree in prange(n_trees):
             for idx_instance in xrange(n_instances):
-                predicted_score = _score_single_instance_single_tree(
+                leaf_node = _score_single_instance_single_tree(
                     X_view,
                     idx_instance,
                     idx_tree,
@@ -98,20 +102,23 @@ def detailed_scoring(model, X):
                     trees_right_child
                 )
 
-                partial_y_view[idx_instance, idx_tree] = predicted_score * trees_weight[idx_tree]
-    return np.asarray(partial_y)
+                y_leaves_view[idx_instance, idx_tree] = leaf_node
+                partial_y_view[idx_instance, idx_tree] = \
+                    trees_nodes_value[leaf_node] * trees_weight[idx_tree]
+
+    return np.asarray(y_leaves), np.asarray(partial_y)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef float _score_single_instance_single_tree(float[:,:] X,
-                                              np.intp_t idx_instance,
-                                              np.intp_t idx_tree,
-                                              int[:] trees_root,
-                                              float[:] trees_weight,
-                                              short[:] trees_nodes_feature,
-                                              float[:] trees_nodes_value,
-                                              int[:] trees_left_child,
-                                              int[:] trees_right_child) nogil:
+cdef int _score_single_instance_single_tree(float[:,:] X,
+                                            np.intp_t idx_instance,
+                                            np.intp_t idx_tree,
+                                            int[:] trees_root,
+                                            float[:] trees_weight,
+                                            short[:] trees_nodes_feature,
+                                            float[:] trees_nodes_value,
+                                            int[:] trees_left_child,
+                                            int[:] trees_right_child) nogil:
 
     # Check the usage of np.intp_t in plave of np.int16_t
     cdef int cur_node = trees_root[idx_tree]
@@ -124,4 +131,4 @@ cdef float _score_single_instance_single_tree(float[:,:] X,
             cur_node = trees_left_child[cur_node]
         else:
             cur_node = trees_right_child[cur_node]
-    return trees_nodes_value[cur_node]
+    return cur_node

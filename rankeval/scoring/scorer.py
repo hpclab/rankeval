@@ -53,6 +53,10 @@ class Scorer(object):
         # (if detailed scoring is True)
         self.partial_y_pred = None
 
+        # Save the leaf id of each tree for each dataset instance
+        # (if detailed scoring is True)
+        self.partial_y_leaves = None
+
     def score(self, detailed):
         """
 
@@ -74,11 +78,12 @@ class Scorer(object):
 
         # Skip the scoring if it has already been done (return cached results)
         if not detailed and self.y_pred is not None or \
-                        detailed and self.partial_y_pred is not None:
+                        detailed and self.partial_y_leaves is not None:
             return self.y_pred
 
         if detailed:
-            self.partial_y_pred = detailed_scoring(self.model, self.dataset.X)
+            self.partial_y_leaves, self.partial_y_pred = \
+                detailed_scoring(self.model, self.dataset.X)
             self.y_pred = self.partial_y_pred.sum(axis=1)
         else:
             self.y_pred = basic_scoring(self.model, self.dataset.X)
@@ -101,18 +106,40 @@ class Scorer(object):
 
     def get_partial_predicted_scores(self):
         """
-        Provide an accessor to the partial scores produced by the given model for each sample of the given dataset X.
-        Each partial score reflects the score produced by a single tree of the ensemble model to a single dataset
-        instance. Thus, the returned numpy matrix has a shape of (n_instances, n_trees). The partial scores does not
-        take into account the tree weights, thus for producing the final score is needed to multiply each row for the
-        tree weight vector.
+        Provide an accessor to the partial scores produced by the given model
+        for each sample of the given dataset X. Each partial score reflects the
+        score produced by a single tree of the ensemble model to a single
+        dataset instance. Thus, the returned numpy matrix has a shape of
+        (n_instances, n_trees). The partial scores does not take into account
+        the tree weights, thus for producing the final score is needed to
+        multiply each row for the tree weight vector.
 
         Returns
         -------
         scores : numpy 2d-array of float
             The predicted score of each tree of the model for each dataset instance
-
         """
         if self.partial_y_pred is None:
             self.score(detailed=True)
         return self.partial_y_pred
+
+    def get_predicted_leaves(self):
+        """
+        Provide an accessor to the leaves that identify the exit nodes of each
+        sample of the given dataset X using the given model.
+
+        Each leaf value reflects the output node of a single tree of the
+        ensemble model to a single dataset instance. Thus, the returned numpy
+        matrix has a shape of (n_instances, n_trees).
+
+        Returns
+        -------
+        scores : numpy 2d-array of int
+            The leaves predicted by each tree of the model on scoring
+            each dataset instance.
+
+        """
+        if self.self.partial_y_leaves is None:
+            self.score(detailed=True)
+        return self.self.partial_y_leaves
+
