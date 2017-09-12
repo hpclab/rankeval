@@ -194,16 +194,16 @@ class RTEnsemble(object):
         """
         if format == "QuickRank":
             from rankeval.model import ProxyQuickRank
-            ProxyQuickRank.save(f, self)
+            return ProxyQuickRank.save(f, self)
         elif format == "LightGBM":
             from rankeval.model import ProxyLightGBM
-            ProxyLightGBM.save(f, self)
+            return ProxyLightGBM.save(f, self)
         elif format == "XGBoost":
             from rankeval.model import ProxyXGBoost
-            ProxyXGBoost.save(f, self)
+            return ProxyXGBoost.save(f, self)
         elif format == "ScikitLearn":
             from rankeval.model import ProxyScikitLearn
-            ProxyScikitLearn.save(f, self)
+            return ProxyScikitLearn.save(f, self)
         else:
             raise TypeError("Model format %s not yet supported!" % format)
 

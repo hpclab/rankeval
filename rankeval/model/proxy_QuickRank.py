@@ -92,6 +92,33 @@ class ProxyQuickRank(object):
                 elem.clear()    # discard the element
                 root.clear()    # remove child reference from the root
 
+
+    @staticmethod
+    def _xmlprettyprint(stringlist):
+        indent = ''
+        in_tag = False
+        file_start = True
+        for token in stringlist:
+            if token.startswith('</') or token.endswith('/>'):
+                indent = indent[:-1]
+                if not in_tag:
+                    yield '\n' + indent
+                yield token
+                in_tag = False
+            elif token.startswith('<'):
+                if not file_start:
+                    yield '\n' + indent
+                yield token
+                indent += '\t'
+                in_tag = True
+                file_start = False
+            elif token == '>':
+                yield '>'
+            elif in_tag:
+                yield token
+            else:
+                yield '\n' + token
+
     @staticmethod
     def save(file_path, model):
         """
@@ -109,7 +136,77 @@ class ProxyQuickRank(object):
         status : bool
             Returns true if the save is successful, false otherwise
         """
-        raise NotImplementedError("Feature not implemented!")
+
+        # ROOT
+        root = etree.Element("ranker")
+
+        # Learning process info
+        n_info = etree.SubElement(root, "info")
+
+        etree.SubElement(n_info, "type").text = "MART"
+        etree.SubElement(n_info, "trees").text = repr(model.n_trees)
+        n_leaves = etree.SubElement(n_info, "leaves")
+        etree.SubElement(n_info, "shrinkage").text = repr(model.learning_rate)
+        etree.SubElement(n_info, "leafsupport").text = repr(0)
+        etree.SubElement(n_info, "discretization").text = repr(0)
+        etree.SubElement(n_info, "estop").text = repr(0)
+
+        # Ensemble
+        n_ensemble = etree.Element("ensemble")
+        root.append(n_ensemble)
+
+        for idx_tree in xrange(model.n_trees):
+            n_tree = etree.SubElement(n_ensemble, "tree",
+                                      {"id": repr(idx_tree+1),
+                                       "weight": repr(model.trees_weight[idx_tree])})
+            cur_node = model.trees_root[idx_tree]
+
+            n_split = ProxyQuickRank._get_node_xml_element(model, cur_node)
+            n_tree.append(n_split)
+
+        with open(file_path, 'w') as f_out:
+            print >>f_out, ''.join(ProxyQuickRank._xmlprettyprint(etree.tostringlist(root)))
+
+
+        return True
+
+    @staticmethod
+    def _get_node_xml_element(model, node_id, child=None):
+        """
+        Builds and xml.etree.ElementTree representing the given node (and its children).
+
+        Parameters
+        ----------
+        model : RTEnsemble
+            The model
+        node_id : int
+            The node id from which the visit is started
+        child : string or None
+            Whether the node is a "left" or "right" child. The None value identifies the root.
+
+        Returns
+        -------
+        etree : xml.etree.ElementTree.Element
+            The Element tree.
+        """
+        n_split = etree.Element("split")
+        if child:
+            n_split.set("pos", child)
+
+        if model.is_leaf_node(node_id):
+            etree.SubElement(n_split, "output").text = model.trees_nodes_value[node_id].astype(str)
+        else:
+            feature_idx = model.trees_nodes_feature[node_id] + 1
+            feature_threshold = model.trees_nodes_value[node_id]
+            etree.SubElement(n_split, "feature").text = repr(feature_idx)
+            etree.SubElement(n_split, "threshold").text = repr(feature_threshold)
+
+            child = ProxyQuickRank._get_node_xml_element(model, model.trees_left_child[node_id], "left")
+            n_split.append(child)
+            child = ProxyQuickRank._get_node_xml_element(model, model.trees_right_child[node_id], "right")
+            n_split.append(child)
+
+        return n_split
 
     @staticmethod
     def _count_nodes(file_path):

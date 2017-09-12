@@ -71,6 +71,17 @@ class ProxyQuickRankTestCase(unittest.TestCase):
                 assert_equal(self.model.is_leaf_node(idx), True,
                              "Leaf node not detected as a leaf")
 
+    def test_load_save_quickrank_model(self):
+        saved_model_file = model_file + ".saved.xml"
+        saved = False
+        try:
+            saved = self.model.save(saved_model_file, format="QuickRank")
+        except:
+            saved = False
+        assert_equal(saved, True, "File not save correctly")
+        print saved_model_file
+
+
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                         level=logging.DEBUG)
