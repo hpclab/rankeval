@@ -71,6 +71,33 @@ class ProxyQuickRankTestCase(unittest.TestCase):
                 assert_equal(self.model.is_leaf_node(idx), True,
                              "Leaf node not detected as a leaf")
 
+    def test_load_save_quickrank_model(self):
+        # save the model
+        saved_model_file = model_file + ".saved.xml"
+        saved = self.model.save(saved_model_file, format="QuickRank")
+        assert_equal(saved, True, "File not save correctly")
+
+        # reload the model
+        model_reloaded = RTEnsemble(saved_model_file, format="QuickRank")
+
+        os.remove(saved_model_file)
+
+        assert_array_almost_equal(self.model.trees_root, model_reloaded.trees_root,
+                                  err_msg="Tree roots are incorrect")
+        assert_array_almost_equal(self.model.trees_weight, model_reloaded.trees_weight,
+                                  err_msg="Tree weights are incorrect")
+        assert_array_almost_equal(self.model.trees_nodes_value, model_reloaded.trees_nodes_value,
+                                  err_msg="Node thresholds are incorrect")
+        assert_array_almost_equal(self.model.trees_nodes_feature, model_reloaded.trees_nodes_feature,
+                                  err_msg="Node features are incorrect")
+        assert_array_almost_equal(self.model.trees_left_child, model_reloaded.trees_left_child,
+                                  err_msg="Left children are incorrect")
+        assert_array_almost_equal(self.model.trees_right_child, model_reloaded.trees_right_child,
+                                  err_msg="Right children are incorrect")
+
+
+
+
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                         level=logging.DEBUG)
