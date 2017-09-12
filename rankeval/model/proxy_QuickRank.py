@@ -145,7 +145,7 @@ class ProxyQuickRank(object):
 
         etree.SubElement(n_info, "type").text = "MART"
         etree.SubElement(n_info, "trees").text = repr(model.n_trees)
-        n_leaves = etree.SubElement(n_info, "leaves")
+        etree.SubElement(n_info, "leaves").text = repr(model.max_leaves())
         etree.SubElement(n_info, "shrinkage").text = repr(model.learning_rate)
         etree.SubElement(n_info, "leafsupport").text = repr(0)
         etree.SubElement(n_info, "discretization").text = repr(0)
@@ -194,7 +194,7 @@ class ProxyQuickRank(object):
             n_split.set("pos", child)
 
         if model.is_leaf_node(node_id):
-            etree.SubElement(n_split, "output").text = model.trees_nodes_value[node_id].astype(str)
+            etree.SubElement(n_split, "output").text = repr(model.trees_nodes_value[node_id])
         else:
             feature_idx = model.trees_nodes_feature[node_id] + 1
             feature_threshold = model.trees_nodes_value[node_id]

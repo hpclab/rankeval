@@ -175,6 +175,28 @@ class RTEnsemble(object):
         return self.trees_left_child[index] == -1 and \
                self.trees_right_child[index] == -1
 
+    def max_leaves(self):
+        """
+        Computes the maximum number of leaves across the trees of the model.
+
+        Returns
+        -------
+        max_leaves : int
+            Maximum number of leaves
+        """
+
+        n_leaves = np.full(shape=self.n_trees, fill_value=-1, dtype=np.int32)
+        for idx_tree in xrange(self.n_trees):
+            root_node = self.trees_root[idx_tree]
+            next_root_node = self.n_nodes
+            if idx_tree+1 != self.n_trees:
+                next_root_node = self.trees_root[idx_tree + 1]
+            n_leaves[idx_tree] = (self.trees_left_child[root_node:next_root_node] == -1).sum()
+
+        return n_leaves.max()
+
+
+
     def save(self, f, format="QuickRank"):
         """
         Save the model onto the file identified by file_path, using the given
