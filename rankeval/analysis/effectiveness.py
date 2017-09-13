@@ -110,7 +110,8 @@ def tree_wise_performance(datasets, models, metrics, step=10):
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            y_pred, partial_y_pred = model.score(dataset, detailed=True)
+            y_pred, partial_y_pred, y_leaves = \
+                model.score(dataset, detailed=True)
 
             # the document scores are accumulated along for the various top-k
             # (in order to avoid useless re-scoring)
@@ -168,7 +169,8 @@ def tree_wise_average_contribution(datasets, models):
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            y_pred, partial_y_pred = model.score(dataset, detailed=True)
+            y_pred, partial_y_pred, y_leaves = \
+                model.score(dataset, detailed=True)
 
             # the document scores are accumulated along for the various top-k
             # (in order to avoid useless re-scoring)

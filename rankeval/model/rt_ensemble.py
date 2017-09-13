@@ -195,8 +195,6 @@ class RTEnsemble(object):
 
         return n_leaves.max()
 
-
-
     def save(self, f, format="QuickRank"):
         """
         Save the model onto the file identified by file_path, using the given

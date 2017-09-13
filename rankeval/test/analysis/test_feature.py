@@ -43,7 +43,6 @@ class FeatureImportanceTestCase(unittest.TestCase):
 
         assert_array_equal(feature_cnt[features],
                            [1, 1, 1, 1])
-        assert(feature_cnt.sum(), 4)
 
     def test_scoring_feature_importance(self):
 
@@ -56,7 +55,8 @@ class FeatureImportanceTestCase(unittest.TestCase):
         # initialize features count
         feature_count = np.zeros(self.dataset.n_features, dtype=np.uint16)
 
-        y_pred_m, partial_y_pred = self.model.score(self.dataset, detailed=True)
+        y_pred_m, partial_y_pred, y_leaves = \
+            self.model.score(self.dataset, detailed=True)
 
         metric = MSE()
 
@@ -75,6 +75,7 @@ class FeatureImportanceTestCase(unittest.TestCase):
         # Check the usual scoring and the scoring performed by analyzing also
         # the feature importance compute the same predictions
         assert_array_almost_equal(y_pred, y_pred_m)
+
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.DEBUG)
