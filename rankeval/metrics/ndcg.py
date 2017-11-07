@@ -54,7 +54,7 @@ class NDCG(Metric):
 
         self._current_dataset = None
         self._current_qid = None
-        self._cache_idcg_score = defaultdict(lambda: defaultdict(int))
+        self._cache_idcg_score = defaultdict(int)
 
     def eval(self, dataset, y_pred):
         """
@@ -88,8 +88,8 @@ class NDCG(Metric):
         if self._current_dataset not in self._cache_idcg_score:
 
             idcg_score = np.ndarray(shape=dataset.n_queries, dtype=np.float32)
-            for qid, q_y, q_y_pred in self.query_iterator(dataset, dataset.y):
-                idcg_score[qid] = self.dcg.eval_per_query(q_y, q_y_pred)
+            for qid, q_y, _ in self.query_iterator(dataset, dataset.y):
+                idcg_score[qid] = self.dcg.eval_per_query(q_y, q_y)
 
             self._cache_idcg_score[self._current_dataset] = idcg_score
 

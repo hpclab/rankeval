@@ -5,23 +5,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-"""Class providing the implementation for loading/storing a XGBoost model
-from/to file. The model has to be saved using textual representation, i.e., by
-using the following method:
+"""Class providing the implementation for loading/storing a Scikit-Learn model
+from/to file. The model has to be saved using the export_scikit_model method:
 .. code-block:: python
-    import xgboost as xgb
+    from sklearn import ensemble
+    from rankeval.model import ProxyScikitLearn
     ...
-    bst = xgb.train(param, dtrain, num_round)
-    bst.dump_model('xgboost.model')
+    gbrt = ensemble.GradientBoostingRegressor(...)
+    gbrt.fit(X, y)
+    ProxyScikitLearn.export_scikit_model(model=gbrt, file_path=model_path)
+    gbrt_rankeval = RTEnsemble(file_path=model_path, format='ScikitLearn')
 
-The XGBoost project is described here:
-    https://github.com/dmlc/xgboost
-
-The XGBoost format adopts a textual representation where each line of the file
-represent a single split node or a leaf node, with several attributes describing
-the feature and the threshold involved (in case of a split node) or the output
-(in case of a leaf). Each node is identified by a unique integer as well as
-additional information not usefull for rankeval and thus ignored.
+The Scikit-Learn project is described here:
+    http://scikit-learn.org/
 """
 
 import re

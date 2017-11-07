@@ -91,7 +91,7 @@ class DCG(Metric):
         if self.cutoff is not None:
             idx_y_pred_sorted = idx_y_pred_sorted[:self.cutoff]
 
-        discount = np.log2(np.arange(2, len(idx_y_pred_sorted)+2))
+        discount = np.log2(np.arange(idx_y_pred_sorted.size) + 2)
 
         if self.implementation == "flat":
             gain = y[idx_y_pred_sorted]
