@@ -144,8 +144,9 @@ class ProxyLightGBM(object):
                 match = decision_type_reg.match(line)
                 if match:
                     types = np.array(match.group(1).strip().split(), dtype=int)
-                    if types.any():
-                        raise AssertionError("Decision Tree not supported")
+                    if (types!=2).any():
+                        raise AssertionError("Decision Tree not supported. RankEval does not "
+                                             "support categorical features and missing values.")
                     continue
 
                 match = default_value_reg.match(line)
