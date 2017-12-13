@@ -408,8 +408,7 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
   try {
     // Read function arguments.
     char const *file_path;
-    PyArrayObject *data_array, *label_array;
-    PyObject *query_ids_array;
+    PyArrayObject *data_array, *label_array, *qids_array;
     int zero_based;
 
     if (!PyArg_ParseTuple(args,
@@ -417,29 +416,29 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
                           &file_path,
                           &PyArray_Type, &data_array,
                           &PyArray_Type, &label_array,
-                          &PyList_Type,  &query_ids_array,
+                          &PyArray_Type,  &qids_array,
                           &zero_based))
       return 0;
 
     int n_samples = PyArray_DIM(data_array, 0);
     int n_features = PyArray_DIM(data_array, 1);
-
+    int n_queries = PyArray_DIM(qids_array, 0) - 1;
 //    int n_samples  = label_array->dimensions[0];
+//    int n_features = data_array->dimensions[0] / n_samples;
+
     float *data   = (float*) data_array->data;
     float *y      = (float*) label_array->data;
-//    int n_features = data_array->dimensions[0] / n_samples;
+    int *qids     = (int*) qids_array->data;
 
     std::ofstream fout;
     fout.open(file_path, std::ofstream::out);
 
     float* data_pointer = data;
     for (int i=0; i < n_samples; i++) {
-      if (PyList_Size(query_ids_array) != 0) {
-        PyObject* pIntObj = PyList_GetItem(query_ids_array, i);
-        long qid = PyLong_AsLong(pIntObj);
+      if (n_queries > 0) {
+        int qid = qids[i];
         fout << y[i] << " qid:" << qid << " ";
-      }
-      else {
+      } else {
         fout << y[i] << " ";
       }
 
