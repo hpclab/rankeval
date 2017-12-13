@@ -194,12 +194,12 @@ class Dataset(object):
         test_mask = np.in1d(qid_map, unique_qid[test_qid])
 
         train_dataset = Dataset(self.X[train_mask], self.y[train_mask],
-                            self.qid[train_mask], name=self.name + ' Train')
+                                qid_map[train_mask], name=self.name + ' Train')
         if vali_size:
             vali_dataset = Dataset(self.X[vali_mask], self.y[vali_mask],
-                                self.qid[vali_mask], name=self.name + ' Vali')
+                                   qid_map[vali_mask], name=self.name + ' Vali')
         test_dataset = Dataset(self.X[test_mask], self.y[test_mask],
-                            self.qid[test_mask], name=self.name + ' Test')
+                               qid_map[test_mask], name=self.name + ' Test')
 
         if not vali_size:
             return train_dataset, test_dataset
