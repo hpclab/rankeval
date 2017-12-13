@@ -42,7 +42,8 @@ def load_svmlight_file(file_path, buffer_mb=40, query_id=False):
 
     where X is a dense numpy matrix of shape (n_samples, n_features) and type dtype,
           y is a ndarray of shape (n_samples,).
-          query_ids is a ndarray of shape(nsamples,) if query_id is True, it is not returned otherwise
+          query_ids is a ndarray of shape(nsamples,) if query_id is True.
+          Otherwise it is not returned.
     """
     data, labels, qids = _load_svmlight_file(file_path, buffer_mb)
 
@@ -163,5 +164,6 @@ def dump_svmlight_file(X, y, f, query_id=None, zero_based=True):
 
     X = np.array(X, dtype=np.float32)
     y = np.array(y, dtype=np.float32)
+    query_id = np.array(query_id, dtype=np.int32)
 
     _dump_svmlight_file(f, X, y, query_id, int(zero_based))

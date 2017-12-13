@@ -124,15 +124,14 @@ class Dataset(object):
         format : str
             The format to use for dumping the dataset on file (actually supported is only "svmlight" format)
         """
-        if self.query_ids.size != self.X.shape[0]:
+        if self.query_ids.size != self.n_instances:
             # we need to unroll the query_ids (it is compacted: it reports only
             # the offset where a new query id starts)
-            query_ids = np.ndarray(self.X.shape[0], dtype=np.float32)
-            last_idx = 0
-            for qid, qid_offset in enumerate(self.query_ids, start=1):
-                for idx in np.arange(last_idx, qid_offset):
+            query_ids = np.ndarray(self.n_instances, dtype=np.uint32)
+            for qid, (start_offset, end_offset) in enumerate(
+                    self.query_offset_iterator(), start=1):
+                for idx in np.arange(start_offset, end_offset):
                     query_ids[idx] = qid
-                last_idx = qid_offset
         else:
             query_ids = self.query_ids
 

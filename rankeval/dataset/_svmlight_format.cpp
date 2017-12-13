@@ -428,7 +428,7 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
 
     float *data   = (float*) data_array->data;
     float *y      = (float*) label_array->data;
-    int *qids     = (int*) qids_array->data;
+    unsigned int *qids     = (unsigned int*) qids_array->data;
 
     std::ofstream fout;
     fout.open(file_path, std::ofstream::out);
@@ -436,7 +436,7 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
     float* data_pointer = data;
     for (int i=0; i < n_samples; i++) {
       if (n_queries > 0) {
-        int qid = qids[i];
+        unsigned int qid = qids[i];
         fout << y[i] << " qid:" << qid << " ";
       } else {
         fout << y[i] << " ";
