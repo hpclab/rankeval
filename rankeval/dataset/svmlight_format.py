@@ -156,14 +156,15 @@ def dump_svmlight_file(X, y, f, query_id=None, zero_based=True):
     #     raise ValueError("X.shape[0] and y.shape[0] should be the same, "
     #                      "got: %r and %r instead." % (X.shape[0], y.shape[0]))
 
-    if query_id is None:
-        query_id = []
     # elif X.shape[0] != len(query_id):
     #         raise ValueError("X.shape[0] and len(query_id) should be the same, "
     #                      "got: %r and %r instead." % (X.shape[0], len(query_id)))
 
     X = np.array(X, dtype=np.float32)
     y = np.array(y, dtype=np.float32)
-    query_id = np.array(query_id, dtype=np.int32)
+    if query_id is None:
+        query_id = np.ndarray(0, dtype=np.int32)
+    else:
+        query_id = np.array(query_id, dtype=np.int32)
 
     _dump_svmlight_file(f, X, y, query_id, int(zero_based))

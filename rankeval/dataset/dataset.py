@@ -6,7 +6,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 """
-This module implements the generic class for loading/dumping a dataset from/to file.
+This module implements the generic class for loading/dumping a dataset from/to
+file.
 """
 import numpy as np
 import copy
@@ -39,7 +40,8 @@ class Dataset(object):
 
     def __init__(self, X, y, query_ids, name=None):
         """
-        This module implements the generic class for loading/dumping a dataset from/to file.
+        This module implements the generic class for loading/dumping a dataset
+        from/to file.
 
         Parameters
         ----------
@@ -50,14 +52,13 @@ class Dataset(object):
         query_ids : numpy.array
             The vector with the query_id for each sample.
         """
-
         if query_ids.size == X.shape[0]:
             # convert from query_ids per sample to query offset
-            self.query_ids = np.append(
-                np.unique(query_ids, return_index=True)[1],
-                query_ids.size)
+            self.query_ids, self.query_offsets = \
+                np.unique(query_ids, return_index=True)
+            self.query_offsets = np.append(self.query_offsets, query_ids.size)
         else:
-            self.query_ids = query_ids
+            raise Exception("query_ids argument has not the correct shape!")
 
         self.X, self.y = X, y
         self.name = "Dataset %s" % (self.X.shape,)
@@ -66,7 +67,7 @@ class Dataset(object):
 
         self.n_instances = self.y.size
         self.n_features = self.X.shape[1]
-        self.n_queries = self.query_ids.size - 1
+        self.n_queries = self.query_ids.size
 
     @staticmethod
     def load(f, name=None, format="svmlight"):
@@ -80,7 +81,8 @@ class Dataset(object):
         name : str
             The name to be given to the current dataset
         format : str
-            The format of the dataset file to load (actually supported is only "svmlight" format)
+            The format of the dataset file to load (actually supported is only
+            "svmlight" format)
 
         Returns
         -------
@@ -115,25 +117,24 @@ class Dataset(object):
 
     def dump(self, f, format):
         """
-        This method implements the writing of a previously loaded dataset according to the given format on file
+        This method implements the writing of a previously loaded dataset
+        according to the given format on file
 
         Parameters
         ----------
         f : path
             The file path where to store the dataset
         format : str
-            The format to use for dumping the dataset on file (actually supported is only "svmlight" format)
+            The format to use for dumping the dataset on file (actually
+            supported is only "svmlight" format)
         """
-        if self.query_ids.size != self.n_instances:
-            # we need to unroll the query_ids (it is compacted: it reports only
-            # the offset where a new query id starts)
-            query_ids = np.ndarray(self.n_instances, dtype=np.uint32)
-            for qid, (start_offset, end_offset) in enumerate(
-                    self.query_offset_iterator(), start=1):
-                for idx in np.arange(start_offset, end_offset):
-                    query_ids[idx] = qid
-        else:
-            query_ids = self.query_ids
+        # we need to unroll the query_ids and query_offsets.
+        # They are represented compact: they report only the query ids and the
+        # offsets where each query starts and ends.
+        query_ids = np.ndarray(self.n_instances, dtype=np.int32)
+        for qid, start_offset, end_offset in self.query_iterator():
+            for idx in np.arange(start_offset, end_offset):
+                query_ids[idx] = qid
 
         if format == "svmlight":
             dump_svmlight_file(self.X, self.y, f, query_ids)
@@ -150,9 +151,11 @@ class Dataset(object):
         Parameters
         ----------
         train_size : float
-            The ratio of query ids in the training set
+            The ratio of query ids in the training set. It should be between
+            0 and 1.
         vali_size : float
-            The ratio of query ids in the validation set. 0 means no validation.
+            The ratio of query ids in the validation set. It should be between
+            0 and 1. 0 means no validation to be created.
         random_state : int
             If int, random_state is the seed used by the random number
             generator. If RandomState instance, random_state is the random
@@ -169,28 +172,27 @@ class Dataset(object):
         if train_size < 0 or train_size > 1 or (train_size + vali_size) > 1:
             raise Exception("train and/or validation sizes are not correct!")
 
-        train_cnt = int(round(train_size * self.n_queries))
-        vali_cnt = int(round(vali_size * self.n_queries))
-        test_cnt = self.n_queries - train_cnt - vali_cnt
+        train_qn = int(round(train_size * self.n_queries))
+        vali_qn = int(round(vali_size * self.n_queries))
+        test_qn = self.n_queries - train_qn - vali_qn
 
         qid_map = np.ndarray(self.n_instances, dtype=np.uint32)
-        for qid, (start_offset, end_offset) in enumerate(self.query_offset_iterator()):
+        for qid, start_offset, end_offset in self.query_iterator():
             for idx in np.arange(start_offset, end_offset):
                 qid_map[idx] = qid
 
         # add queries shuffling
         rng = check_random_state(random_state)
-        qids_permutation = rng.permutation(self.n_queries)
+        unique_qid = np.unique(self.query_ids)
+        qids_permutation = rng.permutation(unique_qid)
 
-        train_qid = qids_permutation[:train_cnt]
-        vali_qid = qids_permutation[train_cnt:train_cnt+vali_cnt]
-        test_qid = qids_permutation[-test_cnt:]
+        train_qid = qids_permutation[:train_qn]
+        vali_qid = qids_permutation[train_qn:train_qn+vali_qn]
+        test_qid = qids_permutation[-test_qn:]
 
-        unique_qid = np.arange(self.n_queries)
-
-        train_mask = np.in1d(qid_map, unique_qid[train_qid])
-        vali_mask = np.in1d(qid_map, unique_qid[vali_qid])
-        test_mask = np.in1d(qid_map, unique_qid[test_qid])
+        train_mask = np.in1d(qid_map, train_qid)
+        vali_mask = np.in1d(qid_map, vali_qid)
+        test_mask = np.in1d(qid_map, test_qid)
 
         train_dataset = Dataset(self.X[train_mask], self.y[train_mask],
                                 qid_map[train_mask], name=self.name + ' Train')
@@ -214,7 +216,7 @@ class Dataset(object):
         del self.X
         self.X = None
 
-    def query_offset_iterator(self):
+    def query_iterator(self):
         """
         This method implements and iterator over the offsets of the query_ids
         in the dataset.
@@ -226,8 +228,9 @@ class Dataset(object):
             The two indices represent (start, end) offsets.
 
         """
-        for i in np.arange(len(self.query_ids) - 1):
-            yield self.query_ids[i], self.query_ids[i+1]
+        for i in np.arange(self.n_queries):
+            yield self.query_ids[i], \
+                  self.query_offsets[i], self.query_offsets[i+1]
 
     def __str__(self):
         return self.name

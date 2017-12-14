@@ -27,7 +27,8 @@ class MetricsTestCase(unittest.TestCase):
         # setup a Dataset object
         cls.dataset = Dataset.load(data_file, name="TestDataset", format="svmlight")
         cls.dataset.y = np.concatenate((cls.y_query1, cls.y_query2))
-        cls.dataset.query_ids = np.array([0,5,10])
+        cls.dataset.query_ids = np.array([0, 1])
+        cls.dataset.query_offsets = np.array([0,5,10])
         cls.dataset.n_queries = 2
         cls.y_pred = np.concatenate((cls.y_pred_query1, cls.y_pred_query2))
 

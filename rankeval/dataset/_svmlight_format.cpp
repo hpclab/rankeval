@@ -176,8 +176,8 @@ static PyObject *to_dense(std::vector<float> &data,
 
   try {
     data_arr     = to_1d_array(data, NPY_FLOAT);
-    qids_arr     = to_1d_array(qids, NPY_INT);
     labels_arr   = to_1d_array(labels, NPY_FLOAT);
+    qids_arr     = to_1d_array(qids, NPY_INT);
 
     ret_tuple = Py_BuildValue("OOO",
                               data_arr, labels_arr, qids_arr);
@@ -200,7 +200,8 @@ static PyObject *to_dense(std::vector<float> &data,
 }
 
 /*
- * Reshape the data array to adjust number of columns (caused by loading of a sparse matrix)
+ * Reshape the data array to adjust number of columns
+ * (caused by the loading of a sparse matrix)
  */
 void reshape_data(std::vector<float> &data,
                   int &old_num_feature,
@@ -234,18 +235,17 @@ void reshape_data(std::vector<float> &data,
 /*
  * Parse single line. Throws exception on failure.
  */
-int parse_line(const std::string &line,
+void parse_line(const std::string &line,
                 std::vector<float> &data,
                 std::vector<float> &labels,
                 std::vector<int> &qids,
-                int &last_qid,
                 int &max_feature)
 {
   if (line.length() == 0)
   	throw std::invalid_argument( "empty line" );
 
   if (line[0] == '#')
-    return last_qid;
+    return;
 
   // FIXME: we shouldn't be parsing line-by-line.
   // Also, we might catch more syntax errors with failbit.
@@ -268,7 +268,6 @@ int parse_line(const std::string &line,
   char c;
   double x;
   int idx;
-  int idx_row=0;
   int next_feature = 1;
 
   if (sscanf(qidNonsense.c_str(), "qid:%u", &idx) != 1) {
@@ -283,17 +282,7 @@ int parse_line(const std::string &line,
     }
 
   } else {
-
-    if (last_qid == 0){
-        last_qid = idx;
-        qids.push_back(idx_row);
-    }
-
-    if (int(idx) != last_qid){
-        idx_row = labels.size()-1;
-        qids.push_back(idx_row);
-        last_qid = int(idx);
-    }
+    qids.push_back(idx);
   }
 
   while (in >> idx >> c >> x) {
@@ -317,8 +306,6 @@ int parse_line(const std::string &line,
   }
 
   max_feature = std::max(next_feature - 1, max_feature);
-
-  return last_qid;
 }
 
 /*
@@ -340,19 +327,10 @@ void parse_file(char const *file_path,
   if (!file_stream)
     throw std::ios_base::failure("File doesn't exist!");
 
-  int last_qid = 0;
   int max_feature = 0;
-  int new_qid;
   std::string line;
   while (std::getline(file_stream, line)) {
-    new_qid = parse_line(line, data, labels, qids, last_qid, max_feature);
-    last_qid = new_qid;
-  }
-  /*
-  * test is the dataset has not qids. if yes -> add SENTINEL
-  */
-  if (qids.size() != 0) {
-    qids.push_back(labels.size());
+    parse_line(line, data, labels, qids, max_feature);
   }
 }
 
@@ -428,7 +406,7 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
 
     float *data   = (float*) data_array->data;
     float *y      = (float*) label_array->data;
-    unsigned int *qids     = (unsigned int*) qids_array->data;
+    int   *qids   = (int*) qids_array->data;
 
     std::ofstream fout;
     fout.open(file_path, std::ofstream::out);
@@ -436,7 +414,7 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
     float* data_pointer = data;
     for (int i=0; i < n_samples; i++) {
       if (n_queries > 0) {
-        unsigned int qid = qids[i];
+        int qid = qids[i];
         fout << y[i] << " qid:" << qid << " ";
       } else {
         fout << y[i] << " ";

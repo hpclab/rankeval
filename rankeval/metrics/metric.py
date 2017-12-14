@@ -64,8 +64,9 @@ class Metric(six.with_metaclass(ABCMeta)):
         """
         self.detailed_scores = np.zeros(dataset.n_queries, dtype=np.float32)
 
-        for qid, q_y, q_y_pred in self.query_iterator(dataset, y_pred):
-            self.detailed_scores[qid] = self.eval_per_query(q_y, q_y_pred)
+        for rel_qid, (qid, q_y, q_y_pred) in enumerate(
+                self.query_iterator(dataset, y_pred)):
+            self.detailed_scores[rel_qid] = self.eval_per_query(q_y, q_y_pred)
         return self.detailed_scores.mean(), self.detailed_scores
 
     @abstractmethod
@@ -109,8 +110,7 @@ class Metric(six.with_metaclass(ABCMeta)):
             The predicted scores for the instances in the dataset belonging to
             the same query id.
         """
-        for query_id, (start_offset, end_offset) in \
-                enumerate(dataset.query_offset_iterator()):
+        for query_id, start_offset, end_offset in dataset.query_iterator():
             yield (query_id,
                    dataset.y[start_offset:end_offset],
                    y_pred[start_offset:end_offset])
