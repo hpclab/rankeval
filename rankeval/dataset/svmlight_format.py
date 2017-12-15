@@ -115,7 +115,7 @@ def load_svmlight_files(files, buffer_mb=40, query_id=False):
     return result
 
 
-def dump_svmlight_file(X, y, f, query_id=None, zero_based=True):
+def dump_svmlight_file(X, y, f, query_id=None, zero_based=False):
     """Dump the dataset in svmlight / libsvm file format.
 
     This format is a text-based format, with one sample per line. It does
@@ -146,7 +146,7 @@ def dump_svmlight_file(X, y, f, query_id=None, zero_based=True):
 
     zero_based : boolean, optional
         Whether column indices should be written zero-based (True) or one-based
-        (False).
+        (False). Default is False.
     """
     if hasattr(f, "write"):
         raise ValueError("File handler not supported. Use a file path.")
