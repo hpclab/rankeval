@@ -52,13 +52,20 @@ class Dataset(object):
         query_ids : numpy.array
             The vector with the query_id for each sample.
         """
-        if query_ids.size == X.shape[0]:
-            # convert from query_ids per sample to query offset
-            self.query_ids, self.query_offsets = \
-                np.unique(query_ids, return_index=True)
-            self.query_offsets = np.append(self.query_offsets, query_ids.size)
-        else:
+        if query_ids.size != X.shape[0]:
             raise Exception("query_ids argument has not the correct shape!")
+
+        # convert from query_ids per sample to query offset
+        self.query_ids, self.query_offsets = \
+            np.unique(query_ids, return_index=True)
+
+        # resort the arrays per offset (if the file does not contains qids in
+        # order, the np.unique will return qids with a different ordering...
+        idx_sort = np.argsort(self.query_offsets)
+        self.query_ids = self.query_ids[idx_sort]
+        self.query_offsets = self.query_offsets[idx_sort]
+
+        self.query_offsets = np.append(self.query_offsets, query_ids.size)
 
         self.X, self.y = X, y
         self.name = "Dataset %s" % (self.X.shape,)
@@ -183,8 +190,7 @@ class Dataset(object):
 
         # add queries shuffling
         rng = check_random_state(random_state)
-        unique_qid = np.unique(self.query_ids)
-        qids_permutation = rng.permutation(unique_qid)
+        qids_permutation = rng.permutation(self.query_ids)
 
         train_qid = qids_permutation[:train_qn]
         vali_qid = qids_permutation[train_qn:train_qn+vali_qn]
