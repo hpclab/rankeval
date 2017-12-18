@@ -238,6 +238,22 @@ class Dataset(object):
             yield self.query_ids[i], \
                   self.query_offsets[i], self.query_offsets[i+1]
 
+    def get_qids_dataset(self):
+        """
+        This method returns the query ids array in linear representation, i.e.,
+        with the qid of each instance. Usefull for creating a new dataset
+        starting from a different one.
+
+        Returns
+        -------
+        query_ids : numpy 1d array of int
+            It is a ndarray of shape (nsamples,)
+        """
+        query_ids = np.empty(shape=self.n_instances, dtype=np.int32)
+        for qid, start_offset, end_offset in self.query_iterator():
+            query_ids[start_offset:end_offset] = qid
+        return query_ids
+
     def __str__(self):
         return self.name
 
