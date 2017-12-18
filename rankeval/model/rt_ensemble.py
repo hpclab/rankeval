@@ -227,7 +227,7 @@ class RTEnsemble(object):
         else:
             raise TypeError("Model format %s not yet supported!" % format)
 
-    def score(self, dataset, detailed=False):
+    def score(self, dataset, detailed=False, cache=False):
         """
         Score the given model on the given dataset. Depending on the detailed
         parameter, the scoring will be either basic (i.e., compute only the
@@ -242,6 +242,11 @@ class RTEnsemble(object):
         detailed : bool
             True if the model has to be scored in a detailed fashion, false
             otherwise
+        cache : bool
+            True if the scoring results has to be cached, False otherwise. Take
+            into account that caching the results could need quite a lot of
+            memory, and this negative effect is particularly evident when
+            scoring multiple models on huge dataset. Default is False.
 
         Returns
         -------
@@ -265,7 +270,8 @@ class RTEnsemble(object):
                 detailed and self._cache_scorer[dataset].partial_y_pred is None:
 
             scorer = Scorer(self, dataset)
-            self._cache_scorer[dataset] = scorer
+            if cache:
+                self._cache_scorer[dataset] = scorer
             # The scoring is performed only if it has not been done before...
             scorer.score(detailed)
 
@@ -278,8 +284,9 @@ class RTEnsemble(object):
                 scorer.y_pred += self.base_score
                 if detailed:
                     scorer.partial_y_pred[:, :1] += self.base_score
+        else:
+            scorer = self._cache_scorer[dataset]
 
-        scorer = self._cache_scorer[dataset]
         if detailed:
             return scorer.y_pred, scorer.partial_y_pred, scorer.y_leaves
         else:
