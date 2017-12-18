@@ -23,7 +23,7 @@ from ..metrics import Metric
 from ipywidgets import IntProgress
 from IPython.display import display
 
-def model_performance(datasets, models, metrics):
+def model_performance(datasets, models, metrics, cache=False):
     """
     This method implements the model performance analysis (part of the
     effectiveness analysis category).
@@ -37,7 +37,10 @@ def model_performance(datasets, models, metrics):
         The models to analyze
     metrics : list of Metric
         The metrics to use for the analysis
-
+    cache : bool
+        Whether to cache or not the intermediate scoring results of each model
+        on each dataset. Caching enable instant access to the scores (after the
+        first scoring) but coudl make use also of a huge quantity of memory.
 
     Returns
     -------
@@ -49,7 +52,7 @@ def model_performance(datasets, models, metrics):
                     dtype=np.float32)
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            y_pred = model.score(dataset, detailed=False)
+            y_pred = model.score(dataset, detailed=False, cache=cache)
             for idx_metric, metric in enumerate(metrics):
                 data[idx_dataset][idx_model][idx_metric] = metric.eval(dataset,
                                                                        y_pred)[0]
@@ -62,7 +65,7 @@ def model_performance(datasets, models, metrics):
     return performance
 
 
-def tree_wise_performance(datasets, models, metrics, step=10):
+def tree_wise_performance(datasets, models, metrics, step=10, cache=False):
     """
     This method implements the analysis of the model on a tree-wise basis
     (part of the effectiveness analysis category).
@@ -81,7 +84,10 @@ def tree_wise_performance(datasets, models, metrics, step=10):
         the top=k model performance.
         (e.g., step=100 means the method will evaluate the model performance
         at 100, 200, 300, etc trees).
-
+    cache : bool
+        Whether to cache or not the intermediate scoring results of each model
+        on each dataset. Caching enable instant access to the scores (after the
+        first scoring) but coudl make use also of a huge quantity of memory.
 
     Returns
     -------
@@ -120,7 +126,7 @@ def tree_wise_performance(datasets, models, metrics, step=10):
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
             y_pred, partial_y_pred, y_leaves = \
-                model.score(dataset, detailed=True)
+                model.score(dataset, detailed=True, cache=cache)
 
             # the document scores are accumulated along for the various top-k
             # (in order to avoid useless re-scoring)
@@ -152,7 +158,7 @@ def tree_wise_performance(datasets, models, metrics, step=10):
     return performance
 
 
-def tree_wise_average_contribution(datasets, models):
+def tree_wise_average_contribution(datasets, models, cache=False):
     """
     This method provides the average contribution given by each tree of each
     model to the scoring of the datasets.
@@ -164,6 +170,10 @@ def tree_wise_average_contribution(datasets, models):
         the given metrics and models
     models : list of RTEnsemble
         The models to analyze
+    cache : bool
+        Whether to cache or not the intermediate scoring results of each model
+        on each dataset. Caching enable instant access to the scores (after the
+        first scoring) but coudl make use also of a huge quantity of memory.
 
     Returns
     -------
@@ -184,7 +194,7 @@ def tree_wise_average_contribution(datasets, models):
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
             y_pred, partial_y_pred, y_leaves = \
-                model.score(dataset, detailed=True)
+                model.score(dataset, detailed=True, cache=cache)
 
             # the document scores are accumulated along for the various top-k
             # (in order to avoid useless re-scoring)
@@ -200,7 +210,8 @@ def tree_wise_average_contribution(datasets, models):
     return performance
 
 
-def query_wise_performance(datasets, models, metrics, bins=None, start=None, end=None):
+def query_wise_performance(datasets, models, metrics, bins=None,
+                           start=None, end=None, cache=False):
     """
     This method implements the analysis of the model on a query-wise basis,
     i.e., it compute the cumulative distribution of a given performance metric.
@@ -228,6 +239,10 @@ def query_wise_performance(datasets, models, metrics, bins=None, start=None, end
         The end point of the range for which we will compute the cumulative
         distribution of the given metric. If end is None, it will use
         the maximum metric score as starting point for the range.
+    cache : bool
+        Whether to cache or not the intermediate scoring results of each model
+        on each dataset. Caching enable instant access to the scores (after the
+        first scoring) but coudl make use also of a huge quantity of memory.
 
     Returns
     -------
@@ -243,7 +258,7 @@ def query_wise_performance(datasets, models, metrics, bins=None, start=None, end
     min_metric_score = max_metric_score = np.nan
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            y_pred = model.score(dataset, detailed=False)
+            y_pred = model.score(dataset, detailed=False, cache=cache)
             for idx_metric, metric in enumerate(metrics):
                 _, metric_scores = metric.eval(dataset, y_pred)
                 glob_metric_scores[idx_dataset][idx_model][idx_metric] = metric_scores
@@ -281,7 +296,8 @@ def query_wise_performance(datasets, models, metrics, bins=None, start=None, end
     return performance
 
 
-def query_class_performance(datasets, models, metrics, query_classes):
+def query_class_performance(datasets, models, metrics, query_classes,
+                            cache=False):
     """
     This method implements the analysis of the effectiveness of a given model
     by providing a breakdown of the performance over query class. Whenever
@@ -305,6 +321,10 @@ def query_class_performance(datasets, models, metrics, query_classes):
         A list containing lists of classes each one for a specific Dataset.
         The i-th item in the j-th list identifies the class of the i-th query
         of the j-th Dataset.
+    cache : bool
+        Whether to cache or not the intermediate scoring results of each model
+        on each dataset. Caching enable instant access to the scores (after the
+        first scoring) but coudl make use also of a huge quantity of memory.
     
     Returns
     -------
@@ -318,7 +338,7 @@ def query_class_performance(datasets, models, metrics, query_classes):
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            y_pred = model.score(dataset, detailed=False)
+            y_pred = model.score(dataset, detailed=False, cache=cache)
             for idx_metric, metric in enumerate(metrics):
                 _, metric_scores = metric.eval(dataset, y_pred)
                 glob_metric_scores[idx_dataset][idx_model][idx_metric] = metric_scores
@@ -353,7 +373,8 @@ def query_class_performance(datasets, models, metrics, query_classes):
     return performance
 
 
-def document_graded_relevance(datasets, models, bins=100, start=None, end=None):
+def document_graded_relevance(datasets, models, bins=100, start=None, end=None,
+                              cache=False):
     """
     This method implements the analysis of the model on a per-label basis,
     i.e., it allows the evaluation of the cumulative predicted score
@@ -383,6 +404,10 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None):
         The end point of the range for which we will compute the cumulative
         distribution of the predicted scores. If end is None, it will use
         the maximum metric score as starting point for the range.
+    cache : bool
+        Whether to cache or not the intermediate scoring results of each model
+        on each dataset. Caching enable instant access to the scores (after the
+        first scoring) but coudl make use also of a huge quantity of memory.
 
     Returns
     -------
@@ -397,7 +422,7 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None):
     min_doc_score = max_doc_score = np.nan
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            y_pred = model.score(dataset, detailed=False)
+            y_pred = model.score(dataset, detailed=False, cache=cache)
             glob_doc_scores[idx_dataset][idx_model] = y_pred
             min_doc_score = np.nanmin([min_doc_score, y_pred.min()])
             max_doc_score = np.nanmax([max_doc_score, y_pred.max()])
@@ -421,7 +446,7 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None):
                 # If this graded relevance is not present in this dataset, skip it
                 if not len(indices):
                     continue
-                y_pred = model.score(dataset, detailed=False)
+                y_pred = model.score(dataset, detailed=False, cache=cache)
                 y_pred_curr = y_pred[indices]
                 # evaluate the histogram
                 values, base = np.histogram(y_pred_curr, bins=bin_values)
@@ -437,7 +462,7 @@ def document_graded_relevance(datasets, models, bins=100, start=None, end=None):
     return performance
 
 
-def rank_confusion_matrix(datasets, models, skip_same_label=False):
+def rank_confusion_matrix(datasets, models, skip_same_label=False, cache=False):
     """
     RankEval allows for a novel rank-oriented confusion matrix by reporting for
     any given relevance label  l_i, the number of document with a predicted
@@ -456,6 +481,10 @@ def rank_confusion_matrix(datasets, models, skip_same_label=False):
     skip_same_label : bool
         True if the method has to skip the pair with the same labels,
         False otherwise
+    cache : bool
+        Whether to cache or not the intermediate scoring results of each model
+        on each dataset. Caching enable instant access to the scores (after the
+        first scoring) but coudl make use also of a huge quantity of memory.
 
     Returns
     -------
@@ -471,7 +500,7 @@ def rank_confusion_matrix(datasets, models, skip_same_label=False):
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
-            y_pred = model.score(dataset, detailed=False)
+            y_pred = model.score(dataset, detailed=False, cache=cache)
             for query_id, start_offset, end_offset in dataset.query_iterator():
                 for i in np.arange(start_offset, end_offset):
                     for j in np.arange(i, end_offset):

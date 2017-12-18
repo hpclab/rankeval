@@ -56,7 +56,7 @@ class FeatureImportanceTestCase(unittest.TestCase):
         feature_count = np.zeros(self.dataset.n_features, dtype=np.uint16)
 
         y_pred_m, partial_y_pred, y_leaves = \
-            self.model.score(self.dataset, detailed=True)
+            self.model.score(self.dataset, detailed=True, cache=True)
 
         metric = MSE()
 
