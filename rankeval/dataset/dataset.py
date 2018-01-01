@@ -238,6 +238,17 @@ class Dataset(object):
             yield self.query_ids[i], \
                   self.query_offsets[i], self.query_offsets[i+1]
 
+    def get_query_size(self):
+        """
+        This method return the size of each query set.
+
+        Returns
+        -------
+        sizes : numpy 1d array of int
+            It is a ndarray of shape (n_queries,)
+        """
+        return np.ediff1d(self.query_offsets)
+
     def get_qids_dataset(self):
         """
         This method returns the query ids array in linear representation, i.e.,
