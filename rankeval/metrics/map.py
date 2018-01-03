@@ -101,7 +101,7 @@ class MAP(Metric):
                 n_relevant_retrieved_at_i += 1
                 precision_at_i += float(n_relevant_retrieved_at_i) / (i + 1)
 
-        return precision_at_i / n_retrieved
+        return precision_at_i / min(n_retrieved, n_relevant_retrieved_at_i)
 
     def __str__(self):
         s = self.name
