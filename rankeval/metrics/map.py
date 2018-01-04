@@ -19,7 +19,7 @@ class MAP(Metric):
 
     """
 
-    def __init__(self, name='MAP', cutoff=None):
+    def __init__(self, name='MAP', cutoff=None, no_relevant_results=1.0):
         """
         This is the constructor of MAP, an object of type Metric, with
         the name MAP. The constructor also allows setting custom values in the
@@ -33,9 +33,13 @@ class MAP(Metric):
             The top k results to be considered at per query level (e.g. 10),
             otherwise the default value is None and is computed on all the
             instances of a query.
+        no_relevant_results: float
+            Float indicating how to treat the cases where then are no relevant
+            results (e.g. 0.5). Default is 1.0.
         """
         super(MAP, self).__init__(name)
         self.cutoff = cutoff
+        self.no_relevant_results = no_relevant_results
 
     def eval(self, dataset, y_pred):
         """
@@ -101,7 +105,10 @@ class MAP(Metric):
                 n_relevant_retrieved_at_i += 1
                 precision_at_i += float(n_relevant_retrieved_at_i) / (i + 1)
 
-        return precision_at_i / min(n_retrieved, n_relevant_retrieved_at_i)
+        if n_relevant_retrieved_at_i > 0:
+            return precision_at_i / min(n_retrieved, n_relevant_retrieved_at_i)
+        else:
+            return self.no_relevant_results
 
     def __str__(self):
         s = self.name
