@@ -33,6 +33,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <iostream>
+#include <iomanip>
 
 /*
  * A Python object responsible for memory management of our vectors.
@@ -409,6 +411,7 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
     int   *qids   = (int*) qids_array->data;
 
     std::ofstream fout;
+    fout.precision(8);
     fout.open(file_path, std::ofstream::out);
 
     float* data_pointer = data;

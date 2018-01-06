@@ -118,9 +118,10 @@ class Dataset(object):
         dataset : rankeval.dataset.Dataset
             The resulting dataset with the given subset of features
         """
-        new_dataset = copy.deepcopy(self)
-        new_dataset.X = new_dataset.X[:, features]
-        return new_dataset
+        return Dataset(self.X[:, features].copy(),
+                       self.y,
+                       self.get_qids_dataset(),
+                       name=self.name)
 
     def dump(self, f, format):
         """
