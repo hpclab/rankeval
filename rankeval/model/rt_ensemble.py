@@ -184,16 +184,75 @@ class RTEnsemble(object):
         max_leaves : int
             Maximum number of leaves
         """
+        return self.num_leaves().max()
 
-        n_leaves = np.full(shape=self.n_trees, fill_value=-1, dtype=np.int32)
-        for idx_tree in xrange(self.n_trees):
+    def num_leaves(self):
+        """
+        Computes the number of leaves for each tree of the model.
+
+        Returns
+        -------
+        n_leaves : numpy 1d array (n_trees)
+            Number of leaves
+        """
+
+        n_leaves = np.empty(shape=self.n_trees, dtype=np.int32)
+        for idx_tree in np.arange(self.n_trees):
             root_node = self.trees_root[idx_tree]
-            next_root_node = self.n_nodes
-            if idx_tree+1 != self.n_trees:
+            if idx_tree+1 == self.n_trees:
+                next_root_node = self.n_nodes
+            else:
                 next_root_node = self.trees_root[idx_tree + 1]
             n_leaves[idx_tree] = (self.trees_left_child[root_node:next_root_node] == -1).sum()
 
-        return n_leaves.max()
+        return n_leaves
+
+    def num_nodes(self):
+        """
+        Computes the number of nodes for each tree of the model.
+
+        Returns
+        -------
+        n_nodes : numpy 1d array (n_trees)
+            Number of nodes
+        """
+
+        n_nodes = np.empty(shape=self.n_trees, dtype=np.int32)
+        for idx_tree in np.arange(self.n_trees):
+            root_node = self.trees_root[idx_tree]
+            if idx_tree+1 == self.n_trees:
+                next_root_node = self.n_nodes
+            else:
+                next_root_node = self.trees_root[idx_tree + 1]
+            n_nodes[idx_tree] = next_root_node - root_node
+
+        return n_nodes
+
+    def height_trees(self):
+        """
+        Computes the height of each tree of the model.
+
+        Returns
+        -------
+        heights : numpy 1d array (n_trees)
+            Height of each tree
+        """
+        def height_node(idx_node, depth):
+            if self.trees_left_child[idx_node] == -1:
+                return depth
+            else:
+                return max(
+                    height_node(self.trees_left_child[idx_node],
+                               depth + 1),
+                    height_node(self.trees_right_child[idx_node],
+                               depth + 1)
+                )
+
+        height_trees = np.empty(shape=self.n_trees, dtype=np.int32)
+        for idx_tree in np.arange(self.n_trees):
+            root_node = self.trees_root[idx_tree]
+            height_trees[idx_tree] = height_node(root_node, 0)
+        return height_trees
 
     def save(self, f, format="QuickRank"):
         """
