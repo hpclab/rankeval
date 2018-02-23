@@ -180,8 +180,8 @@ def plot_tree_wise_performance(performance, compare="models"):
                                                model=model,
                                                metric=metric)
                     axes[i, 0].plot(k_values, metric_values.values, label=metric)
-                    max_k = np.nanargmax(k_values)
-                    axes[i, 0].plot(max_k, metric_values.values[max_k], "ok",
+                    max_k = np.nanargmax(metric_values)
+                    axes[i, 0].plot(k_values[max_k], metric_values.values[max_k], "ok",
                                    fillstyle="none", label=None)
                 
                 axes[i, 0].plot([], [], "ok", fillstyle="none", label="Max")
@@ -210,8 +210,8 @@ def plot_tree_wise_performance(performance, compare="models"):
                                                model=model,
                                                metric=metric)
                     axes[j, 0].plot(k_values, metric_values.values, label=model)
-                    max_k = np.nanargmax(k_values)
-                    axes[j, 0].plot(max_k, metric_values.values[max_k], "ok",
+                    max_k = np.nanargmax(metric_values)
+                    axes[j, 0].plot(k_values[max_k], metric_values.values[max_k], "ok",
                                    fillstyle = "none", label=None)
 
                 axes[j, 0].plot([], [], "ok", fillstyle="none", label="Max")
@@ -240,8 +240,8 @@ def plot_tree_wise_performance(performance, compare="models"):
                                                model=model,
                                                metric=metric)
                     axes[j, 0].plot(k_values, metric_values.values, label=dataset.name)
-                    max_k = np.nanargmax(k_values)
-                    axes[j, 0].plot(max_k, metric_values.values[max_k], "ok",
+                    max_k = np.nanargmax(metric_values)
+                    axes[j, 0].plot(k_values[max_k], metric_values.values[max_k], "ok",
                                    fillstyle = "none", label=None)
                 axes[j, 0].plot([], [], "ok", fillstyle="none", label="Max")
                 axes[j, 0].set_ylabel(metric)
