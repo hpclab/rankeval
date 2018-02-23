@@ -285,9 +285,8 @@ def plot_tree_wise_average_contribution(performance):
         fig.suptitle(performance.name + " for " + dataset.name)
         
         for i, model in enumerate(performance.coords['model'].values):
-            k_values = performance.indexes['k'].values
             metric_values = performance.sel(dataset=dataset, model=model)
-            axes[i, 0].plot(k_values, metric_values.values)
+            axes[i, 0].plot( metric_values.values)
             axes[i, 0].legend((model,), loc='upper center')
             axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
 
