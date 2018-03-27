@@ -68,6 +68,22 @@ or (if you have nose already installed):
 
 ```nosetests -v```
 
-## Credits:
+## Cite RankEval
+
+If you use RankEval, please cite us!
+
+```
+@inproceedings{rankeval-sigir17,
+  author = {Claudio Lucchese and Cristina Ioana Muntean and Franco Maria Nardini and
+            Raffaele Perego and Salvatore Trani},
+  title = {RankEval: An Evaluation and Analysis Framework for Learning-to-Rank Solutions},
+  booktitle = {SIGIR 2017: Proceedings of the 40th International {ACM} {SIGIR}
+               Conference on Research and Development in Information Retrieval},
+  year = {2017},
+  location = {Tokyo, Japan}
+}
+```
+
+## Credits
     - Dataset loader: https://github.com/deronnek/svmlight-loader
     - Query id implementation: https://github.com/mblondel/svmlight-loader/pull/6
