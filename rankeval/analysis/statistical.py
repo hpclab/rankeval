@@ -23,7 +23,8 @@ from rankeval.metrics import MSE
 from ipywidgets import IntProgress
 from IPython.display import display
 
-def statistical_significance(datasets, model_a, model_b, metrics, n_perm=100000):
+def statistical_significance(datasets, model_a, model_b, metrics,
+                             n_perm=100000, cache=False):
     """
     This method computes the statistical significance of the performance difference between model_a and.
 
@@ -39,6 +40,10 @@ def statistical_significance(datasets, model_a, model_b, metrics, n_perm=100000)
         The metrics to use for the analysis
     n_perm : int
         Number of permutations for the randomization test.
+    cache : bool
+        Whether to cache or not the intermediate scoring results of each model
+        on each dataset. Caching enable instant access to the scores (after the
+        first scoring) but coudl make use also of a huge quantity of memory.
 
     Returns
     -------
@@ -53,8 +58,8 @@ def statistical_significance(datasets, model_a, model_b, metrics, n_perm=100000)
 
     data = np.zeros(shape=(len(datasets), len(metrics), 2), dtype=np.float32)
     for idx_dataset, dataset in enumerate(datasets):
-        y_pred_a = model_a.score(dataset, detailed=False)
-        y_pred_b = model_b.score(dataset, detailed=False)
+        y_pred_a = model_a.score(dataset, detailed=False, cache=cache)
+        y_pred_b = model_b.score(dataset, detailed=False, cache=cache)
         for idx_metric, metric in enumerate(metrics):
             progress_bar.value += 1
 

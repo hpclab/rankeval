@@ -6,10 +6,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 """
-This module implements the generic class for loading/dumping a dataset from/to file.
+This module implements the generic class for loading/dumping a dataset from/to
+file.
 """
 import numpy as np
 import copy
+from sklearn.utils.validation import check_random_state
 
 from .svmlight_format import load_svmlight_file, dump_svmlight_file
 
@@ -38,7 +40,8 @@ class Dataset(object):
 
     def __init__(self, X, y, query_ids, name=None):
         """
-        This module implements the generic class for loading/dumping a dataset from/to file.
+        This module implements the generic class for loading/dumping a dataset
+        from/to file.
 
         Parameters
         ----------
@@ -49,22 +52,29 @@ class Dataset(object):
         query_ids : numpy.array
             The vector with the query_id for each sample.
         """
+        if query_ids.size != X.shape[0]:
+            raise Exception("query_ids argument has not the correct shape!")
 
-        if len(query_ids) == X.shape[0]:
-            # convert from query_ids per sample to query offset
-            self.query_ids = np.append(np.unique(query_ids, return_index=True)[1],
-                                       query_ids.size)
-        else:
-            self.query_ids = query_ids
+        # convert from query_ids per sample to query offset
+        self.query_ids, self.query_offsets = \
+            np.unique(query_ids, return_index=True)
+
+        # resort the arrays per offset (if the file does not contains qids in
+        # order, the np.unique will return qids with a different ordering...
+        idx_sort = np.argsort(self.query_offsets)
+        self.query_ids = self.query_ids[idx_sort]
+        self.query_offsets = self.query_offsets[idx_sort]
+
+        self.query_offsets = np.append(self.query_offsets, query_ids.size)
 
         self.X, self.y = X, y
         self.name = "Dataset %s" % (self.X.shape,)
         if name is not None:
             self.name = name
 
-        self.n_instances = len(self.y)
+        self.n_instances = self.y.size
         self.n_features = self.X.shape[1]
-        self.n_queries = len(self.query_ids) - 1
+        self.n_queries = self.query_ids.size
 
     @staticmethod
     def load(f, name=None, format="svmlight"):
@@ -78,7 +88,8 @@ class Dataset(object):
         name : str
             The name to be given to the current dataset
         format : str
-            The format of the dataset file to load (actually supported is only "svmlight" format)
+            The format of the dataset file to load (actually supported is only
+            "svmlight" format)
 
         Returns
         -------
@@ -107,37 +118,101 @@ class Dataset(object):
         dataset : rankeval.dataset.Dataset
             The resulting dataset with the given subset of features
         """
-        new_dataset = copy.deepcopy(self)
-        new_dataset.X = new_dataset.X[:, features]
-        return new_dataset
+        return Dataset(self.X[:, features].copy(),
+                       self.y,
+                       self.get_qids_dataset(),
+                       name=self.name)
 
     def dump(self, f, format):
         """
-        This method implements the writing of a previously loaded dataset according to the given format on file
+        This method implements the writing of a previously loaded dataset
+        according to the given format on file
 
         Parameters
         ----------
         f : path
             The file path where to store the dataset
         format : str
-            The format to use for dumping the dataset on file (actually supported is only "svmlight" format)
+            The format to use for dumping the dataset on file (actually
+            supported is only "svmlight" format)
         """
-        if len(self.query_ids) != self.X.shape[0]:
-            # we need to unroll the query_ids (it is compacted: it reports only
-            # the offset where a new query id starts)
-            query_ids = np.ndarray(self.X.shape[0], dtype=np.float32)
-            last_idx = 0
-            for qid, qid_offset in enumerate(self.query_ids, start=1):
-                for idx in np.arange(last_idx, qid_offset):
-                    query_ids[idx] = qid
-                last_idx = qid_offset
-        else:
-            query_ids = self.query_ids
+        # we need to unroll the query_ids and query_offsets.
+        # They are represented compact: they report only the query ids and the
+        # offsets where each query starts and ends.
+        query_ids = np.ndarray(self.n_instances, dtype=np.int32)
+        for qid, start_offset, end_offset in self.query_iterator():
+            for idx in np.arange(start_offset, end_offset):
+                query_ids[idx] = qid
 
         if format == "svmlight":
             dump_svmlight_file(self.X, self.y, f, query_ids)
         else:
             raise TypeError("Dataset format %s is not yet supported!" % format)
+
+    def split(self, train_size, vali_size=0, random_state=None):
+        """
+        This method splits the dataset into train/validation/test partition.
+        It shuffle the query ids before partitioning. If vali_size=0, it means
+        the method will not create a validation set, thus returning only
+        train and test sets. Otherwise it will return train/vali/test sets.
+
+        Parameters
+        ----------
+        train_size : float
+            The ratio of query ids in the training set. It should be between
+            0 and 1.
+        vali_size : float
+            The ratio of query ids in the validation set. It should be between
+            0 and 1. 0 means no validation to be created.
+        random_state : int
+            If int, random_state is the seed used by the random number
+            generator. If RandomState instance, random_state is the random
+            number generator. If None, the random number generator is the
+            RandomState instance used by np.random.
+
+        Returns
+        -------
+        (train, vali, test) datasets : tuple of rankeval.dataset.Dataset
+            The resulting datasets with the given fraction of query ids in each
+            partition.
+        """
+
+        if train_size < 0 or train_size > 1 or (train_size + vali_size) > 1:
+            raise Exception("train and/or validation sizes are not correct!")
+
+        train_qn = int(round(train_size * self.n_queries))
+        vali_qn = int(round(vali_size * self.n_queries))
+        test_qn = self.n_queries - train_qn - vali_qn
+
+        qid_map = np.ndarray(self.n_instances, dtype=np.uint32)
+        for qid, start_offset, end_offset in self.query_iterator():
+            for idx in np.arange(start_offset, end_offset):
+                qid_map[idx] = qid
+
+        # add queries shuffling
+        rng = check_random_state(random_state)
+        qids_permutation = rng.permutation(self.query_ids)
+
+        train_qid = qids_permutation[:train_qn]
+        vali_qid = qids_permutation[train_qn:train_qn+vali_qn]
+        test_qid = qids_permutation[-test_qn:]
+
+        train_mask = np.in1d(qid_map, train_qid)
+        vali_mask = np.in1d(qid_map, vali_qid)
+        test_mask = np.in1d(qid_map, test_qid)
+
+        train_dataset = Dataset(self.X[train_mask], self.y[train_mask],
+                                qid_map[train_mask], name=self.name + ' Train')
+        if vali_size:
+            vali_dataset = Dataset(self.X[vali_mask], self.y[vali_mask],
+                                   qid_map[vali_mask], name=self.name + ' Vali')
+        test_dataset = Dataset(self.X[test_mask], self.y[test_mask],
+                               qid_map[test_mask], name=self.name + ' Test')
+
+        if not vali_size:
+            return train_dataset, test_dataset
+        else:
+            return train_dataset, vali_dataset, test_dataset
 
     def clear_X(self):
         """
@@ -148,7 +223,7 @@ class Dataset(object):
         del self.X
         self.X = None
 
-    def query_offset_iterator(self):
+    def query_iterator(self):
         """
         This method implements and iterator over the offsets of the query_ids
         in the dataset.
@@ -160,8 +235,36 @@ class Dataset(object):
             The two indices represent (start, end) offsets.
 
         """
-        for i in np.arange(len(self.query_ids) - 1):
-            yield self.query_ids[i], self.query_ids[i+1]
+        for i in np.arange(self.n_queries):
+            yield self.query_ids[i], \
+                  self.query_offsets[i], self.query_offsets[i+1]
+
+    def get_query_size(self):
+        """
+        This method return the size of each query set.
+
+        Returns
+        -------
+        sizes : numpy 1d array of int
+            It is a ndarray of shape (n_queries,)
+        """
+        return np.ediff1d(self.query_offsets)
+
+    def get_qids_dataset(self):
+        """
+        This method returns the query ids array in linear representation, i.e.,
+        with the qid of each instance. Usefull for creating a new dataset
+        starting from a different one.
+
+        Returns
+        -------
+        query_ids : numpy 1d array of int
+            It is a ndarray of shape (nsamples,)
+        """
+        query_ids = np.empty(shape=self.n_instances, dtype=np.int32)
+        for qid, start_offset, end_offset in self.query_iterator():
+            query_ids[start_offset:end_offset] = qid
+        return query_ids
 
     def __str__(self):
         return self.name

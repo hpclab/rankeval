@@ -53,7 +53,7 @@ class NDCG(Metric):
                        implementation=self.implementation)
 
         self._current_dataset = None
-        self._current_qid = None
+        self._current_rel_qid = None
         self._cache_idcg_score = defaultdict(int)
 
     def eval(self, dataset, y_pred):
@@ -82,14 +82,15 @@ class NDCG(Metric):
         """
         # used to cache ideal DCG scores on a dataset basis
         self._current_dataset = dataset
-        self._current_qid = 0
+        self._current_rel_qid = 0
 
         # Compute the ideal DCG scores only once and cache them
         if self._current_dataset not in self._cache_idcg_score:
 
             idcg_score = np.ndarray(shape=dataset.n_queries, dtype=np.float32)
-            for qid, q_y, _ in self.query_iterator(dataset, dataset.y):
-                idcg_score[qid] = self.dcg.eval_per_query(q_y, q_y)
+            for rel_id, (qid, q_y, _) in enumerate(
+                    self.query_iterator(dataset, dataset.y)):
+                idcg_score[rel_id] = self.dcg.eval_per_query(q_y, q_y)
 
             self._cache_idcg_score[self._current_dataset] = idcg_score
 
@@ -120,10 +121,10 @@ class NDCG(Metric):
         """
         dcg_score = self.dcg.eval_per_query(y, y_pred)
 
-        if self._current_qid is not None:
+        if self._current_rel_qid is not None:
             idcg_score = \
-                self._cache_idcg_score[self._current_dataset][self._current_qid]
-            self._current_qid += 1
+                self._cache_idcg_score[self._current_dataset][self._current_rel_qid]
+            self._current_rel_qid += 1
         else:
             idcg_score = self.dcg.eval_per_query(y, y)
 

@@ -42,7 +42,8 @@ def load_svmlight_file(file_path, buffer_mb=40, query_id=False):
 
     where X is a dense numpy matrix of shape (n_samples, n_features) and type dtype,
           y is a ndarray of shape (n_samples,).
-          query_ids is a ndarray of shape(nsamples,) if query_id is True, it is not returned otherwise
+          query_ids is a ndarray of shape(nsamples,) if query_id is True.
+          Otherwise it is not returned.
     """
     data, labels, qids = _load_svmlight_file(file_path, buffer_mb)
 
@@ -114,7 +115,7 @@ def load_svmlight_files(files, buffer_mb=40, query_id=False):
     return result
 
 
-def dump_svmlight_file(X, y, f, query_id=None, zero_based=True):
+def dump_svmlight_file(X, y, f, query_id=None, zero_based=False):
     """Dump the dataset in svmlight / libsvm file format.
 
     This format is a text-based format, with one sample per line. It does
@@ -145,7 +146,7 @@ def dump_svmlight_file(X, y, f, query_id=None, zero_based=True):
 
     zero_based : boolean, optional
         Whether column indices should be written zero-based (True) or one-based
-        (False).
+        (False). Default is False.
     """
     if hasattr(f, "write"):
         raise ValueError("File handler not supported. Use a file path.")
@@ -155,13 +156,15 @@ def dump_svmlight_file(X, y, f, query_id=None, zero_based=True):
     #     raise ValueError("X.shape[0] and y.shape[0] should be the same, "
     #                      "got: %r and %r instead." % (X.shape[0], y.shape[0]))
 
-    if query_id is None:
-        query_id = []
     # elif X.shape[0] != len(query_id):
     #         raise ValueError("X.shape[0] and len(query_id) should be the same, "
     #                      "got: %r and %r instead." % (X.shape[0], len(query_id)))
 
     X = np.array(X, dtype=np.float32)
     y = np.array(y, dtype=np.float32)
+    if query_id is None:
+        query_id = np.ndarray(0, dtype=np.int32)
+    else:
+        query_id = np.array(query_id, dtype=np.int32)
 
     _dump_svmlight_file(f, X, y, query_id, int(zero_based))
