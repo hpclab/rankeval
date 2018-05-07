@@ -33,7 +33,7 @@ import re
 
 import numpy as np
 
-from rt_ensemble import RTEnsemble
+from .rt_ensemble import RTEnsemble
 
 tree_reg = re.compile("^Tree=(\d+)")
 num_leaves_reg = re.compile("^num_leaves=(\d+)")
@@ -86,7 +86,7 @@ class ProxyLightGBM(object):
 
                 match = split_feature_reg.match(line)
                 if match:
-                    split_features = map(int, match.group(1).strip().split())
+                    split_features = list( map(int, match.group(1).strip().split()) )
                     for pos, feature in enumerate(split_features):
                         model.trees_nodes_feature[root_node + pos] = feature
                     num_splits = len(split_features)
@@ -94,14 +94,14 @@ class ProxyLightGBM(object):
 
                 match = threshold_reg.match(line)
                 if match:
-                    thresholds = map(float, match.group(1).strip().split())
+                    thresholds = list( map(float, match.group(1).strip().split()) )
                     for pos, threshold in enumerate(thresholds):
                         model.trees_nodes_value[root_node + pos] = threshold
                     continue
 
                 match = left_child_reg.match(line)
                 if match:
-                    left_children = map(int, match.group(1).strip().split())
+                    left_children = list( map(int, match.group(1).strip().split()) )
                     for pos, child in enumerate(left_children):
                         if child >= 0:
                             model.trees_left_child[root_node + pos] = \
@@ -113,7 +113,7 @@ class ProxyLightGBM(object):
 
                 match = right_child_reg.match(line)
                 if match:
-                    right_children = map(int, match.group(1).strip().split())
+                    right_children = list( map(int, match.group(1).strip().split()) )
                     for pos, child in enumerate(right_children):
                         if child >= 0:
                             model.trees_right_child[root_node + pos] = \
@@ -133,7 +133,7 @@ class ProxyLightGBM(object):
 
                 match = leaf_value_reg.match(line)
                 if match:
-                    leaf_values = map(float, match.group(1).strip().split())
+                    leaf_values = list( map(float, match.group(1).strip().split()) )
                     num_leaves = len(leaf_values)
                     for pos, leaf_value in enumerate(leaf_values):
                         model.trees_nodes_value[root_node + num_splits + pos] \

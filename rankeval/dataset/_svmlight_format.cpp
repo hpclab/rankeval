@@ -483,7 +483,7 @@ static const char svmlight_format_doc[] =
   "Loader/Writer for svmlight / libsvm datasets - C++ helper routines";
 
 #if PY_MAJOR_VERSION >= 3
-PyMODINIT_FUNC PyInit__svmlight_loader(void)
+PyMODINIT_FUNC PyInit__svmlight_format(void)
 {
   _import_array();
 

@@ -38,7 +38,7 @@ import re
 import sys
 import numpy as np
 
-from rt_ensemble import RTEnsemble
+from .rt_ensemble import RTEnsemble
 
 tree_reg = re.compile("^booster\[(\d+)\]")
 node_reg = re.compile("(\d+):\[f(\d+)<(.*)\]")

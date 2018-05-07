@@ -10,11 +10,11 @@ The :mod:`rankeval.model` module includes utilities to load a model
 and dump it according to several supported model's format.
 """
 
-from proxy_LightGBM import ProxyLightGBM
-from proxy_QuickRank import ProxyQuickRank
-from proxy_ScikitLearn import ProxyScikitLearn
-from proxy_XGBoost import ProxyXGBoost
-from rt_ensemble import RTEnsemble
+from .proxy_LightGBM import ProxyLightGBM
+from .proxy_QuickRank import ProxyQuickRank
+from .proxy_ScikitLearn import ProxyScikitLearn
+from .proxy_XGBoost import ProxyXGBoost
+from .rt_ensemble import RTEnsemble
 
 __all__ = ['RTEnsemble',
            'ProxyQuickRank',

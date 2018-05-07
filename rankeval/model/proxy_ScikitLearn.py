@@ -24,7 +24,7 @@ import re
 
 import numpy as np
 
-from rt_ensemble import RTEnsemble
+from .rt_ensemble import RTEnsemble
 
 base_score_reg = re.compile("^base_score=(.+)$")
 learning_rate_reg = re.compile("^learning_rate=(.+)$")

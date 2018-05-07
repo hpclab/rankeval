@@ -5,7 +5,7 @@ loader for the svmlight / libsvm sparse dataset format.  """
 #          Lars Buitinck <L.J.Buitinck@uva.nl>
 # License: Simple BSD.
 
-from _svmlight_format import _load_svmlight_file, _dump_svmlight_file
+from ._svmlight_format import _load_svmlight_file, _dump_svmlight_file
 import numpy as np
 
 
@@ -48,7 +48,7 @@ def load_svmlight_file(file_path, buffer_mb=40, query_id=False):
 
     # reshape the numpy array into a matrix
     n_samples = len(labels)
-    n_features = len(data) / n_samples
+    n_features = int( len(data) / n_samples )
     data.shape = (n_samples, n_features)
     if data.dtype != np.float32:
         new_data = data.astype(dtype=np.float32)

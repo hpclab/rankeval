@@ -21,7 +21,7 @@ nodes on the other hand are described by an "output" tag with the value as
 content.
 """
 
-from rt_ensemble import RTEnsemble
+from .rt_ensemble import RTEnsemble
 
 try:
     import xml.etree.cElementTree as etree

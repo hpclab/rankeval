@@ -123,15 +123,15 @@ def __fetch_dataset_and_models__(dataset_dictionary, fold=None, data_home=None,
     if not dataset_already_downloaded:
         os.makedirs(dataset_home)
 
-        print "Downloading dataset. This may take a few minutes."
+        print ("Downloading dataset. This may take a few minutes.")
 
         data_url = dataset_dictionary['DATASET_URL']
-        print "Downloading dataset from %s " % data_url
+        print ("Downloading dataset from %s " % data_url)
         opener = urlopen(data_url)
         with open(archive_name, 'wb') as f:
             f.write(opener.read())
 
-        print "Decompressing %s" % archive_name
+        print ("Decompressing %s" % archive_name)
         tarfile.open(archive_name, "r:gz").extractall(path=dataset_home)
         os.remove(archive_name)
 
@@ -161,12 +161,12 @@ def __fetch_dataset_and_models__(dataset_dictionary, fold=None, data_home=None,
             os.makedirs(models_home)
 
             models_url = dataset_dictionary['MODELS_URL']
-            print "Downloading letor models from %s" % models_url
+            print ("Downloading letor models from %s" % models_url)
             opener = urlopen(models_url)
             with open(models_archive_name, 'wb') as f:
                 f.write(opener.read())
 
-            print "Decompressing %s" % models_archive_name
+            print ("Decompressing %s" % models_archive_name)
             tarfile.open(models_archive_name, "r:gz").extractall(
                 path=models_home)
             os.remove(models_archive_name)
@@ -230,7 +230,7 @@ def load_dataset(dataset_name, fold=None, download_if_missing=True,
 
     container = DatasetContainer()
 
-    print "Loading files. This may take a few minutes."
+    print ("Loading files. This may take a few minutes.")
 
     if data.get('train') is not None:
         train_dataset = Dataset.load(data['train'], name=dataset_name + "_train", format=dataset_format)
@@ -249,6 +249,6 @@ def load_dataset(dataset_name, fold=None, download_if_missing=True,
     if with_models:
         container.model_filenames = data['models']
 
-    print "done loading dataset!"
+    print ("done loading dataset!")
 
     return container

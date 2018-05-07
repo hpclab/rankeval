@@ -10,7 +10,7 @@ Class for efficient scoring of an ensemble-based model composed of binary regres
 """
 
 from ..dataset import Dataset
-from _efficient_scoring import basic_scoring, detailed_scoring
+from ._efficient_scoring import basic_scoring, detailed_scoring
 
 
 class Scorer(object):
