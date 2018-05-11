@@ -67,7 +67,7 @@ class Metric(six.with_metaclass(ABCMeta)):
         for rel_qid, (qid, q_y, q_y_pred) in enumerate(
                 self.query_iterator(dataset, y_pred)):
             self.detailed_scores[rel_qid] = self.eval_per_query(q_y, q_y_pred)
-        return self.detailed_scores.mean(), self.detailed_scores
+        return np.nanmean(self.detailed_scores), self.detailed_scores
 
     @abstractmethod
     def eval_per_query(self, y, y_pred):
