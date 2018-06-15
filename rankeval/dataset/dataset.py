@@ -214,6 +214,36 @@ class Dataset(object):
         else:
             return train_dataset, vali_dataset, test_dataset
 
+    def subset(self, query_ids, relative=False, name=None):
+        """
+        This method return a subset of the dataset according to the query_ids
+        parameter. If relative=True, the qids are considered relative indices
+        according the the query order of the current dataset
+
+        Parameters
+        ----------
+        query_ids : numpy 1d array of int
+            It is a ndarray with the query_ids to select
+        relative: bool
+            Whether to consider the query_ids as absolute or relative
+        name : str
+            The name to give to the dataset
+
+        Returns
+        -------
+        datasets : rankeval.dataset.Dataset
+            The resulting dataset with only the query_ids requested
+        """
+        qid_map = np.ndarray(self.n_instances, dtype=np.uint32)
+        for qid, start_offset, end_offset in self.query_iterator():
+            for idx in np.arange(start_offset, end_offset):
+                qid_map[idx] = qid
+
+        mask = np.in1d(qid_map, query_ids)
+
+        return Dataset(self.X[mask], self.y[mask],
+                       qid_map[mask], name=name)
+
     def clear_X(self):
         """
         This method clears the space used by the dataset instance for storing X (the dataset features).
