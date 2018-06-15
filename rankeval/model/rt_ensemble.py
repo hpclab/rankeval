@@ -347,7 +347,7 @@ class RTEnsemble(object):
             scorer = self._cache_scorer[dataset]
 
         if detailed:
-            return scorer.y_pred, scorer.partial_y_pred, scorer.y_leaves
+            return scorer.y_pred, scorer.partial_y_pred, scorer.out_leaves
         else:
             return scorer.y_pred
 
