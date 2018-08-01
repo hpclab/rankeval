@@ -106,7 +106,7 @@ class MAP(Metric):
                 precision_at_i += float(n_relevant_retrieved_at_i) / (i + 1)
 
         if n_relevant_retrieved_at_i > 0:
-            return precision_at_i / min(n_retrieved, n_relevant_retrieved_at_i)
+            return precision_at_i / min(n_retrieved, np.count_nonzero(y))
         else:
             return self.no_relevant_results
 
