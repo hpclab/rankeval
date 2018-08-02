@@ -15,7 +15,7 @@ class MAP(Metric):
     This class implements MAP with several parameters. We implemented MAP as in
     https://www.kaggle.com/wiki/MeanAveragePrecision, adapted from:
     http://en.wikipedia.org/wiki/Information_retrieval
-    http://sas.uwaterloo.ca/stats_navigation/techreports/04WorkingPapers/2004-09.pdf
+    https://www.ethz.ch/content/dam/ethz/special-interest/gess/computational-social-science-dam/documents/education/Spring2017/ML/LinkPrediction.pdf
 
     """
 
@@ -74,7 +74,7 @@ class MAP(Metric):
         where:
             - P(k) means the precision at cut-off k in the item list. P(k)
             equals 0 when the k-th item is not followed upon recommendation
-            - m is the number of relevant documents
+            - m is the overall number of relevant documents
             - n is the number of predicted documents
 
         If the denominator is zero, P(k)/min(m,n) is set to zero.
@@ -101,9 +101,9 @@ class MAP(Metric):
         precision_at_i = 0.
         n_relevant_retrieved_at_i = 0.
         for i in range(n_retrieved):
-            if y[idx_y_pred_sorted[i]] != 0:
+            if y[idx_y_pred_sorted[i]] > 0:
                 n_relevant_retrieved_at_i += 1
-                precision_at_i += float(n_relevant_retrieved_at_i) / (i + 1)
+                precision_at_i += n_relevant_retrieved_at_i / (i + 1)
 
         if n_relevant_retrieved_at_i > 0:
             return precision_at_i / min(n_retrieved, np.count_nonzero(y))
