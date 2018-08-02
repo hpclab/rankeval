@@ -22,11 +22,11 @@ class Dataset(object):
     Attributes
     ----------
     X : numpy 2d array of float
-        It is a dense numpy matrix of shape (n_samples, n_features),
+        It is a dense numpy matrix of shape (n_instances, n_features),
     y : numpy 1d array of float
-        It is a ndarray of shape (n_samples,) with the gold label
+        It is a ndarray of shape (n_instances,) with the gold label
     query_ids : numpy 1d array of int
-        It is a ndarray of shape(nsamples,)
+        It is a ndarray of shape(n_queries,)
     query_offsets : numpy 1d array of int
         It is a ndarray of shape(n_queries+1, ) with the start and end offsets
         of each query. In particular. the i-th query has indices ranging in
@@ -220,8 +220,7 @@ class Dataset(object):
     def subset(self, query_ids, name=None):
         """
         This method return a subset of the dataset according to the query_ids
-        parameter. If relative=True, the qids are considered relative indices
-        according the the query order of the current dataset
+        parameter.
 
         Parameters
         ----------
@@ -271,7 +270,7 @@ class Dataset(object):
             yield self.query_ids[i], \
                   self.query_offsets[i], self.query_offsets[i+1]
 
-    def get_query_size(self):
+    def get_query_sizes(self):
         """
         This method return the size of each query set.
 
@@ -285,13 +284,13 @@ class Dataset(object):
     def get_qids_dataset(self):
         """
         This method returns the query ids array in linear representation, i.e.,
-        with the qid of each instance. Usefull for creating a new dataset
+        with the qid of each instance. Useful for creating a new dataset
         starting from a different one.
 
         Returns
         -------
         query_ids : numpy 1d array of int
-            It is a ndarray of shape (nsamples,)
+            It is a ndarray of shape (n_instances,)
         """
         query_ids = np.empty(shape=self.n_instances, dtype=np.int32)
         for qid, start_offset, end_offset in self.query_iterator():

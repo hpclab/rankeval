@@ -321,7 +321,7 @@ class RTEnsemble(object):
 
         # check that the features used by the model are "compatible" with the
         # features in the dataset (at least, in terms of their number)
-        if np.max(self.trees_nodes_feature) + 1 > dataset.X.shape[1]:
+        if np.max(self.trees_nodes_feature) + 1 > dataset.n_features:
             raise RuntimeError("Dataset features are not compatible with "
                                "model features")
 
