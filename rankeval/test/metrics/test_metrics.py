@@ -261,14 +261,12 @@ class MetricsTestCase(unittest.TestCase):
                             , decimal=3)
 
     def test_MAP_eval_per_query(self):
-        idx_y_pred_sorted = np.argsort(self.y_pred_query1)[::-1]
-
         # without cutoff
         p = MAP()
         result = p.eval_per_query(self.y_query2, self.y_pred_query2)
-        assert_almost_equal(result, 0.2, decimal=2)
+        assert_almost_equal(result, 0.5, decimal=2)
 
         # without cutoff
         p = MAP(cutoff=3)
         result = p.eval_per_query(self.y_query2, self.y_pred_query2)
-        assert_almost_equal(result, 0.166, decimal=3)
+        assert_almost_equal(result, 0.25, decimal=3)

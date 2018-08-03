@@ -182,24 +182,34 @@ def _kfold_scoring(dataset, k, algo):
     display(progress_bar)    
 
     scores = np.zeros(dataset.n_instances, dtype=np.float32)
-    q_lens = dataset.query_ids[1:]-dataset.query_ids[:-1]
+    query_sizes = dataset.get_query_sizes()
     # shuffle queries
     shuffled_qid = np.random.permutation(dataset.n_queries)
-    chunk_size = int(math.ceil(dataset.n_queries/float(k)))
-    for f,p in enumerate(range(0,dataset.n_queries,chunk_size)):
+    chunk_query_size = int(math.ceil(dataset.n_queries/float(k)))
+    for p in range(0, dataset.n_queries, chunk_query_size):
         progress_bar.value += 1
 
         # p-th fold is used for testing
-        test_rows = np.zeros(dataset.n_instances, dtype=np.bool)
-        for q in shuffled_qid[p: p+chunk_size]:
-            test_rows[ dataset.query_ids[q]:dataset.query_ids[q+1] ] = True
+        test_rows = np.full(dataset.n_instances,
+                            fill_value=False,
+                            dtype=np.bool)
+        for q in shuffled_qid[p: p + chunk_query_size]:
+            test_rows[dataset.query_offsets[q]:dataset.query_offsets[q+1]] = True
         # other folds are used for training
         train_rows = np.logical_not(test_rows)
-        train_q = np.ones(dataset.n_queries, dtype=np.bool)
-        train_q[shuffled_qid[p: p+chunk_size]] = False
+
+        train_q = np.full(dataset.n_queries,
+                          fill_value=True,
+                          dtype=np.bool)
+        train_q[shuffled_qid[p: p+chunk_query_size]] = False
+
         # get algorithm predictions
-        fold_scores = algo(dataset.X[train_rows], dataset.y[train_rows], q_lens[train_q],
-                           dataset.X[test_rows])
+        fold_scores = algo(
+            dataset.X[train_rows],
+            dataset.y[train_rows],
+            query_sizes[train_q],
+            dataset.X[test_rows]
+        )
         # update scores for the current fold
         scores[test_rows] = fold_scores
         
@@ -207,7 +217,8 @@ def _kfold_scoring(dataset, k, algo):
     progress_bar.close()
         
     return scores
-            
+
+
 def _multi_kfold_scoring(dataset, algo, L=10, k=2):
     """
     Performs multiple scorings of the given dataset.

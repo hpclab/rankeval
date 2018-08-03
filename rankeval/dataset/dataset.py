@@ -10,8 +10,7 @@ This module implements the generic class for loading/dumping a dataset from/to
 file.
 """
 import numpy as np
-import copy
-from sklearn.utils.validation import check_random_state
+import numbers
 
 from .svmlight_format import load_svmlight_file, dump_svmlight_file
 
@@ -23,11 +22,15 @@ class Dataset(object):
     Attributes
     ----------
     X : numpy 2d array of float
-        It is a dense numpy matrix of shape (n_samples, n_features),
+        It is a dense numpy matrix of shape (n_instances, n_features),
     y : numpy 1d array of float
-        It is a ndarray of shape (n_samples,) with the gold label
+        It is a ndarray of shape (n_instances,) with the gold label
     query_ids : numpy 1d array of int
-        It is a ndarray of shape(nsamples,)
+        It is a ndarray of shape(n_queries,)
+    query_offsets : numpy 1d array of int
+        It is a ndarray of shape(n_queries+1, ) with the start and end offsets
+        of each query. In particular. the i-th query has indices ranging in
+        [ query_offsets[i], query_offsets[i+1] ), with the latter excluded.
     name : str
         The name to give to the dataset
     n_instances : int
@@ -190,7 +193,7 @@ class Dataset(object):
                 qid_map[idx] = qid
 
         # add queries shuffling
-        rng = check_random_state(random_state)
+        rng = Dataset._check_random_state(random_state)
         qids_permutation = rng.permutation(self.query_ids)
 
         train_qid = qids_permutation[:train_qn]
@@ -214,10 +217,38 @@ class Dataset(object):
         else:
             return train_dataset, vali_dataset, test_dataset
 
+    def subset(self, query_ids, name=None):
+        """
+        This method return a subset of the dataset according to the query_ids
+        parameter.
+
+        Parameters
+        ----------
+        query_ids : numpy 1d array of int
+            It is a ndarray with the query_ids to select
+        name : str
+            The name to give to the dataset
+
+        Returns
+        -------
+        datasets : rankeval.dataset.Dataset
+            The resulting dataset with only the query_ids requested
+        """
+        qid_map = np.ndarray(self.n_instances, dtype=np.uint32)
+        for qid, start_offset, end_offset in self.query_iterator():
+            for idx in np.arange(start_offset, end_offset):
+                qid_map[idx] = qid
+
+        mask = np.in1d(qid_map, query_ids)
+
+        return Dataset(self.X[mask], self.y[mask],
+                       qid_map[mask], name=name)
+
     def clear_X(self):
         """
-        This method clears the space used by the dataset instance for storing X (the dataset features).
-        This space is used only for scoring, thus it can be freed after.
+        This method clears the space used by the dataset instance for storing X
+        (the dataset features). This space is used only for scoring, thus it
+        can be freed after.
 
         """
         del self.X
@@ -239,7 +270,7 @@ class Dataset(object):
             yield self.query_ids[i], \
                   self.query_offsets[i], self.query_offsets[i+1]
 
-    def get_query_size(self):
+    def get_query_sizes(self):
         """
         This method return the size of each query set.
 
@@ -253,18 +284,40 @@ class Dataset(object):
     def get_qids_dataset(self):
         """
         This method returns the query ids array in linear representation, i.e.,
-        with the qid of each instance. Usefull for creating a new dataset
+        with the qid of each instance. Useful for creating a new dataset
         starting from a different one.
 
         Returns
         -------
         query_ids : numpy 1d array of int
-            It is a ndarray of shape (nsamples,)
+            It is a ndarray of shape (n_instances,)
         """
         query_ids = np.empty(shape=self.n_instances, dtype=np.int32)
         for qid, start_offset, end_offset in self.query_iterator():
             query_ids[start_offset:end_offset] = qid
         return query_ids
+
+    @staticmethod
+    def _check_random_state(seed):
+        """
+        Turn seed into a np.random.RandomState instance (took for sklearn)
+
+        Parameters
+        ----------
+        seed : None | int | instance of RandomState
+            If seed is None, return the RandomState singleton used by np.random.
+            If seed is an int, return a new RandomState instance seeded with it.
+            If seed is already a RandomState instance, return it.
+            Otherwise raise ValueError.
+        """
+        if seed is None or seed is np.random:
+            return np.random.mtrand._rand
+        if isinstance(seed, (numbers.Integral, np.integer)):
+            return np.random.RandomState(seed)
+        if isinstance(seed, np.random.RandomState):
+            return seed
+        raise ValueError('%r cannot be used to seed a numpy.random.RandomState'
+                         ' instance' % seed)
 
     def __str__(self):
         return self.name
