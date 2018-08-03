@@ -112,37 +112,6 @@ def plot_model_performance(performance, compare="models", show_values=False):
     return fig_list
 
 
-def resolvexticks(performance):
-    """
-    This methods subsamples xticks uniformly when too many xticks on x axes.
-    It is called by plot_tree_wise_performance, when the number of trees
-    (xticks) is too large to be nicely displayed.
-
-    Parameters
-    ----------
-    performance : xarray
-        The
-
-    Returns
-    -------
-    xticks : list
-        The list of indeces for xticks.
-    xticks_labels : list
-        The corresponding labels for each xtick.
-
-    """
-    sampling_factor = len(performance.coords['k'].values) / 10.
-    new_xtick = islice(np.arange(len(performance.coords['k'].values)), 0,
-                       None, sampling_factor)
-    new_xticklabel = islice(performance.coords['k'].values, 0,
-                            None, sampling_factor)
-    xticks = list(new_xtick)
-    xticks.append(np.arange(len(performance.coords['k'].values))[-1])
-    xticks_labels = list(new_xticklabel)
-    xticks_labels.append(performance.coords['k'].values[-1])
-    return xticks, xticks_labels
-
-
 def plot_tree_wise_performance(performance, compare="models"):
     """
     This method plots the results obtained from the tree_wise_performance
@@ -175,25 +144,22 @@ def plot_tree_wise_performance(performance, compare="models"):
                                      sharex=True, squeeze=False, figsize=(8, 8))
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
-                    k_values = performance.sel(dataset=dataset,
+                    k_values = performance.indexes['k'].values
+                    metric_values = performance.sel(dataset=dataset,
                                                model=model,
                                                metric=metric)
-                    axes[i, 0].plot(k_values.values, label=metric)
-                    max_k = np.nanargmax(k_values.values)
-                    axes[i, 0].plot(max_k, k_values.values[max_k], "ok",
+                    axes[i, 0].plot(k_values, metric_values.values, label=metric)
+                    max_k = np.nanargmax(metric_values)
+                    axes[i, 0].plot(k_values[max_k], metric_values.values[max_k], "ok",
                                    fillstyle="none", label=None)
                 
                 axes[i, 0].plot([], [], "ok", fillstyle="none", label="Max")
                 axes[i, 0].set_ylabel(model)
                 axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
-
-                if len(performance.coords['k'].values) > 10:
-                    xticks, xticks_labels = resolvexticks(performance)
-                    axes[i, 0].set_xticks(xticks)
-                    axes[i, 0].set_xticklabels(xticks_labels)
             
             axes[i, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             axes[i, 0].set_xlabel("Number of trees")
+            axes[i, 0].set_xlim(xmin=0)
             fig.suptitle(performance.name + " for " + dataset.name)
 
             fig_list.append(fig)
@@ -204,25 +170,22 @@ def plot_tree_wise_performance(performance, compare="models"):
                                      sharex=True, squeeze=False, figsize=(8, 8))
             for j, metric in enumerate(performance.coords['metric'].values):  
                 for i, model in enumerate(performance.coords['model'].values):
-                    k_values = performance.sel(dataset=dataset,
+                    k_values = performance.indexes['k'].values
+                    metric_values = performance.sel(dataset=dataset,
                                                model=model,
                                                metric=metric)
-                    axes[j, 0].plot(k_values.values, label=model)
-                    max_k = np.nanargmax(k_values.values)
-                    axes[j, 0].plot(max_k, k_values.values[max_k], "ok",
+                    axes[j, 0].plot(k_values, metric_values.values, label=model)
+                    max_k = np.nanargmax(metric_values)
+                    axes[j, 0].plot(k_values[max_k], metric_values.values[max_k], "ok",
                                    fillstyle = "none", label=None)
 
                 axes[j, 0].plot([], [], "ok", fillstyle="none", label="Max")
                 axes[j, 0].set_ylabel(metric)
                 axes[j, 0].yaxis.grid(True, zorder=0, ls="--")
-
-                if len(performance.coords['k'].values) > 10:
-                    xticks, xticks_labels = resolvexticks(performance)
-                    axes[j, 0].set_xticks(xticks)
-                    axes[j, 0].set_xticklabels(xticks_labels)
             
             axes[j, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             axes[j, 0].set_xlabel("Number of trees")
+            axes[j, 0].set_xlim(xmin=0)
             fig.suptitle(performance.name + " for " + dataset.name)
 
             fig_list.append(fig)
@@ -233,24 +196,21 @@ def plot_tree_wise_performance(performance, compare="models"):
                                      sharex=True, squeeze=False, figsize=(8, 8))
             for j, metric in enumerate(performance.coords['metric'].values):  
                 for k, dataset in enumerate(performance.coords['dataset'].values):
-                    k_values = performance.sel(dataset=dataset,
+                    k_values = performance.indexes['k'].values
+                    metric_values = performance.sel(dataset=dataset,
                                                model=model,
                                                metric=metric)
-                    axes[j, 0].plot(k_values.values, label=dataset.name)
-                    max_k = np.nanargmax(k_values.values)
-                    axes[j, 0].plot(max_k, k_values.values[max_k], "ok",
+                    axes[j, 0].plot(k_values, metric_values.values, label=dataset.name)
+                    max_k = np.nanargmax(metric_values)
+                    axes[j, 0].plot(k_values[max_k], metric_values.values[max_k], "ok",
                                    fillstyle = "none", label=None)
                 axes[j, 0].plot([], [], "ok", fillstyle="none", label="Max")
                 axes[j, 0].set_ylabel(metric)
                 axes[j, 0].yaxis.grid(True, zorder=0, ls="--")
-                
-                if len(performance.coords['k'].values) > 10:
-                    xticks, xticks_labels = resolvexticks(performance)
-                    axes[j, 0].set_xticks(xticks)
-                    axes[j, 0].set_xticklabels(xticks_labels)
                     
             axes[j, 0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             axes[j, 0].set_xlabel("Number of trees")
+            axes[j, 0].set_xlim(xmin=0)
             fig.suptitle(performance.name + " for " + model.name)
 
             fig_list.append(fig)
@@ -282,12 +242,13 @@ def plot_tree_wise_average_contribution(performance):
         fig.suptitle(performance.name + " for " + dataset.name)
         
         for i, model in enumerate(performance.coords['model'].values):
-            k_values = performance.sel(dataset=dataset, model=model)
-            axes[i, 0].plot(k_values.values)
+            metric_values = performance.sel(dataset=dataset, model=model)
+            axes[i, 0].plot( metric_values.values)
             axes[i, 0].legend((model,), loc='upper center')
             axes[i, 0].yaxis.grid(True, zorder=0, ls="--")
 
         axes[i, 0].set_xlabel("Number of trees")
+        axes[i, 0].set_xlim(xmin=0)
    
         fig_list.append(fig)
     
@@ -327,11 +288,11 @@ def plot_query_wise_performance(performance, compare="models"):
             fig.suptitle(performance.name + " for " + dataset.name)
             for i, model in enumerate(performance.coords['model'].values):
                 for j, metric in enumerate(performance.coords['metric'].values):
-                    k_values = performance.sel(dataset=dataset,
+                    metric_values = performance.sel(dataset=dataset,
                                                model=model,
                                                metric=metric)
                     axes[i, 0].plot(performance.coords['bin'].values,
-                                    k_values.values*100, label=metric)
+                                    metric_values.values*100, label=metric)
 
                 axes[i, 0].set_ylabel("Query %")
                 axes[i, 0].yaxis.set_ticks(np.arange(0, 101, 25))
@@ -348,11 +309,11 @@ def plot_query_wise_performance(performance, compare="models"):
             fig.suptitle(performance.name + " for " + dataset.name)
             for j, metric in enumerate(performance.coords['metric'].values):
                 for i, model in enumerate(performance.coords['model'].values):
-                    k_values = performance.sel(dataset=dataset,
+                    metric_values = performance.sel(dataset=dataset,
                                                model=model,
                                                metric=metric)
                     axes[j, 0].plot(performance.coords['bin'].values,
-                                    k_values.values*100, label = model)
+                                    metric_values.values*100, label = model)
 
                 axes[j, 0].set_ylabel("Query %")
                 axes[j, 0].yaxis.set_ticks(np.arange(0, 101, 25))

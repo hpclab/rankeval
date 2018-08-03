@@ -184,16 +184,75 @@ class RTEnsemble(object):
         max_leaves : int
             Maximum number of leaves
         """
+        return self.num_leaves().max()
 
-        n_leaves = np.full(shape=self.n_trees, fill_value=-1, dtype=np.int32)
-        for idx_tree in xrange(self.n_trees):
+    def num_leaves(self):
+        """
+        Computes the number of leaves for each tree of the model.
+
+        Returns
+        -------
+        n_leaves : numpy 1d array (n_trees)
+            Number of leaves
+        """
+
+        n_leaves = np.empty(shape=self.n_trees, dtype=np.int32)
+        for idx_tree in np.arange(self.n_trees):
             root_node = self.trees_root[idx_tree]
-            next_root_node = self.n_nodes
-            if idx_tree+1 != self.n_trees:
+            if idx_tree+1 == self.n_trees:
+                next_root_node = self.n_nodes
+            else:
                 next_root_node = self.trees_root[idx_tree + 1]
             n_leaves[idx_tree] = (self.trees_left_child[root_node:next_root_node] == -1).sum()
 
-        return n_leaves.max()
+        return n_leaves
+
+    def num_nodes(self):
+        """
+        Computes the number of nodes for each tree of the model.
+
+        Returns
+        -------
+        n_nodes : numpy 1d array (n_trees)
+            Number of nodes
+        """
+
+        n_nodes = np.empty(shape=self.n_trees, dtype=np.int32)
+        for idx_tree in np.arange(self.n_trees):
+            root_node = self.trees_root[idx_tree]
+            if idx_tree+1 == self.n_trees:
+                next_root_node = self.n_nodes
+            else:
+                next_root_node = self.trees_root[idx_tree + 1]
+            n_nodes[idx_tree] = next_root_node - root_node
+
+        return n_nodes
+
+    def height_trees(self):
+        """
+        Computes the height of each tree of the model.
+
+        Returns
+        -------
+        heights : numpy 1d array (n_trees)
+            Height of each tree
+        """
+        def height_node(idx_node, depth):
+            if self.trees_left_child[idx_node] == -1:
+                return depth
+            else:
+                return max(
+                    height_node(self.trees_left_child[idx_node],
+                               depth + 1),
+                    height_node(self.trees_right_child[idx_node],
+                               depth + 1)
+                )
+
+        height_trees = np.empty(shape=self.n_trees, dtype=np.int32)
+        for idx_tree in np.arange(self.n_trees):
+            root_node = self.trees_root[idx_tree]
+            height_trees[idx_tree] = height_node(root_node, 0)
+        return height_trees
 
     def save(self, f, format="QuickRank"):
         """
@@ -227,7 +286,7 @@ class RTEnsemble(object):
         else:
             raise TypeError("Model format %s not yet supported!" % format)
 
-    def score(self, dataset, detailed=False):
+    def score(self, dataset, detailed=False, cache=False):
         """
         Score the given model on the given dataset. Depending on the detailed
         parameter, the scoring will be either basic (i.e., compute only the
@@ -242,6 +301,11 @@ class RTEnsemble(object):
         detailed : bool
             True if the model has to be scored in a detailed fashion, false
             otherwise
+        cache : bool
+            True if the scoring results has to be cached, False otherwise. Take
+            into account that caching the results could need quite a lot of
+            memory, and this negative effect is particularly evident when
+            scoring multiple models on huge dataset. Default is False.
 
         Returns
         -------
@@ -257,7 +321,7 @@ class RTEnsemble(object):
 
         # check that the features used by the model are "compatible" with the
         # features in the dataset (at least, in terms of their number)
-        if np.max(self.trees_nodes_feature) + 1 > dataset.X.shape[1]:
+        if np.max(self.trees_nodes_feature) + 1 > dataset.n_features:
             raise RuntimeError("Dataset features are not compatible with "
                                "model features")
 
@@ -265,7 +329,8 @@ class RTEnsemble(object):
                 detailed and self._cache_scorer[dataset].partial_y_pred is None:
 
             scorer = Scorer(self, dataset)
-            self._cache_scorer[dataset] = scorer
+            if cache:
+                self._cache_scorer[dataset] = scorer
             # The scoring is performed only if it has not been done before...
             scorer.score(detailed)
 
@@ -278,10 +343,11 @@ class RTEnsemble(object):
                 scorer.y_pred += self.base_score
                 if detailed:
                     scorer.partial_y_pred[:, :1] += self.base_score
+        else:
+            scorer = self._cache_scorer[dataset]
 
-        scorer = self._cache_scorer[dataset]
         if detailed:
-            return scorer.y_pred, scorer.partial_y_pred, scorer.y_leaves
+            return scorer.y_pred, scorer.partial_y_pred, scorer.out_leaves
         else:
             return scorer.y_pred
 

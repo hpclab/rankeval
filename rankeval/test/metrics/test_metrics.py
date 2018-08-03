@@ -27,7 +27,8 @@ class MetricsTestCase(unittest.TestCase):
         # setup a Dataset object
         cls.dataset = Dataset.load(data_file, name="TestDataset", format="svmlight")
         cls.dataset.y = np.concatenate((cls.y_query1, cls.y_query2))
-        cls.dataset.query_ids = np.array([0,5,10])
+        cls.dataset.query_ids = np.array([0, 1])
+        cls.dataset.query_offsets = np.array([0,5,10])
         cls.dataset.n_queries = 2
         cls.y_pred = np.concatenate((cls.y_pred_query1, cls.y_pred_query2))
 
@@ -260,14 +261,12 @@ class MetricsTestCase(unittest.TestCase):
                             , decimal=3)
 
     def test_MAP_eval_per_query(self):
-        idx_y_pred_sorted = np.argsort(self.y_pred_query1)[::-1]
-
         # without cutoff
         p = MAP()
         result = p.eval_per_query(self.y_query2, self.y_pred_query2)
-        assert_almost_equal(result, 0.2, decimal=2)
+        assert_almost_equal(result, 0.5, decimal=2)
 
         # without cutoff
         p = MAP(cutoff=3)
         result = p.eval_per_query(self.y_query2, self.y_pred_query2)
-        assert_almost_equal(result, 0.166, decimal=3)
+        assert_almost_equal(result, 0.25, decimal=3)

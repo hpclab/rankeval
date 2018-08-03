@@ -75,7 +75,7 @@ class ProxyXGBoostTestCase(unittest.TestCase):
                              "Leaf node not detected as a leaf")
 
     def test_prediction(self):
-        y_pred = self.model.score(self.dataset)
+        y_pred = self.model.score(self.dataset, cache=True)
         assert_array_almost_equal(y_pred[:5],
                                   [0.651668,  0.604406,  0.604406,
                                    0.610305,  0.563043])

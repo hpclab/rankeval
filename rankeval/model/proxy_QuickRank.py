@@ -92,7 +92,6 @@ class ProxyQuickRank(object):
                 elem.clear()    # discard the element
                 root.clear()    # remove child reference from the root
 
-
     @staticmethod
     def _xmlprettyprint(stringlist):
         indent = ''
@@ -166,7 +165,6 @@ class ProxyQuickRank(object):
 
         with open(file_path, 'w') as f_out:
             print >>f_out, ''.join(ProxyQuickRank._xmlprettyprint(etree.tostringlist(root)))
-
 
         return True
 

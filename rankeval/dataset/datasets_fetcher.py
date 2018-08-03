@@ -11,11 +11,8 @@ import json
 import shutil
 import tarfile
 import fnmatch
-from os import environ
-from os import makedirs
-from os.path import exists
-from os.path import expanduser
-from os.path import join
+from os import environ, makedirs
+from os.path import exists, expanduser, join
 
 from .dataset import Dataset
 from .dataset_container import DatasetContainer
