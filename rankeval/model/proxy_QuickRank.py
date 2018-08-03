@@ -21,6 +21,8 @@ nodes on the other hand are described by an "output" tag with the value as
 content.
 """
 
+from six.moves import range
+
 from .rt_ensemble import RTEnsemble
 
 try:
@@ -92,32 +94,24 @@ class ProxyQuickRank(object):
                 elem.clear()    # discard the element
                 root.clear()    # remove child reference from the root
 
-
     @staticmethod
-    def _xmlprettyprint(stringlist):
-        indent = ''
-        in_tag = False
-        file_start = True
-        for token in stringlist:
-            if token.startswith('</') or token.endswith('/>'):
-                indent = indent[:-1]
-                if not in_tag:
-                    yield '\n' + indent
-                yield token
-                in_tag = False
-            elif token.startswith('<'):
-                if not file_start:
-                    yield '\n' + indent
-                yield token
-                indent += '\t'
-                in_tag = True
-                file_start = False
-            elif token == '>':
-                yield '>'
-            elif in_tag:
-                yield token
-            else:
-                yield '\n' + token
+    def _xmlprettyprint(elem, level=0, indent_str='\t'):
+        i = "\n" + level * indent_str
+        j = "\n" + (level - 1) * indent_str
+        if len(elem):
+            if not elem.text or not elem.text.strip():
+                elem.text = i + indent_str
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+            for child in elem:
+                ProxyQuickRank._xmlprettyprint(child, level + 1, indent_str)
+            # last child needs to have 1 indentation less in the following line
+            elem.getchildren()[-1].tail = i
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+        else:
+            if level and (not elem.tail or not elem.tail.strip()):
+                elem.tail = i
 
     @staticmethod
     def save(file_path, model):
@@ -155,18 +149,22 @@ class ProxyQuickRank(object):
         n_ensemble = etree.Element("ensemble")
         root.append(n_ensemble)
 
-        for idx_tree in xrange(model.n_trees):
-            n_tree = etree.SubElement(n_ensemble, "tree",
-                                      {"id": repr(idx_tree+1),
-                                       "weight": repr(model.trees_weight[idx_tree])})
+        for idx_tree in range(model.n_trees):
+            n_tree = etree.SubElement(
+                n_ensemble, "tree",
+                {
+                    "id": repr(idx_tree+1),
+                    "weight": repr(model.trees_weight[idx_tree])
+                })
             cur_node = model.trees_root[idx_tree]
 
             n_split = ProxyQuickRank._get_node_xml_element(model, cur_node)
             n_tree.append(n_split)
 
-        with open(file_path, 'w') as f_out:
-            print >>f_out, ''.join(ProxyQuickRank._xmlprettyprint(etree.tostringlist(root)))
+        ProxyQuickRank._xmlprettyprint(root)
 
+        with open(file_path, 'w') as f_out:
+            f_out.write(etree.tostring(root).decode('utf-8'))
 
         return True
 

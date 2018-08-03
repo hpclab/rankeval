@@ -17,7 +17,7 @@ import xarray as xr
 from ..model import RTEnsemble
 from ..metrics import MSE, RMSE
 
-from _efficient_feature import eff_feature_importance, \
+from ._efficient_feature import eff_feature_importance, \
     eff_feature_importance_tree
 
 

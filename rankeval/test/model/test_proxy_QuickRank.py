@@ -96,8 +96,6 @@ class ProxyQuickRankTestCase(unittest.TestCase):
                                   err_msg="Right children are incorrect")
 
 
-
-
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                         level=logging.DEBUG)
