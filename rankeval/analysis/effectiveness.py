@@ -23,6 +23,7 @@ from ..metrics import Metric
 from ipywidgets import IntProgress
 from IPython.display import display
 
+
 def model_performance(datasets, models, metrics, cache=False):
     """
     This method implements the model performance analysis (part of the

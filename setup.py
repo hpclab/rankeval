@@ -12,13 +12,14 @@ sudo python ./setup.py install
 
 import sys
 import os
+import io
+
+from setuptools import setup, find_packages, Extension
+from setuptools.command.build_ext import build_ext
 
 if (sys.version_info[:1] == 2 and sys.version_info[:2] < (2, 7)) or \
     (sys.version_info[:1] == 3 and sys.version_info[:2] < (3, 5)):
     raise Exception('This version of rankeval needs Python 2.7, 3.5 or later.')
-
-from setuptools import setup, find_packages, Extension
-from setuptools.command.build_ext import build_ext
 
 
 class custom_build_ext(build_ext):
@@ -38,80 +39,25 @@ class custom_build_ext(build_ext):
         self.include_dirs.append(np.get_include())
 
 
-rankeval_dir = os.path.join(os.path.dirname(__file__), 'rankeval')
+root_dir = os.path.dirname(__file__)
+rankeval_dir = os.path.join(root_dir, 'rankeval')
 dataset_dir = os.path.join(rankeval_dir, 'dataset')
 scoring_dir = os.path.join(rankeval_dir, 'scoring')
 analysis_dir = os.path.join(rankeval_dir, 'analysis')
 
 cmdclass = {'build_ext': custom_build_ext}
 
-LONG_DESCRIPTION = u"""
-==============================================
-RankEval -- Analysis and evaluation of Learning to Rank models
-==============================================
-RankEval is a Python library for the #analysis# and #evaluation# of Learning 
-to Rank models based on ensembles of regression trees.
-Target audience is the *machine learning* (ML) and *information retrieval* 
-(IR) communities.
-
-Features
----------
-* The tool is **memory-dependent** w.r.t. the corpus size (input dataset needs
-to fit in RAM),
-* **Intuitive interfaces**
-  * easy to load your own input corpus/model (supported the model format of 
-    the most popular learning tools such as QuickRank, RankLib, XGBoost, Scikit-Learn, etc.
-  * easy to extend with other analysis and evaluations
-* Efficient multicore implementations of the evaluation phase
-* Extensive `documentation and Jupyter Notebook support for the presentation of the 
-  detailed analysis.
-
-Installation
-------------
-This software depends on `NumPy and Scipy <http://www.scipy.org/Download>`_, two 
-Python packages for scientific computing.
-You must have them installed prior to installing `rankeval`.
-The simple way to install `rankeval` is::
-    pip install -U rankeval
-Or, if you have instead downloaded and unzipped the `source tar.gz 
-<http://pypi.python.org/pypi/rankeval>`_ package,
-you'd run:
-    python setup.py test
-    python setup.py install
-This version has been tested under Python 2.7 and 3.5.
-
-How come RankEval is so fast and memory efficient? Isn't it pure Python, and 
-isn't Python slow and greedy?
---------------------------------------------------------------------------------------------------------
-Many scientific algorithms can be expressed in terms of large matrix 
-operations. RankEval taps into these low-level BLAS libraries, by means of its
-dependency on NumPy. So while most of the rankeval code is pure Python, it 
-actually executes highly optimized C under the hood, including multithreading 
-(for document scoring, by using OpenMP facilities).
-
-Citing RankEval
--------------
-When `citing RankEval in academic papers, please use this BibTeX entry::
-    @inproceedings{rankeval-sigir17,
-        author = {Claudio Lucchese and Cristina Ioana Muntean and Franco Maria Nardini and 
-                    Raffaele Perego and Salvatore Trani},
-        title = {RankEval: An Evaluation and Analysis Framework for Learning-to-Rank Solutions},
-        booktitle = {SIGIR 2017: Proceedings of the 40th International {ACM} {SIGIR} 
-            Conference on Research and Development in Information Retrieval},
-        year = {2017},
-        location = {Tokyo, Japan}
-    }
-----------------
-RankEval is open source software released under the `MPL 2.0 license <http://mozilla.org/MPL/2.0/>`_.
-Copyright (c) 2017-now HPC-ISTI CNR
-"""
+version = io.open(os.path.join(root_dir, 'VERSION'),
+                  encoding='utf-8').read().strip(),
+readme = io.open(os.path.join(root_dir, 'README.md'), encoding='utf-8').read()
 
 setup(
     name='rankeval',
-    version='0.1',
+    version=open(os.path.join(root_dir, 'VERSION')).read().strip(),
     description='Tool for the analysis and evaluation of Learning to Rank '
                 'models based on ensembles of regression trees.',
-    long_description=LONG_DESCRIPTION,
+    long_description=readme,
+    long_description_content_type='text/markdown',
 
     ext_modules=[
         Extension('rankeval.dataset._svmlight_format',
@@ -182,7 +128,7 @@ setup(
     install_requires=[
         # Use 1.13: https://github.com/quantopian/zipline/issues/1808
         'numpy >= 1.13',
-        'scipy >= 0.7.0',
+        'scipy >= 0.14.0',
         'six >= 1.9.0',
         'pandas >= 0.19.1',
         'xarray >= 0.9.5',
