@@ -1,4 +1,4 @@
-<img src=doc/banner.png>
+<img src="https://github.com/hpclab/rankeval/blob/master/doc/banner.png?raw=true">
 
 # RankEval: An Evaluation and Analysis Framework for Learning-to-Rank Solutions
 
@@ -11,13 +11,35 @@ only very limited help for the tuning and evaluation of the trained models.
 
 RankEval aims at providing a common ground for several Learning to Rank 
 libraries by providing useful and interoperable tools for a comprehensive
-comparison and in-depth analysis of ranking models.
+comparison and in-depth analysis of ranking models. Target audience is the 
+*machine learning* (ML) and *information retrieval* (IR) communities.
 
 RankEval is available under Mozilla Public License 2.0.
 
 The official GitHub repository is: [here](https://github.com/hpclab/rankeval).
 
-For questions/suggestions on how to improve RankEval, send us an email: rankeval@isti.cnr.it
+For questions/suggestions on how to improve RankEval, send us an email: 
+rankeval@isti.cnr.it
+
+## Features
+
+Rankeval provides a common ground between several pre-existing tools and offers 
+services which support the interpretation of differently generated models in a 
+unified environment, allowing an easy, comprehensive comparison and in-depth 
+analysis.
+
+The main functionalities of RankEval can be summarized along five dimensions:
+- effectiveness analysis
+- feature analysis
+- structural analysis
+- topological analysis
+- interoperability among GBRT libraries
+    - support the model format of the most popular learning tools such as 
+    QuickRank, RankLib, XGBoost, LightGBM, Scikit-Learn, etc
+
+These functionalities can be applied to several models at the same time, so to 
+have a direct comparison of the analysis performed. The tool has been written 
+to ensure **flexibility**, **extensibility**, and **efficiency**. 
 
 ## Documentation
 
@@ -38,10 +60,16 @@ export CXX=g++-5
 Moreover, RankEval needs the following libraries to be installed before the 
 installation process begin:
   - numpy >= 1.13
-  - scipy >= 0.7
+  - scipy >= 0.14
   - cython >= 0.25
   - matplotlib >= 2.0.2
+  
+RankEval can be easily installed from Python Package Index (PyPI). 
+You may download and install it by running:
 
+```pip install rankeval```
+
+Alternatively, you can build the library from source.
 Below an example of installation.
 
 ```python setup.py install```

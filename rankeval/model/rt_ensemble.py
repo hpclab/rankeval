@@ -127,6 +127,9 @@ class RTEnsemble(object):
         elif format == "ScikitLearn":
             from rankeval.model import ProxyScikitLearn
             ProxyScikitLearn.load(file_path, self)
+        elif format == "Jforests":
+            from rankeval.model import ProxyJforests
+            ProxyJforests.load(file_path, self)
         else:
             raise TypeError("Model format %s not yet supported!" % format)
 
