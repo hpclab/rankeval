@@ -16,7 +16,7 @@ class MAP(Metric):
     https://www.kaggle.com/wiki/MeanAveragePrecision, adapted from:
     http://en.wikipedia.org/wiki/Information_retrieval
     https://www.ethz.ch/content/dam/ethz/special-interest/gess/computational-social-science-dam/documents/education/Spring2017/ML/LinkPrediction.pdf
-
+    http://sdsawtelle.github.io/blog/output/mean-average-precision-MAP-for-recommender-systems.html
     """
 
     def __init__(self, name='MAP', cutoff=None, no_relevant_results=1.0):

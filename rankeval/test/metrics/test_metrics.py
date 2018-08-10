@@ -270,3 +270,30 @@ class MetricsTestCase(unittest.TestCase):
         p = MAP(cutoff=3)
         result = p.eval_per_query(self.y_query2, self.y_pred_query2)
         assert_almost_equal(result, 0.25, decimal=3)
+
+    def test_MAP_eval_per_query_countercheck(self):
+        idx_y_pred_sorted = np.argsort(self.y_pred_query1)[::-1]
+        sorted_y = self.y_query1[idx_y_pred_sorted]
+
+        precision_at_i = np.zeros(self.y_query1.size, dtype=np.float32)
+        recall_at_i = np.zeros(self.y_query1.size, dtype=np.float32)
+        n_relevant = np.count_nonzero(self.y_query1)
+
+        for i in np.arange(self.y_query1.size):
+            relevants_at_i = float(np.count_nonzero(sorted_y[:i+1]))
+            precision_at_i[i] = relevants_at_i / (i+1)
+            recall_at_i[i] = relevants_at_i / n_relevant
+
+        change_recall_at_i = np.ediff1d(recall_at_i, to_begin=recall_at_i[0])
+
+        map_wo_cut = MAP()
+        score1 = map_wo_cut.eval_per_query(self.y_query1, self.y_pred_query1)
+        score2 = np.dot(precision_at_i, change_recall_at_i)
+        assert_almost_equal(score1, score2, decimal=3)
+
+        for i in np.arange(self.y_query1.size):
+            idx_pos_k = np.argwhere(sorted_y[:i+1]).flatten()
+            map_at_k = MAP(cutoff=i+1)
+            score1 = map_at_k.eval_per_query(self.y_query1, self.y_pred_query1)
+            score2 = np.sum(precision_at_i[idx_pos_k]) / min(i+1, n_relevant)
+            assert_almost_equal(score1, score2, decimal=3)

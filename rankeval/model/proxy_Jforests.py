@@ -72,11 +72,11 @@ class ProxyJforests(object):
             if event == 'end':
 
                 if elem.tag == 'SplitFeatures':
-                    # TODO: check in features start by 0 or 1
                     split_features = map(int, elem.text.split(" "))
+                    num_splits = 0
                     for pos, feature in enumerate(split_features):
+                        num_splits += 1
                         model.trees_nodes_feature[root_node + pos] = feature
-                    num_splits = len(split_features)
                 elif elem.tag == 'LeftChildren':
                     left_children = map(int, elem.text.split(" "))
                     for pos, child in enumerate(left_children):
@@ -101,8 +101,9 @@ class ProxyJforests(object):
                         model.trees_nodes_value[root_node + pos] = threshold
                 elif elem.tag == 'LeafOutputs':
                     leaf_values = map(float, elem.text.split(" "))
-                    num_leaves = len(leaf_values)
+                    num_leaves = 0
                     for pos, leaf_value in enumerate(leaf_values):
+                        num_leaves += 1
                         model.trees_nodes_value[root_node + num_splits + pos] \
                             = leaf_value
 
