@@ -15,6 +15,7 @@ from proxy_QuickRank import ProxyQuickRank
 from proxy_ScikitLearn import ProxyScikitLearn
 from proxy_XGBoost import ProxyXGBoost
 from proxy_Jforests import ProxyJforests
+from proxy_CatBoost import ProxyCatBoost
 from rt_ensemble import RTEnsemble
 
 __all__ = ['RTEnsemble',
@@ -22,4 +23,6 @@ __all__ = ['RTEnsemble',
            'ProxyLightGBM',
            'ProxyXGBoost',
            'ProxyScikitLearn',
-           'ProxyJforests']
+           'ProxyJforests',
+           'ProxyCatBoost'
+]

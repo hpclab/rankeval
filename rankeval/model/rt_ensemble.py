@@ -130,6 +130,9 @@ class RTEnsemble(object):
         elif format == "Jforests":
             from rankeval.model import ProxyJforests
             ProxyJforests.load(file_path, self)
+        elif format == "CatBoost":
+            from rankeval.model import ProxyCatBoost
+            ProxyCatBoost.load(file_path, self)
         else:
             raise TypeError("Model format %s not yet supported!" % format)
 
