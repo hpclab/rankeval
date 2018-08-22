@@ -32,7 +32,7 @@ much on prediction time (that is not currently measured by rankeval).
 import coremltools
 import numpy as np
 
-from rt_ensemble import RTEnsemble
+from .rt_ensemble import RTEnsemble
 
 
 class ProxyCatBoost(object):
