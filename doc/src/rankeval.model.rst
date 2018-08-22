@@ -1,5 +1,5 @@
-rankeval\.model package
-=======================
+rankeval.model package
+======================
 
 .. automodule:: rankeval.model
     :members:
@@ -9,40 +9,56 @@ rankeval\.model package
 Submodules
 ----------
 
-rankeval\.model\.proxy\_LightGBM module
----------------------------------------
+rankeval.model.proxy\_CatBoost module
+-------------------------------------
+
+.. automodule:: rankeval.model.proxy_CatBoost
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+rankeval.model.proxy\_Jforests module
+-------------------------------------
+
+.. automodule:: rankeval.model.proxy_Jforests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+rankeval.model.proxy\_LightGBM module
+-------------------------------------
 
 .. automodule:: rankeval.model.proxy_LightGBM
     :members:
     :undoc-members:
     :show-inheritance:
 
-rankeval\.model\.proxy\_QuickRank module
-----------------------------------------
+rankeval.model.proxy\_QuickRank module
+--------------------------------------
 
 .. automodule:: rankeval.model.proxy_QuickRank
     :members:
     :undoc-members:
     :show-inheritance:
 
-rankeval\.model\.proxy\_ScikitLearn module
-------------------------------------------
+rankeval.model.proxy\_ScikitLearn module
+----------------------------------------
 
 .. automodule:: rankeval.model.proxy_ScikitLearn
     :members:
     :undoc-members:
     :show-inheritance:
 
-rankeval\.model\.proxy\_XGBoost module
---------------------------------------
+rankeval.model.proxy\_XGBoost module
+------------------------------------
 
 .. automodule:: rankeval.model.proxy_XGBoost
     :members:
     :undoc-members:
     :show-inheritance:
 
-rankeval\.model\.rt\_ensemble module
-------------------------------------
+rankeval.model.rt\_ensemble module
+----------------------------------
 
 .. automodule:: rankeval.model.rt_ensemble
     :members:

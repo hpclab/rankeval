@@ -1,5 +1,5 @@
-rankeval\.visualization package
-===============================
+rankeval.visualization package
+==============================
 
 .. automodule:: rankeval.visualization
     :members:
@@ -9,24 +9,24 @@ rankeval\.visualization package
 Submodules
 ----------
 
-rankeval\.visualization\.effectiveness module
----------------------------------------------
+rankeval.visualization.effectiveness module
+-------------------------------------------
 
 .. automodule:: rankeval.visualization.effectiveness
     :members:
     :undoc-members:
     :show-inheritance:
 
-rankeval\.visualization\.feature module
----------------------------------------
+rankeval.visualization.feature module
+-------------------------------------
 
 .. automodule:: rankeval.visualization.feature
     :members:
     :undoc-members:
     :show-inheritance:
 
-rankeval\.visualization\.topological module
--------------------------------------------
+rankeval.visualization.topological module
+-----------------------------------------
 
 .. automodule:: rankeval.visualization.topological
     :members:

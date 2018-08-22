@@ -1,5 +1,5 @@
-rankeval\.scoring package
-=========================
+rankeval.scoring package
+========================
 
 .. automodule:: rankeval.scoring
     :members:
@@ -9,8 +9,8 @@ rankeval\.scoring package
 Submodules
 ----------
 
-rankeval\.scoring\.scorer module
---------------------------------
+rankeval.scoring.scorer module
+------------------------------
 
 .. automodule:: rankeval.scoring.scorer
     :members:
