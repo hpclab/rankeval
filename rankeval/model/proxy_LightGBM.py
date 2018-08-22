@@ -21,12 +21,12 @@ weight of the tree (i.e., the learning rate or shrinkage factor). In order to
 maintain the scoring made by rankeval (that multiply the leaf output by the tree
 weight), the weight of the trees have been set equals to 1.
 
-NOTE: currently rankeval support the loading of LightGBM models only if they
-have been trained by disabling missing values, i.e., when setting the relative
-parameter of the training method to False (`'use_missing'=False`). This is
-required because LtR datasets do not have missing values, but have feature
-values equals to zero (while LightGBM consider zero valued feature as missing
-values).
+NOTE: currently rankeval does not support missing features. This features is not
+strictly required because all the most popular open-domain Learning to Rank
+datasets do not have missing values. To this regard, take thus into account that
+you may experience an unexpected behaviour if the LightGBM model you are trying
+to load is trained on a dataset with missing values (especially in the case you
+use the setting zero_as_missing=true).
 """
 
 import re
