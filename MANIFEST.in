@@ -1,5 +1,6 @@
 include README.md
 include LICENSE
 include AUTHORS.md
+include VERSION
 recursive-include doc *
 recursive-include rankeval *
