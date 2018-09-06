@@ -39,7 +39,9 @@ class custom_build_ext(build_ext):
         self.include_dirs.append(np.get_include())
 
 
-root_dir = os.path.dirname(__file__)
+root_dir = os.path.dirname(os.path.abspath(os.path.expanduser(__file__)))
+# make it relative in order to avoid errors of absolute path by pypi
+root_dir = os.path.relpath(root_dir)
 rankeval_dir = os.path.join(root_dir, 'rankeval')
 dataset_dir = os.path.join(rankeval_dir, 'dataset')
 scoring_dir = os.path.join(rankeval_dir, 'scoring')
