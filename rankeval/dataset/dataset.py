@@ -281,7 +281,7 @@ class Dataset(object):
         """
         return np.ediff1d(self.query_offsets)
 
-    def get_qids_dataset(self):
+    def get_qids_dataset(self, dtype=np.int32):
         """
         This method returns the query ids array in linear representation, i.e.,
         with the qid of each instance. Useful for creating a new dataset
@@ -289,10 +289,10 @@ class Dataset(object):
 
         Returns
         -------
-        query_ids : numpy 1d array of int
+        query_ids : numpy 1d array
             It is a ndarray of shape (n_instances,)
         """
-        query_ids = np.empty(shape=self.n_instances, dtype=np.int32)
+        query_ids = np.empty(shape=self.n_instances, dtype=dtype)
         for qid, start_offset, end_offset in self.query_iterator():
             query_ids[start_offset:end_offset] = qid
         return query_ids
