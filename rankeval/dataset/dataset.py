@@ -261,8 +261,8 @@ class Dataset(object):
 
         Returns
         -------
-        offsets : tuple of (int, int)
-            The row index of instances belonging to the same query.
+        offsets : tuple of (int, int, int)
+            The query_id and the row index of instances belonging to the query.
             The two indices represent (start, end) offsets.
 
         """
