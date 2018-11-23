@@ -234,11 +234,7 @@ class Dataset(object):
         datasets : rankeval.dataset.Dataset
             The resulting dataset with only the query_ids requested
         """
-        qid_map = np.ndarray(self.n_instances, dtype=np.uint32)
-        for qid, start_offset, end_offset in self.query_iterator():
-            for idx in np.arange(start_offset, end_offset):
-                qid_map[idx] = qid
-
+        qid_map = self.get_qids_dataset()
         mask = np.in1d(qid_map, query_ids)
 
         return Dataset(self.X[mask], self.y[mask],
