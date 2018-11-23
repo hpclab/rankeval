@@ -240,16 +240,6 @@ class Dataset(object):
         return Dataset(self.X[mask], self.y[mask],
                        qid_map[mask], name=name)
 
-    def clear_X(self):
-        """
-        This method clears the space used by the dataset instance for storing X
-        (the dataset features). This space is used only for scoring, thus it
-        can be freed after.
-
-        """
-        del self.X
-        self.X = None
-
     def query_iterator(self):
         """
         This method implements and iterator over the offsets of the query_ids
