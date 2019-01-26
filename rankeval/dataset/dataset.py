@@ -56,7 +56,7 @@ class Dataset(object):
             The vector with the query_id for each sample.
         """
         if query_ids.size != X.shape[0]:
-            raise Exception("query_ids argument has not the correct shape!")
+            raise Exception("query_ids has wrong size. Expected %s but got %s" % (X.shape[0], query_ids.size))
 
         # convert from query_ids per sample to query offset
         self.query_ids, self.query_offsets = \
