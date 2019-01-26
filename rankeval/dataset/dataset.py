@@ -323,7 +323,7 @@ class Dataset(object):
         return self.name
 
     def __hash__(self):
-        return int( sum(self.y[:100]) + sum(self.X[:100,0]) )
+        return int( self.y[:100].sum() + self.X[:100,0].sum() )
 
     def __eq__(self, other):
         return (self.X == other.X).all() and \
