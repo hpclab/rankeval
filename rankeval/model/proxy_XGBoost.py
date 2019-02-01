@@ -86,7 +86,7 @@ class ProxyXGBoost(object):
 
                 match_node = node_reg.search(line)
                 if match_node:
-                    node_id = int(match_node.group(1).strip()) + root_node
+                    node_id = num_nodes + root_node
                     feature_id = int(match_node.group(2).strip())
                     threshold = np.float32(match_node.group(3).strip())
 
@@ -101,7 +101,7 @@ class ProxyXGBoost(object):
 
                 match_leaf = leaf_reg.search(line)
                 if match_leaf:
-                    node_id = int(match_leaf.group(1).strip()) + root_node
+                    node_id = num_nodes + root_node
                     leaf_value = float(match_leaf.group(2).strip())
                     model.trees_nodes_value[node_id] = leaf_value
 
