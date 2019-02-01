@@ -135,7 +135,6 @@ setup(
         'pandas >= 0.19.1',
         'xarray >= 0.9.5',
         'seaborn >= 0.8',
-        'coremltools >= 0.8',
         'matplotlib >= 2.0.2',
     ],
     tests_require=[

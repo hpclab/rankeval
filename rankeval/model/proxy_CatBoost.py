@@ -29,8 +29,8 @@ development of the CatBoost proxy, allowing to analyze it without focusing too
 much on prediction time (that is not currently measured by rankeval).
 """
 
-import coremltools
 import numpy as np
+import logging
 
 from .rt_ensemble import RTEnsemble
 
@@ -53,6 +53,13 @@ class ProxyCatBoost(object):
         model : RTEnsemble
             The model instance to fill
         """
+
+        try:
+            import coremltools
+        except ImportError:
+            logging.error('Missing coremltools package!.')
+            return
+
         coreml_model = coremltools.models.model.MLModel(file_path)
 
         n_trees, n_nodes = ProxyCatBoost._count_nodes(coreml_model)
