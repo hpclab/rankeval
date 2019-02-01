@@ -46,27 +46,26 @@ class ProxyXGBoostTestCase(unittest.TestCase):
 
     def test_split_features(self):
         assert_array_equal(self.model.trees_nodes_feature,
-                           [52, 14, 17, -1, -1, -1, -1,
-                            54, 10, 52, -1, -1, -1, -1])
+                           [52, 14, -1, -1, 17, -1, -1,
+                            54, 10, -1, -1, 52, -1, -1])
 
     def test_tree_values(self):
         assert_array_almost_equal(
             self.model.trees_nodes_value,
-            [4.446650e-02, 2.650000e+01, 2.319870e+01,
-             3.306930e-02, -2.745530e-02, 2.891870e-02,
-             6.771300e-02, 3.554500e-03, 2.095000e+02,
-             4.446650e-02, -1.829400e-03, -4.251890e-02,
-             2.092780e-03, 3.061710e-02],
-            decimal=4,
+            [4.4466496e-02, 2.6499998e+01, 3.3069301e-02, -2.7455300e-02,
+             2.3198698e+01, 2.8918700e-02, 6.7713000e-02, 3.5544997e-03,
+             2.0949998e+02, -1.8294000e-03, -4.2518899e-02, 4.4466496e-02,
+             2.0927801e-03, 3.0617099e-02],
+            decimal=5,
             err_msg="Split thresholds or leaf outputs value are not correct")
 
     def test_left_children(self):
         assert_array_equal(self.model.trees_left_child,
-                           [1, 3, 5, -1, -1, -1, -1, 8, 10, 12, -1, -1, -1, -1])
+                           [1, 2, -1, -1, 5, -1, -1, 8, 9, -1, -1, 12, -1, -1])
 
     def test_right_children(self):
         assert_array_equal(self.model.trees_right_child,
-                           [2, 4, 6, -1, -1, -1, -1, 9, 11, 13, -1, -1, -1, -1])
+                           [4, 3, -1, -1, 6, -1, -1, 11, 10, -1, -1, 13, -1, -1])
 
     def test_leaf_correctness(self):
         for idx, feature in enumerate(self.model.trees_nodes_feature):
