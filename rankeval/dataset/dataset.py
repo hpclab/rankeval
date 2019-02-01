@@ -326,8 +326,9 @@ class Dataset(object):
         return int( self.y[:100].sum() + self.X[:100,0].sum() )
 
     def __eq__(self, other):
-        return (self.X == other.X).all() and \
-               (self.y == other.y).all() and \
+        # use != instead of == because it is more efficient for sparse matrices:
+        x_eq = not(self.X != other.X)
+        return x_eq and (self.y == other.y).all() and \
                (self.query_ids == other.query_ids).all()
 
     def __ne__(self, other):
