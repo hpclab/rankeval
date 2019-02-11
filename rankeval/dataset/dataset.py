@@ -56,7 +56,7 @@ class Dataset(object):
             The vector with the query_id for each sample.
         """
         if query_ids.size != X.shape[0]:
-            raise Exception("query_ids argument has not the correct shape!")
+            raise Exception("query_ids has wrong size. Expected %s but got %s" % (X.shape[0], query_ids.size))
 
         # convert from query_ids per sample to query offset
         self.query_ids, self.query_offsets = \
@@ -267,7 +267,7 @@ class Dataset(object):
         """
         return np.ediff1d(self.query_offsets)
 
-    def get_qids_dataset(self):
+    def get_qids_dataset(self, dtype=np.int32):
         """
         This method returns the query ids array in linear representation, i.e.,
         with the qid of each instance. Useful for creating a new dataset
@@ -275,10 +275,10 @@ class Dataset(object):
 
         Returns
         -------
-        query_ids : numpy 1d array of int
+        query_ids : numpy 1d array
             It is a ndarray of shape (n_instances,)
         """
-        query_ids = np.empty(shape=self.n_instances, dtype=np.int32)
+        query_ids = np.empty(shape=self.n_instances, dtype=dtype)
         for qid, start_offset, end_offset in self.query_iterator():
             query_ids[start_offset:end_offset] = qid
         return query_ids
@@ -309,11 +309,12 @@ class Dataset(object):
         return self.name
 
     def __hash__(self):
-        return int( sum(self.y[:100]) + sum(self.X[:100,0]) )
+        return int( self.y[:100].sum() + self.X[:100,0].sum() )
 
     def __eq__(self, other):
-        return (self.X == other.X).all() and \
-               (self.y == other.y).all() and \
+        # use != instead of == because it is more efficient for sparse matrices:
+        x_eq = not(self.X != other.X)
+        return x_eq and (self.y == other.y).all() and \
                (self.query_ids == other.query_ids).all()
 
     def __ne__(self, other):

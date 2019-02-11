@@ -49,13 +49,13 @@ analysis_dir = os.path.join(rankeval_dir, 'analysis')
 
 cmdclass = {'build_ext': custom_build_ext}
 
-version = io.open(os.path.join(root_dir, 'VERSION'),
+version = io.open(os.path.join(rankeval_dir, 'VERSION'),
                   encoding='utf-8').read().strip(),
 readme = io.open(os.path.join(root_dir, 'README.md'), encoding='utf-8').read()
 
 setup(
     name='rankeval',
-    version=open(os.path.join(root_dir, 'VERSION')).read().strip(),
+    version=open(os.path.join(rankeval_dir, 'VERSION')).read().strip(),
     description='Tool for the analysis and evaluation of Learning to Rank '
                 'models based on ensembles of regression trees.',
     long_description=readme,

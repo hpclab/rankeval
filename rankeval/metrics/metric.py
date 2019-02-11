@@ -86,7 +86,7 @@ class Metric(six.with_metaclass(ABCMeta)):
 
         Returns
         -------
-        dcg: float
+        : float
             Represents the metric score for one query.
         """
 
