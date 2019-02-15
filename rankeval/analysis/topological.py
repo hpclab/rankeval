@@ -18,7 +18,7 @@ import numpy as np
 import scipy.stats
 
 from ..model import RTEnsemble
-from _efficient_topological import efficient_topological_analysis
+from ._efficient_topological import efficient_topological_analysis
 
 
 def topological_analysis(model, include_leaves=True):
