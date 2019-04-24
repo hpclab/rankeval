@@ -327,7 +327,7 @@ class Dataset(object):
 
     def __eq__(self, other):
         # use != instead of == because it is more efficient for sparse matrices:
-        x_eq = not(self.X != other.X)
+        x_eq = not(self.X != other.X).any()
         return x_eq and (self.y == other.y).all() and \
                (self.query_ids == other.query_ids).all()
 
