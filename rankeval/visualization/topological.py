@@ -51,7 +51,9 @@ def plot_shape(topological, max_level=10):
     max_nodes = max(128, 2**max_levels)
 
     # custom color map
-    cm = LinearSegmentedColormap.from_list('w2r', [(1,1,1),(23./255.,118./255.,182./255.)], N=256)
+    cm = LinearSegmentedColormap.from_list(
+        'w2r', [(1,1,1),(23./255.,118./255.,182./255.)], N=256
+    )
 
     # figure
     fig = plt.figure(1, figsize=(12, 6))
@@ -60,9 +62,11 @@ def plot_shape(topological, max_level=10):
     x_ticks = [x+2. for x in range(max_levels-1)]
     grid_locator2 = FixedLocator( x_ticks )
     tick_formatter2 = DictFormatter({k:" " +str(int(k) -1) for k in x_ticks})
-    grid_helper = floating_axes.GridHelperCurveLinear(tr, extremes=(0, np.pi, 0, max_levels),
-                                                      grid_locator2=grid_locator2,
-                                                      tick_formatter2 = tick_formatter2)
+    grid_helper = floating_axes.GridHelperCurveLinear(
+        tr, extremes=(0, np.pi, 0, max_levels),
+        grid_locator2=grid_locator2,
+        tick_formatter2 = tick_formatter2
+    )
 
     ax3 = floating_axes.FloatingSubplot(fig, 111, grid_helper=grid_helper)
     fig.add_axes(ax3)
@@ -71,7 +75,7 @@ def plot_shape(topological, max_level=10):
     ax3.axis["bottom"].set_visible(False)
     ax3.axis["top"].set_visible(False)
     ax3.axis["right"].set_axis_direction("top")
-    
+
     ax3.axis["left"].set_axis_direction("bottom")
     ax3.axis["left"].major_ticklabels.set_pad(-5)
     ax3.axis["left"].major_ticklabels.set_rotation(180)
@@ -86,17 +90,19 @@ def plot_shape(topological, max_level=10):
     ax3.patch.zorder=.9 # but this has a side effect that the patch is
                         # drawn twice, and possibly over some other
                         # artists. So, we decrease the zorder a bit to
-                        # prevent this.            
+                        # prevent this.
     # data to be plotted
     theta, r = np.mgrid[0:np.pi:(max_nodes+1)*1j, 0:max_levels+1]
     z = np.zeros(theta.size).reshape(theta.shape)
 
     for level in xrange(max_levels):
         num_nodes = 2**level
-        num_same_color = max_nodes/num_nodes
+        num_same_color = int(max_nodes/num_nodes)
         for node in xrange(num_nodes):
+            start_idx = num_same_color * node
+            end_idx = start_idx + num_same_color
             if node<ts.shape[1]:
-                z[ num_same_color*node:num_same_color*(node+1), level ] = ts[level, node]
+                z[start_idx:end_idx, level] = ts[level, node]
 
     # draw the tree nodes frequencies
     h = ax.pcolormesh(theta, r, z, cmap=cm, vmin=0., vmax=1.)
@@ -104,7 +110,7 @@ def plot_shape(topological, max_level=10):
     # color bar
     cax = fig.add_axes([.95, 0.15, 0.025, 0.8]) # axes for the colot bar
     cbar = fig.colorbar(h, cax=cax, ticks=np.linspace(0,1,11))
-    cbar.ax.tick_params(labelsize=8) 
+    cbar.ax.tick_params(labelsize=8)
     cax.set_title('Frequency', verticalalignment="bottom", fontsize=10)
 
     # separate depths
@@ -116,16 +122,24 @@ def plot_shape(topological, max_level=10):
     ax.plot( [0,0], [0,1], 'k-')
 
     # label tree depths
-    ax.text(np.pi/2*3,.2, "ROOT", horizontalalignment='center', verticalalignment='center')
-    ax.text(-.08,max_levels, "Tree level", verticalalignment='bottom', fontsize=14)
-    
+    ax.text(
+        np.pi/2*3,.2, "ROOT",
+        horizontalalignment='center', verticalalignment='center'
+    )
+    ax.text(
+        -.08,max_levels, "Tree level",
+        verticalalignment='bottom', fontsize=14
+    )
+
     # left/right subtree
 #    ax.text(np.pi/4.,max_levels*1.15, "Left subtree", fontsize=12,
 #            horizontalalignment="center", verticalalignment="center")
-#    ax.text(np.pi/4.*3,max_levels*1.15, "Right subtree", fontsize=12, 
+#    ax.text(np.pi/4.*3,max_levels*1.15, "Right subtree", fontsize=12,
 #            horizontalalignment="center", verticalalignment="center")
 
-    ax3.set_title("Average Tree Shape: " + str(topological.model), fontsize=16, y=1.2)
+    ax3.set_title(
+        "Average Tree Shape: " + str(topological.model),
+        fontsize=16, y=1.2)
 
     return fig
 
@@ -212,7 +226,9 @@ def export_graphviz(ensemble, tree_id=0, out_file=None, max_depth=None,
 
         # PostScript compatibility for special characters
         if special_characters:
-            characters = ['&#35;', '<FONT POINT-SIZE="10"><SUB>', '</SUB></FONT>', '&le;', '<br/>', '>', '&#37;']
+            characters = [
+                '&#35;', '<FONT POINT-SIZE="10"><SUB>',
+                '</SUB></FONT>', '&le;', '<br/>', '>', '&#37;']
             node_string = '<'
         else:
             characters = ['#', '[', ']', '<=', '\\n', '"', '%']
@@ -397,16 +413,16 @@ def export_graphviz(ensemble, tree_id=0, out_file=None, max_depth=None,
         if output_leaves is not None:
             leaves_count = np.unique(output_leaves[:, tree_id],
                                      return_counts=True)
-            counts = defaultdict(lambda:0, zip(*leaves_count))
+            counts = defaultdict((lambda:0), zip(*leaves_count))
             recursive_count(ensemble, tree_id, counts,
                             ensemble.trees_root[tree_id])
 
             if label == 'all':
-                colors['bounds'] = (np.min(counts.values()),
-                                    np.max(counts.values()))
+                colors['bounds'] = (np.min(list(counts.values())),
+                                    np.max(list(counts.values())))
             elif label == 'leaves':
-                colors['bounds'] = (np.min(leaves_count[1]),
-                                    np.max(leaves_count[1]))
+                colors['bounds'] = (np.min(list(leaves_count[1])),
+                                    np.max(list(leaves_count[1])))
             else:
                 raise ValueError("Label parameter not supported, %s" % label)
 

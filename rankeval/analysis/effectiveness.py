@@ -23,6 +23,11 @@ from ..metrics import Metric
 from ipywidgets import IntProgress
 from IPython.display import display
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 def model_performance(datasets, models, metrics, cache=False):
     """
@@ -101,7 +106,7 @@ def tree_wise_performance(datasets, models, metrics, step=10, cache=False):
 
     """
     def get_tree_steps(model_trees):
-        trees = range(step-1, model_trees, step)
+        trees = xrange(step-1, model_trees, step)
         # Add last tree to the steps
         if trees[-1] != model_trees-1:
             trees.append(model_trees-1)
