@@ -258,13 +258,13 @@ void parse_line(const std::string &line,
     //printf("%s\n",line.substr(0,hashIdx).c_str());
   float y;
   if (!(in >> y)) {
-  	throw std::invalid_argument( "non-numeric or missing label, lineno " + lineno );
+  	throw std::invalid_argument( "non-numeric or missing label, lineno " + std::to_string(lineno) );
   }
   labels.push_back(y);
 
   std::string qidNonsense;
   if (!(in >> qidNonsense)) {
-  	throw std::invalid_argument( "Missing qid label, lineno " + lineno );
+  	throw std::invalid_argument( "Missing qid label, lineno " + std::to_string(lineno) );
   }
 
   char c;
@@ -280,7 +280,7 @@ void parse_line(const std::string &line,
         data.push_back(x);
         ++next_feature;
     } else {
-    	throw std::invalid_argument( std::string("expected ':', got '") + c + "', lineno " + lineno);
+    	throw std::invalid_argument( std::string("expected ':', got '") + c + "', lineno " + std::to_string(lineno));
     }
 
   } else {
