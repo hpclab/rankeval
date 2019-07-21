@@ -289,7 +289,7 @@ void parse_line(const std::string &line,
 
   while (in >> idx >> c >> x) {
     if (c != ':')
-    	throw std::invalid_argument( std::string("expected ':', got '") + c + "', lineno " + lineno);
+    	throw std::invalid_argument( std::string("expected ':', got '") + c + "'");
     // Add zeros in empty spaces between next_feature and idx indices (iff idx > next_feature)
     for (; next_feature < idx; ++next_feature)
       data.push_back(0);
