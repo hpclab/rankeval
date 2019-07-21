@@ -241,10 +241,10 @@ void parse_line(const std::string &line,
                 std::vector<float> &data,
                 std::vector<float> &labels,
                 std::vector<int> &qids,
-                int &max_feature)
+                int &max_feature, int &lineno)
 {
   if (line.length() == 0)
-  	throw std::invalid_argument( "empty line" );
+  	throw std::invalid_argument( "empty line, lineno " + lineno );
 
   if (line[0] == '#')
     return;
@@ -258,13 +258,13 @@ void parse_line(const std::string &line,
     //printf("%s\n",line.substr(0,hashIdx).c_str());
   float y;
   if (!(in >> y)) {
-  	throw std::invalid_argument( "non-numeric or missing label" );
+  	throw std::invalid_argument( "non-numeric or missing label, lineno " + lineno );
   }
   labels.push_back(y);
 
   std::string qidNonsense;
   if (!(in >> qidNonsense)) {
-  	throw std::invalid_argument( "Missing qid label" );
+  	throw std::invalid_argument( "Missing qid label, lineno " + lineno );
   }
 
   char c;
@@ -280,7 +280,7 @@ void parse_line(const std::string &line,
         data.push_back(x);
         ++next_feature;
     } else {
-    	throw std::invalid_argument( std::string("expected ':', got '") + c + "'");
+    	throw std::invalid_argument( std::string("expected ':', got '") + c + "', lineno " + lineno);
     }
 
   } else {
@@ -289,7 +289,7 @@ void parse_line(const std::string &line,
 
   while (in >> idx >> c >> x) {
     if (c != ':')
-    	throw std::invalid_argument( std::string("expected ':', got '") + c + "'");
+    	throw std::invalid_argument( std::string("expected ':', got '") + c + "', lineno " + lineno);
     // Add zeros in empty spaces between next_feature and idx indices (iff idx > next_feature)
     for (; next_feature < idx; ++next_feature)
       data.push_back(0);
@@ -330,9 +330,11 @@ void parse_file(char const *file_path,
     throw std::ios_base::failure("File doesn't exist!");
 
   int max_feature = 0;
+  int lineno = 0;  
   std::string line;
   while (std::getline(file_stream, line)) {
-    parse_line(line, data, labels, qids, max_feature);
+    lineno++;	  
+    parse_line(line, data, labels, qids, max_feature, lineno);
   }
 }
 
