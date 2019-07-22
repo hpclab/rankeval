@@ -241,10 +241,10 @@ void parse_line(const std::string &line,
                 std::vector<float> &data,
                 std::vector<float> &labels,
                 std::vector<int> &qids,
-                int &max_feature)
+                int &max_feature, int &lineno)
 {
   if (line.length() == 0)
-  	throw std::invalid_argument( "empty line" );
+  	throw std::invalid_argument( "empty line, lineno " + lineno );
 
   if (line[0] == '#')
     return;
@@ -258,43 +258,36 @@ void parse_line(const std::string &line,
     //printf("%s\n",line.substr(0,hashIdx).c_str());
   float y;
   if (!(in >> y)) {
-  	throw std::invalid_argument( "non-numeric or missing label" );
+  	throw std::invalid_argument( "non-numeric or missing label, lineno " + std::to_string(lineno) );
   }
   labels.push_back(y);
 
-  std::string qidNonsense;
-  if (!(in >> qidNonsense)) {
-  	throw std::invalid_argument( "Missing qid label" );
-  }
-
-  char c;
-  double x;
   int idx;
+  double x;
   int next_feature = 1;
 
-  if (sscanf(qidNonsense.c_str(), "qid:%u", &idx) != 1) {
-    if(sscanf(qidNonsense.c_str(), "%u%c%lf", &idx, &c, &x) == 3) {
+  std::string token;
+  if (!(in >> token) || sscanf(token.c_str(), "qid:%u", &idx) != 1) {
+  	throw std::invalid_argument( "Missing qid label, lineno " +
+  	                              std::to_string(lineno) );
+  } else {
+    qids.push_back(idx);
+  }
+
+  while (in >> token) {
+    if(sscanf(token.c_str(), "%u:%lf", &idx, &x) == 2) {
+
         // Add zeros in empty spaces between next_feature and idx indices  (iff idx > next_feature)
         for (; next_feature < idx; ++next_feature)
           data.push_back(0);
         data.push_back(x);
         ++next_feature;
     } else {
-    	throw std::invalid_argument( std::string("expected ':', got '") + c + "'");
+        throw std::invalid_argument( std::string("expected 'fid:val', got '") +
+                                     token.c_str() +
+                                     "', lineno " +
+                                     std::to_string(lineno));
     }
-
-  } else {
-    qids.push_back(idx);
-  }
-
-  while (in >> idx >> c >> x) {
-    if (c != ':')
-    	throw std::invalid_argument( std::string("expected ':', got '") + c + "'");
-    // Add zeros in empty spaces between next_feature and idx indices (iff idx > next_feature)
-    for (; next_feature < idx; ++next_feature)
-      data.push_back(0);
-    data.push_back(x);
-    ++next_feature;
   }
 
   // Add zeros at the end of the row (iff next_feature < max_feature)
@@ -330,9 +323,11 @@ void parse_file(char const *file_path,
     throw std::ios_base::failure("File doesn't exist!");
 
   int max_feature = 0;
+  int lineno = 0;  
   std::string line;
   while (std::getline(file_stream, line)) {
-    parse_line(line, data, labels, qids, max_feature);
+    lineno++;	  
+    parse_line(line, data, labels, qids, max_feature, lineno);
   }
 }
 
