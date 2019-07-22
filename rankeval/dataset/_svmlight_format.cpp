@@ -411,7 +411,7 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
     int   *qids   = (int*) qids_array->data;
 
     std::ofstream fout;
-    fout.precision(8);
+    fout.precision(9);
     fout.open(file_path, std::ofstream::out);
 
     float* data_pointer = data;
