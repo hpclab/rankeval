@@ -11,6 +11,7 @@ file.
 """
 import numpy as np
 import numbers
+import hashlib
 
 from .svmlight_format import load_svmlight_file, dump_svmlight_file
 
@@ -309,7 +310,13 @@ class Dataset(object):
         return self.name
 
     def __hash__(self):
-        return int( self.y[:100].sum() + self.X[:100,0].sum() )
+
+        h = hashlib.md5()
+
+        for arr in [self.X, self.y, self.query_ids]:
+            h.update(arr)
+
+        return int(h.hexdigest(), 16)
 
     def __eq__(self, other):
         # use != instead of == because it is more efficient for sparse matrices:
