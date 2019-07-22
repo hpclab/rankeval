@@ -21,7 +21,7 @@ from ._efficient_feature import eff_feature_importance, \
     eff_feature_importance_tree
 
 
-def feature_importance(model, dataset, metric=None):
+def feature_importance(model, dataset, metric=None, normalize=True):
     """
     This method computes the feature importance relative to the given model
     and dataset.
@@ -36,6 +36,10 @@ def feature_importance(model, dataset, metric=None):
     metric : rankeval.metrics.Metric
         The metric to use for compute the feature gain at each split node.
         The default metric is the Root Mean Squared Error (MSE).
+    normalize : bool
+        Whether to normalize the computed importance such as to have a relative
+        importance (rescale importance by the value of the most important
+        feature).
 
     Returns
     -------
@@ -75,6 +79,9 @@ def feature_importance(model, dataset, metric=None):
         for tree_id in np.arange(model.n_trees):
             _feature_importance_tree(model, dataset, tree_id, y_pred, metric,
                                      feature_imp, feature_count)
+
+    if normalize:
+        feature_imp = feature_imp / feature_imp.max()
 
     performance = xr.DataArray([feature_imp, feature_count],
                                name='Feature Importance Analysis',
