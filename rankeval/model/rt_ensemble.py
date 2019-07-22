@@ -41,7 +41,8 @@ class RTEnsemble(object):
             The fpath to the filename where the model has been saved
         name : str
             The name to be given to the current model
-        format : ['QuickRank', 'ScikitLearn', 'XGBoost', 'LightGBM']
+        format : ['QuickRank', 'ScikitLearn', 'XGBoost', 'LightGBM',
+                  'CatBoost', 'Jforests']
             The format of the model to load.
         base_score : None or float
             The initial prediction score of all instances, global bias.
