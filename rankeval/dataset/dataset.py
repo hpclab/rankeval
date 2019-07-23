@@ -127,7 +127,7 @@ class Dataset(object):
                        self.get_qids_dataset(),
                        name=self.name)
 
-    def dump(self, f, format):
+    def dump(self, f, file_format):
         """
         This method implements the writing of a previously loaded dataset
         according to the given format on file
@@ -136,7 +136,7 @@ class Dataset(object):
         ----------
         f : path
             The file path where to store the dataset
-        format : str
+        file_format : str
             The format to use for dumping the dataset on file (actually
             supported is only "svmlight" format)
         """
@@ -148,7 +148,7 @@ class Dataset(object):
             for idx in np.arange(start_offset, end_offset):
                 query_ids[idx] = qid
 
-        if format == "svmlight":
+        if file_format == "svmlight":
             dump_svmlight_file(self.X, self.y, f, query_ids)
         else:
             raise TypeError("Dataset format %s is not yet supported!" % format)
