@@ -306,7 +306,7 @@ void parse_line(const std::string &line,
 /*
  * Parse entire file. Throws exception on failure.
  */
-void parse_file(PyObject *file_stream,
+void parse_file(PyObject *pystream,
                 std::vector<float> &data,
                 std::vector<float> &labels,
                 std::vector<int> &qids)
@@ -315,9 +315,8 @@ void parse_file(PyObject *file_stream,
   int lineno = 0;  
   std::string line;
   while (true) {
-//  while (std::getline(file_stream, line)) {
-    PyObject* py_line = PyFile_GetLine(file_stream, 0);
-    std::string line = std::string(PyBytes_AS_STRING(py_line));
+    PyObject* py_line = PyFile_GetLine(pystream, 0);
+    line = std::string(PyBytes_AS_STRING(py_line));
     if (line.empty())
         break;
     lineno++;	  
@@ -335,25 +334,13 @@ static PyObject *load_svmlight_file(PyObject *self, PyObject *args)
 
   try {
     // Read function arguments.
-    PyObject *pyobjinstream;
-    if (!PyArg_ParseTuple(args, "O", &pyobjinstream))
+    PyObject *pystream;
+    if (!PyArg_ParseTuple(args, "O", &pystream))
       return 0;
-
-//    int fd = PyObject_AsFileDescriptor(pyobjinstream);
-//    instream = PyObject_AsFileDescriptor(pyobjinstream)
-
-//  std::ifstream file_stream;
-//  file_stream.exceptions(std::ios::badbit);
-//  file_stream.rdbuf()->pubsetbuf(&buffer[0], buffer_size);
-//  file_stream.open(file_path);
-//
-//  if (!file_stream)
-//    throw std::ios_base::failure("File doesn't exist!");
-
 
     std::vector<float> data, labels;
     std::vector<int> qids;
-    parse_file(pyobjinstream, data, labels, qids);
+    parse_file(pystream, data, labels, qids);
     return to_dense(data, labels, qids);
 
   } catch (SyntaxError const &e) {
