@@ -7,9 +7,28 @@ loader for the svmlight / libsvm sparse dataset format.  """
 
 from ._svmlight_format import _load_svmlight_file, _dump_svmlight_file
 import numpy as np
+import io
+import os
+from contextlib import closing
 
 
-def load_svmlight_file(file_path, buffer_mb=40, query_id=False):
+def _open(f):
+    if isinstance(f, int):  # file descriptor
+        return io.open(f, "rb", closefd=False)
+    elif not isinstance(f, str):
+        raise TypeError("expected {str, int, file-like}, got %s" % type(f))
+
+    _, ext = os.path.splitext(f)
+    if ext == ".gz":
+        import gzip
+        return gzip.open(f, "rb")
+    elif ext == ".bz2":
+        from bz2 import BZ2File
+        return BZ2File(f, "rb")
+    else:
+        return open(f, "rb")
+
+def load_svmlight_file(f, query_id=False):
     """Load datasets in the svmlight / libsvm format into sparse CSR matrix
 
     This format is a text-based format, with one sample per line. It does
@@ -29,10 +48,11 @@ def load_svmlight_file(file_path, buffer_mb=40, query_id=False):
 
     Parameters
     ----------
-    file_path: str
-        Path to a file to load.
-    buffer_mb : integer
-        Buffer size to use for low level read
+    f : {str, file-like, int}
+        (Path to) a file to load. If a path ends in ".gz" or ".bz2", it will
+        be uncompressed on the fly. If an integer is passed, it is assumed to
+        be a file descriptor. A file-like or file descriptor will not be closed
+        by this function. A file-like object must be opened in binary mode.
     query_id : bool
         True if the query ids has to be loaded, false otherwise
 
@@ -45,7 +65,11 @@ def load_svmlight_file(file_path, buffer_mb=40, query_id=False):
           query_ids is a ndarray of shape(nsamples,) if query_id is True.
           Otherwise it is not returned.
     """
-    data, labels, qids = _load_svmlight_file(file_path, buffer_mb)
+    if hasattr(f, "read"):
+        data, labels, qids = _load_svmlight_file(f)
+    else:
+        with closing(_open(f)) as f:
+            data, labels, qids = _load_svmlight_file(f)
 
     # reshape the numpy array into a matrix
     n_samples = len(labels)
@@ -69,7 +93,7 @@ def load_svmlight_file(file_path, buffer_mb=40, query_id=False):
         return data, labels, qids
 
 
-def load_svmlight_files(files, buffer_mb=40, query_id=False):
+def load_svmlight_files(files, query_id=False):
     """Load dataset from multiple files in SVMlight format
 
     This function is equivalent to mapping load_svmlight_file over a list of
@@ -79,8 +103,12 @@ def load_svmlight_files(files, buffer_mb=40, query_id=False):
 
     Parameters
     ----------
-    files : iterable over str
-        Paths to files to load.
+    files : iterable over {str, file-like, int}
+        (Paths of) files to load. If a path ends in ".gz" or ".bz2", it will
+        be uncompressed on the fly. If an integer is passed, it is assumed to
+        be a file descriptor. File-likes and file descriptors will not be
+        closed by this function. File-like objects must be opened in binary
+        mode
 
     n_features: int or None
         The number of features to use. If None, it will be inferred from the
@@ -93,7 +121,8 @@ def load_svmlight_files(files, buffer_mb=40, query_id=False):
     -------
     [X1, y1, ..., Xn, yn]
 
-    where each (Xi, yi, [comment_i, query_id_i]) tuple is the result from load_svmlight_file(files[i]).
+    where each (Xi, yi, [comment_i, query_id_i]) tuple is the result from
+    load_svmlight_file(files[i]).
 
     Rationale
     ---------
@@ -107,10 +136,10 @@ def load_svmlight_files(files, buffer_mb=40, query_id=False):
     load_svmlight_file
     """
     files = iter(files)
-    result = list(load_svmlight_file(next(files), buffer_mb, query_id=query_id))
+    result = list(load_svmlight_file(next(files), query_id=query_id))
 
     for f in files:
-        result += load_svmlight_file(f, buffer_mb, query_id=query_id)
+        result += load_svmlight_file(f, query_id=query_id)
 
     return result
 

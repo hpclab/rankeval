@@ -87,8 +87,12 @@ class Dataset(object):
 
         Parameters
         ----------
-        f : path
-            The file name of the dataset to load
+        f : {str, file-like, int}
+            (Path to) a file to load. If a path ends in ".gz" or ".bz2", it will
+            be uncompressed on the fly. If an integer is passed, it is assumed
+            to be a file descriptor. A file-like or file descriptor will not be
+            closed by this function. A file-like object must be opened in
+            binary mode.
         name : str
             The name to be given to the current dataset
         format : str

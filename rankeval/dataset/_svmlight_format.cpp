@@ -244,7 +244,7 @@ void parse_line(const std::string &line,
                 int &max_feature, int &lineno)
 {
   if (line.length() == 0)
-  	throw std::invalid_argument( "empty line, lineno " + lineno );
+  	throw std::invalid_argument("empty line, lineno " + std::to_string(lineno));
 
   if (line[0] == '#')
     return;
@@ -306,26 +306,20 @@ void parse_line(const std::string &line,
 /*
  * Parse entire file. Throws exception on failure.
  */
-void parse_file(char const *file_path,
-                size_t buffer_size,
+void parse_file(PyObject *file_stream,
                 std::vector<float> &data,
                 std::vector<float> &labels,
                 std::vector<int> &qids)
 {
-  std::vector<char> buffer(buffer_size);
-
-  std::ifstream file_stream;
-  file_stream.exceptions(std::ios::badbit);
-  file_stream.rdbuf()->pubsetbuf(&buffer[0], buffer_size);
-  file_stream.open(file_path);
-
-  if (!file_stream)
-    throw std::ios_base::failure("File doesn't exist!");
-
   int max_feature = 0;
   int lineno = 0;  
   std::string line;
-  while (std::getline(file_stream, line)) {
+  while (true) {
+//  while (std::getline(file_stream, line)) {
+    PyObject* py_line = PyFile_GetLine(file_stream, 0);
+    std::string line = std::string(PyBytes_AS_STRING(py_line));
+    if (line.empty())
+        break;
     lineno++;	  
     parse_line(line, data, labels, qids, max_feature, lineno);
   }
@@ -341,18 +335,25 @@ static PyObject *load_svmlight_file(PyObject *self, PyObject *args)
 
   try {
     // Read function arguments.
-    char const *file_path;
-    int buffer_mb;
-
-    if (!PyArg_ParseTuple(args, "si", &file_path, &buffer_mb))
+    PyObject *pyobjinstream;
+    if (!PyArg_ParseTuple(args, "O", &pyobjinstream))
       return 0;
 
-    buffer_mb = std::max(buffer_mb, 1);
-    size_t buffer_size = buffer_mb * 1024 * 1024;
+//    int fd = PyObject_AsFileDescriptor(pyobjinstream);
+//    instream = PyObject_AsFileDescriptor(pyobjinstream)
+
+//  std::ifstream file_stream;
+//  file_stream.exceptions(std::ios::badbit);
+//  file_stream.rdbuf()->pubsetbuf(&buffer[0], buffer_size);
+//  file_stream.open(file_path);
+//
+//  if (!file_stream)
+//    throw std::ios_base::failure("File doesn't exist!");
+
 
     std::vector<float> data, labels;
     std::vector<int> qids;
-    parse_file(file_path, buffer_size, data, labels, qids);
+    parse_file(pyobjinstream, data, labels, qids);
     return to_dense(data, labels, qids);
 
   } catch (SyntaxError const &e) {
