@@ -370,13 +370,13 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
 {
   try {
     // Read function arguments.
-    char const *file_path;
+    PyObject *pystream;
     PyArrayObject *data_array, *label_array, *qids_array;
     int zero_based;
 
     if (!PyArg_ParseTuple(args,
-                          "sO!O!O!i",
-                          &file_path,
+                          "OO!O!O!i",
+                          &pystream,
                           &PyArray_Type, &data_array,
                           &PyArray_Type, &label_array,
                           &PyArray_Type,  &qids_array,
@@ -386,35 +386,39 @@ static PyObject *dump_svmlight_file(PyObject *self, PyObject *args)
     int n_samples = PyArray_DIM(data_array, 0);
     int n_features = PyArray_DIM(data_array, 1);
     int n_queries = PyArray_DIM(qids_array, 0) - 1;
-//    int n_samples  = label_array->dimensions[0];
-//    int n_features = data_array->dimensions[0] / n_samples;
 
     float *data   = (float*) data_array->data;
     float *y      = (float*) label_array->data;
     int   *qids   = (int*) qids_array->data;
 
-    std::ofstream fout;
-    fout.precision(9);
-    fout.open(file_path, std::ofstream::out);
+    std::ostringstream out;
+    out.precision(9);
 
     float* data_pointer = data;
     for (int i=0; i < n_samples; i++) {
       if (n_queries > 0) {
         int qid = qids[i];
-        fout << y[i] << " qid:" << qid << " ";
+        out << y[i] << " qid:" << qid << " ";
       } else {
-        fout << y[i] << " ";
+        out << y[i] << " ";
       }
 
       for (int jj=0; jj < n_features; ++jj) {
-        fout << (zero_based ? jj : jj+1) << ":" << data_pointer[jj] << " ";
+        out << (zero_based ? jj : jj+1) << ":" << data_pointer[jj] << " ";
       }
 
       data_pointer += n_features;
-      fout << std::endl;
-    }
+      out << std::endl;
 
-    fout.close();
+      if (PyFile_WriteString(out.str().c_str(), pystream) == -1) {
+        std::string msg("error in SVMlight/libSVM writer: not able to write");
+        PyErr_SetString(PyExc_RuntimeError, msg.c_str());
+        return 0;
+      }
+      // Reset string stream content
+      out.str("");
+      out.clear();
+    }
 
     Py_INCREF(Py_None);
     return Py_None;

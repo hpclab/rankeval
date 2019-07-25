@@ -12,21 +12,28 @@ import os
 from contextlib import closing
 
 
-def _open(f):
+def _open(f, mode='r'):
+    if mode not in ['r', 'w']:
+        raise TypeError("expected mode to be 'r' or 'w', got %s" % mode)
+    if mode == 'r':
+        mode = 'rb'
+    else:
+        mode = 'wt'
     if isinstance(f, int):  # file descriptor
-        return io.open(f, "rb", closefd=False)
+        return io.open(f, mode, closefd=False)
     elif not isinstance(f, str):
         raise TypeError("expected {str, int, file-like}, got %s" % type(f))
 
     _, ext = os.path.splitext(f)
     if ext == ".gz":
         import gzip
-        return gzip.open(f, "rb")
+        return gzip.open(f, mode)
     elif ext == ".bz2":
-        from bz2 import BZ2File
-        return BZ2File(f, "rb")
+        import bz2
+        return bz2.open(f, mode)
     else:
-        return open(f, "rb")
+        return open(f, mode)
+
 
 def load_svmlight_file(f, query_id=False):
     """Load datasets in the svmlight / libsvm format into sparse CSR matrix
@@ -162,8 +169,12 @@ def dump_svmlight_file(X, y, f, query_id=None, zero_based=False):
     y : array-like, shape = [n_samples]
         Target values.
 
-    f : str
-        Specifies the path that will contain the data.
+    f : {str, file-like, int}
+        (Path to) a file to dump. If a path ends in ".gz" or ".bz2", it will
+        be compressed on the fly. If an integer is passed, it is assumed
+        to be a file descriptor. A file-like or file descriptor will not be
+        closed by this function. A file-like object must be opened in
+        text mode.
 
     comment : list, optional 
         Comments to append to each row after a # character
@@ -177,18 +188,6 @@ def dump_svmlight_file(X, y, f, query_id=None, zero_based=False):
         Whether column indices should be written zero-based (True) or one-based
         (False). Default is False.
     """
-    if hasattr(f, "write"):
-        raise ValueError("File handler not supported. Use a file path.")
-
-    # todo: this test is ok if we know the number of features! to divide X.shape[0] with
-    # if X.shape[0] != y.shape[0]:
-    #     raise ValueError("X.shape[0] and y.shape[0] should be the same, "
-    #                      "got: %r and %r instead." % (X.shape[0], y.shape[0]))
-
-    # elif X.shape[0] != len(query_id):
-    #         raise ValueError("X.shape[0] and len(query_id) should be the same, "
-    #                      "got: %r and %r instead." % (X.shape[0], len(query_id)))
-
     X = np.array(X, dtype=np.float32)
     y = np.array(y, dtype=np.float32)
     if query_id is None:
@@ -196,4 +195,8 @@ def dump_svmlight_file(X, y, f, query_id=None, zero_based=False):
     else:
         query_id = np.array(query_id, dtype=np.int32)
 
-    _dump_svmlight_file(f, X, y, query_id, int(zero_based))
+    if hasattr(f, "write"):
+        _dump_svmlight_file(f, X, y, query_id, int(zero_based))
+    else:
+        with closing(_open(f, mode='w')) as f:
+            _dump_svmlight_file(f, X, y, query_id, int(zero_based))

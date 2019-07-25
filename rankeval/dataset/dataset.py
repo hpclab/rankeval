@@ -131,15 +131,19 @@ class Dataset(object):
                        self.get_qids_dataset(),
                        name=self.name)
 
-    def dump(self, f, format):
+    def dump(self, f, format="svmlight"):
         """
         This method implements the writing of a previously loaded dataset
         according to the given format on file
 
         Parameters
         ----------
-        f : path
-            The file path where to store the dataset
+        f : {str, file-like, int}
+            (Path to) a file to dump. If a path ends in ".gz" or ".bz2", it will
+            be compressed on the fly. If an integer is passed, it is assumed
+            to be a file descriptor. A file-like or file descriptor will not be
+            closed by this function. A file-like object must be opened in
+            text mode.
         format : str
             The format to use for dumping the dataset on file (actually
             supported is only "svmlight" format)
