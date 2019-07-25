@@ -13,9 +13,12 @@ sudo python ./setup.py install
 import sys
 import os
 import io
+import shutil
 
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
+from distutils.command.clean import clean as Clean
+
 
 if (sys.version_info[:1] == 2 and sys.version_info[:2] < (2, 7)) or \
     (sys.version_info[:1] == 3 and sys.version_info[:2] < (3, 5)):
@@ -39,6 +42,35 @@ class custom_build_ext(build_ext):
         self.include_dirs.append(np.get_include())
 
 
+# Custom clean command to remove build artifacts
+class CleanCommand(Clean):
+    description = "Remove build artifacts from the source tree"
+
+    def run(self):
+        Clean.run(self)
+        # Remove c files if we are not within a sdist package
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        remove_c_files = not os.path.exists(os.path.join(cwd, 'PKG-INFO'))
+        if remove_c_files:
+            print('Will remove generated .c files')
+        if os.path.exists('build'):
+            shutil.rmtree('build')
+        for dirpath, dirnames, filenames in os.walk('rankeval'):
+            for filename in filenames:
+                if any(filename.endswith(suffix) for suffix in
+                       (".so", ".pyd", ".dll", ".pyc")):
+                    os.unlink(os.path.join(dirpath, filename))
+                    continue
+                extension = os.path.splitext(filename)[1]
+                if remove_c_files and extension in ['.c', '.cpp']:
+                    pyx_file = str.replace(filename, extension, '.pyx')
+                    if os.path.exists(os.path.join(dirpath, pyx_file)):
+                        os.unlink(os.path.join(dirpath, filename))
+            for dirname in dirnames:
+                if dirname == '__pycache__':
+                    shutil.rmtree(os.path.join(dirpath, dirname))
+
+
 root_dir = os.path.dirname(os.path.abspath(os.path.expanduser(__file__)))
 # make it relative in order to avoid errors of absolute path by pypi
 root_dir = os.path.relpath(root_dir)
@@ -47,7 +79,10 @@ dataset_dir = os.path.join(rankeval_dir, 'dataset')
 scoring_dir = os.path.join(rankeval_dir, 'scoring')
 analysis_dir = os.path.join(rankeval_dir, 'analysis')
 
-cmdclass = {'build_ext': custom_build_ext}
+cmdclass = {
+    'build_ext': custom_build_ext,
+    'clean': CleanCommand
+}
 
 version = io.open(os.path.join(rankeval_dir, 'VERSION'),
                   encoding='utf-8').read().strip(),
