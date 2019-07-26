@@ -2,9 +2,8 @@ import logging
 import os
 import unittest
 
-import coremltools
 from numpy.testing import assert_equal, assert_array_equal, \
-    assert_array_almost_equal
+    assert_array_almost_equal, assert_raises
 
 from rankeval.dataset import Dataset
 from rankeval.model import ProxyCatBoost
@@ -14,6 +13,11 @@ from rankeval.test.base import data_dir
 model_file = os.path.join(data_dir, "CatBoost.model.coreml")
 data_file = os.path.join(data_dir, "msn1.fold1.test.5k.txt")
 
+try:
+    import coremltools
+    coremltools_missing = False
+except ImportError:
+    coremltools_missing = True
 
 class ProxyCatBoostTestCase(unittest.TestCase):
 
@@ -29,7 +33,9 @@ class ProxyCatBoostTestCase(unittest.TestCase):
         del cls.dataset
         cls.dataset = None
 
+    @unittest.skipIf(coremltools_missing, "coremltools package missing")
     def test_count_nodes(self):
+
         coreml_model = coremltools.models.model.MLModel(model_file)
         n_trees, n_nodes = ProxyCatBoost._count_nodes(coreml_model)
         # print "Num Trees: %d\nNum Nodes: %d" % (n_trees, n_nodes),

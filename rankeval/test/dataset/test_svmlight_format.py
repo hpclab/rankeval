@@ -4,7 +4,8 @@ import unittest
 
 import numpy as np
 from nose.tools import raises
-from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_equal, assert_array_equal, \
+    assert_array_almost_equal
 
 try:
     from sklearn.datasets import load_svmlight_file as sk_load_svmlight_file
@@ -70,6 +71,16 @@ class SVMLightLoaderTestCase(unittest.TestCase):
         # test y
         assert_array_equal(y, [1, 2, 3])
 
+    def test_load_svmlight_file_descriptor(self):
+        with open(datafile, 'rb') as reader:
+            X, y = load_svmlight_file(reader)
+
+        # test X's shape
+        assert_array_equal(X.shape, (3, 20))
+
+        # test y
+        assert_array_equal(y, [1, 2, 3])
+
     def test_load_svmlight_files_comment_qid(self):
         X_train, y_train, q_train, X_test, y_test, q_test = \
             load_svmlight_files([datafile] * 2,  query_id=True)
@@ -109,10 +120,6 @@ class SVMLightLoaderTestCase(unittest.TestCase):
             assert False
         except RuntimeError:
             pass
-
-    @raises(TypeError)
-    def test_not_a_filename(self):
-        load_svmlight_file(1)
 
     @raises(IOError)
     def test_invalid_filename(self):

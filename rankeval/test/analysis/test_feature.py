@@ -33,7 +33,8 @@ class FeatureImportanceTestCase(unittest.TestCase):
         cls.dataset = None
  
     def test_feature_importance(self):
-        feature_imp, feature_cnt = feature_importance(self.model, self.dataset)
+        feature_imp, feature_cnt = feature_importance(
+            self.model, self.dataset, normalize=False)
 
         features = [7, 105, 107, 114]
         assert_allclose(feature_imp[features],

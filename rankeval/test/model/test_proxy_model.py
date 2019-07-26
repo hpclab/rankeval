@@ -19,6 +19,7 @@ class ProxyModelTestCase(unittest.TestCase):
         except TypeError:
             pass
 
+
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                         level=logging.DEBUG)

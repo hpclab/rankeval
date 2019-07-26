@@ -255,7 +255,6 @@ void parse_line(const std::string &line,
   std::istringstream in(line.substr(0, hashIdx));
   in.exceptions(std::ios::badbit);
 
-    //printf("%s\n",line.substr(0,hashIdx).c_str());
   float y;
   if (!(in >> y)) {
   	throw std::invalid_argument( "non-numeric or missing label, lineno " + std::to_string(lineno) );
@@ -265,16 +264,26 @@ void parse_line(const std::string &line,
   int idx;
   double x;
   int next_feature = 1;
+  bool reuse_line = false;
 
   std::string token;
-  if (!(in >> token) || sscanf(token.c_str(), "qid:%u", &idx) != 1) {
+  if (!(in >> token)) {
   	throw std::invalid_argument( "Missing qid label, lineno " +
   	                              std::to_string(lineno) );
+  }
+
+
+  if (sscanf(token.c_str(), "qid:%u", &idx) != 1) {
+    reuse_line = true;
   } else {
     qids.push_back(idx);
   }
 
-  while (in >> token) {
+  while (true) {
+    if (!reuse_line && !(in >> token))
+        break;
+    reuse_line = false;
+
     if(sscanf(token.c_str(), "%u:%lf", &idx, &x) == 2) {
 
         // Add zeros in empty spaces between next_feature and idx indices  (iff idx > next_feature)
