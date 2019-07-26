@@ -19,19 +19,29 @@ import xarray as xr
 from ..dataset import Dataset
 from ..metrics.metric import Metric
 from rankeval.metrics import MSE
+from rankeval import is_notebook
 
-from ipywidgets import IntProgress
-from IPython.display import display
+if is_notebook():
+    try:
+        import ipywidgets
+        from IPython.display import display
+    except ImportError:
+        ipywidgets = None
+else:
+    ipywidgets = None
+
 
 def statistical_significance(datasets, model_a, model_b, metrics,
                              n_perm=100000, cache=False):
     """
-    This method computes the statistical significance of the performance difference between model_a and.
+    This method computes the statistical significance of the performance
+    difference between model_a and.
 
     Parameters
     ----------
     datasets : list of Dataset
-        The datasets to use for analyzing the behaviour of the model using the given metrics and models
+        The datasets to use for analyzing the behaviour of the model using the
+        given metrics and models
     model_a : RTEnsemble
         The first model considered.
     model_b : RTEnsemble
@@ -48,20 +58,22 @@ def statistical_significance(datasets, model_a, model_b, metrics,
     Returns
     -------
     stat_sig : xarray.DataArray
-        A DataArray containing the statistical significance of the performance difference
-        between any pair of models on the given dataset.
+        A DataArray containing the statistical significance of the performance
+        difference between any pair of models on the given dataset.
     """
-
-    progress_bar = IntProgress(min=0, max=len(datasets)*len(metrics), 
-                               description="Iterating datasets and metrics")
-    display(progress_bar)    
+    if ipywidgets:
+        progress_bar = ipywidgets.IntProgress(
+            min=0, max=len(datasets)*len(metrics),
+            description="Iterating datasets and metrics")
+        display(progress_bar)
 
     data = np.zeros(shape=(len(datasets), len(metrics), 2), dtype=np.float32)
     for idx_dataset, dataset in enumerate(datasets):
         y_pred_a = model_a.score(dataset, detailed=False, cache=cache)
         y_pred_b = model_b.score(dataset, detailed=False, cache=cache)
         for idx_metric, metric in enumerate(metrics):
-            progress_bar.value += 1
+            if ipywidgets:
+                progress_bar.value += 1
 
             metrics_a = metric.eval(dataset, y_pred_a)[1]
             metrics_b = metric.eval(dataset, y_pred_b)[1]
@@ -71,13 +83,16 @@ def statistical_significance(datasets, model_a, model_b, metrics,
             data[idx_dataset][idx_metric][0] = p1
             data[idx_dataset][idx_metric][1] = p2
 
-    progress_bar.bar_style = "success"
-    progress_bar.close()
+    if ipywidgets:
+        progress_bar.bar_style = "success"
+        progress_bar.close()
 
-    performance = xr.DataArray(data,
-                               name='Statistical Significance',
-                               coords=[datasets, metrics, ['one-sided', 'two-sided']],
-                               dims=['dataset', 'metric', 'p-value'])
+    performance = xr.DataArray(
+        data,
+        name='Statistical Significance',
+        coords=[datasets, metrics, ['one-sided', 'two-sided']],
+        dims=['dataset', 'metric', 'p-value']
+    )
 
     return performance
 
@@ -106,8 +121,10 @@ def _randomization(metric_scores_a, metric_scores_b, n_perm=100000):
         "A comparison of statistical significance tests for information retrieval evaluation."
         In Proceedings of the sixteenth ACM conference on Conference on information and knowledge management, pp. 623-632. ACM, 2007.
     """
-    progress_bar = IntProgress(min=0, max=10, description="Randomization Test")
-    display(progress_bar)    
+    if ipywidgets:
+        progress_bar = ipywidgets.IntProgress(
+            min=0, max=10, description="Randomization Test")
+        display(progress_bar)
 
     # find the best system
     metric_scores_a_mean = np.mean(metric_scores_a)
@@ -131,7 +148,8 @@ def _randomization(metric_scores_a, metric_scores_b, n_perm=100000):
 
     # repeat n_prem times
     for i in range(n_perm):
-        if i % (n_perm/10)==0: progress_bar.value+=1
+        if ipywidgets and i % (n_perm/10) == 0:
+            progress_bar.value += 1
         
         # select a random subset
         sel = np.random.choice([False, True], len(metric_scores_a))
@@ -151,8 +169,9 @@ def _randomization(metric_scores_a, metric_scores_b, n_perm=100000):
         if np.abs(delta) >= abs_difference:
             p2 += 1.
 
-    progress_bar.bar_style = "success"
-    progress_bar.close()
+    if ipywidgets:
+        progress_bar.bar_style = "success"
+        progress_bar.close()
 
     p1 /= n_perm
     p2 /= n_perm
@@ -178,8 +197,10 @@ def _kfold_scoring(dataset, k, algo):
     score : numpy.ndarray
         A vecotr of num_instances scores.
     """
-    progress_bar = IntProgress(min=0, max=k, description="Processing k folds")
-    display(progress_bar)    
+    if ipywidgets:
+        progress_bar = ipywidgets.IntProgress(
+            min=0, max=k, description="Processing k folds")
+        display(progress_bar)
 
     scores = np.zeros(dataset.n_instances, dtype=np.float32)
     query_sizes = dataset.get_query_sizes()
@@ -187,7 +208,8 @@ def _kfold_scoring(dataset, k, algo):
     shuffled_qid = np.random.permutation(dataset.n_queries)
     chunk_query_size = int(math.ceil(dataset.n_queries/float(k)))
     for p in range(0, dataset.n_queries, chunk_query_size):
-        progress_bar.value += 1
+        if ipywidgets:
+            progress_bar.value += 1
 
         # p-th fold is used for testing
         test_rows = np.full(dataset.n_instances,
@@ -239,18 +261,22 @@ def _multi_kfold_scoring(dataset, algo, L=10, k=2):
     score : numpy.ndarray
         A matrix num_instances x L.
     """
-    progress_bar = IntProgress(min=0, max=L, description="Computing L scores")
-    display(progress_bar)    
+    if ipywidgets:
+        progress_bar = ipywidgets.IntProgress(
+            min=0, max=L, description="Computing L scores")
+        display(progress_bar)
 
     scores = np.zeros( (dataset.n_instances, L), dtype=np.float32)
 
     for l in range(L):
-        progress_bar.value += 1
+        if ipywidgets:
+            progress_bar.value += 1
 
         scores[:,l] = _kfold_scoring(dataset, k, algo)
 
-    progress_bar.bar_style = "success"
-    progress_bar.close()
+    if ipywidgets:
+        progress_bar.bar_style = "success"
+        progress_bar.close()
     
     return scores
 
@@ -319,15 +345,18 @@ def bias_variance(datasets=[], algos=[], metrics=[], L=10, k=2):
     for metric in metrics:
         assert isinstance(metric, Metric)
 
-    progress_bar = IntProgress(min=0, max=len(datasets)*len(metrics)*len(algos),
-                               description="Iterating datasets and metrics")
-    display(progress_bar)    
+    if ipywidgets:
+        progress_bar = ipywidgets.IntProgress(
+            min=0, max=len(datasets)*len(metrics)*len(algos),
+            description="Iterating datasets and metrics")
+        display(progress_bar)
 
     data = np.zeros(shape=(len(datasets), len(metrics), len(algos), 3), dtype=np.float32)
     for idx_dataset, dataset in enumerate(datasets):
         for idx_algo, algo in enumerate(algos):
             for idx_metric, metric in enumerate(metrics):
-                progress_bar.value += 1
+                if ipywidgets:
+                    progress_bar.value += 1
                 
                 scores = _multi_kfold_scoring(dataset, algo=algo, L=L, k=k)
                 
@@ -354,15 +383,19 @@ def bias_variance(datasets=[], algos=[], metrics=[], L=10, k=2):
                 data[idx_dataset][idx_metric][idx_algo][0] = avg_error
                 data[idx_dataset][idx_metric][idx_algo][1] = avg_bias
                 data[idx_dataset][idx_metric][idx_algo][2] = avg_var
-                
 
-    progress_bar.bar_style = "success"
-    progress_bar.close()
+    if ipywidgets:
+        progress_bar.bar_style = "success"
+        progress_bar.close()
 
-    performance = xr.DataArray(data,
-                               name='Bias/Variance Decomposition',
-                               coords=[datasets, metrics, [a.__name__ for a in algos], 
-                               ['Error', 'Bias', 'Variance']],
-                               dims=['dataset', 'metric', 'algo', 'error'])
+    performance = xr.DataArray(
+        data,
+        name='Bias/Variance Decomposition',
+        coords=[datasets,
+                metrics,
+                [a.__name__ for a in algos],
+                ['Error', 'Bias', 'Variance']],
+        dims=['dataset', 'metric', 'algo', 'error']
+    )
 
     return performance

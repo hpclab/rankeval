@@ -19,9 +19,16 @@ import xarray as xr
 from ..dataset import Dataset
 from ..model import RTEnsemble
 from ..metrics import Metric
+from rankeval import is_notebook
 
-from ipywidgets import IntProgress
-from IPython.display import display
+if is_notebook():
+    try:
+        import ipywidgets
+        from IPython.display import display
+    except ImportError:
+        ipywidgets = None
+else:
+    ipywidgets = None
 
 try:
     xrange
@@ -123,11 +130,12 @@ def tree_wise_performance(datasets, models, metrics, step=10, cache=False):
                           len(metrics)), fill_value=np.nan, dtype=np.float32)
 
 
-    progress_bar = IntProgress(min=0, max=len(datasets)*len(metrics)*
-                               sum([len(get_tree_steps(model.n_trees)) for model in models ]), 
-                               description="Computing metrics")
-    display(progress_bar)    
-
+    if ipywidgets:
+        progress_bar = ipywidgets.IntProgress(
+            min=0, max=len(datasets)*len(metrics)*
+            sum([len(get_tree_steps(model.n_trees)) for model in models ]),
+            description="Computing metrics")
+        display(progress_bar)
 
     for idx_dataset, dataset in enumerate(datasets):
         for idx_model, model in enumerate(models):
@@ -149,13 +157,15 @@ def tree_wise_performance(datasets, models, metrics, step=10, cache=False):
 
                 # compute the metric score using the predicted document scores
                 for idx_metric, metric in enumerate(metrics):
-                    progress_bar.value += 1
+                    if ipywidgets:
+                        progress_bar.value += 1
 
                     metric_score, _ = metric.eval(dataset, y_pred)
                     data[idx_dataset][idx_model][idx_top_k][idx_metric] = metric_score
 
-    progress_bar.bar_style = "success"
-    progress_bar.close()
+    if ipywidgets:
+        progress_bar.bar_style = "success"
+        progress_bar.close()
 
     performance = xr.DataArray(data,
                                name='Tree-Wise Performance',
