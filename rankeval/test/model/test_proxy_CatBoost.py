@@ -19,6 +19,8 @@ try:
 except ImportError:
     coremltools_missing = True
 
+
+@unittest.skipIf(coremltools_missing, "coremltools package missing")
 class ProxyCatBoostTestCase(unittest.TestCase):
 
     @classmethod
@@ -33,7 +35,6 @@ class ProxyCatBoostTestCase(unittest.TestCase):
         del cls.dataset
         cls.dataset = None
 
-    @unittest.skipIf(coremltools_missing, "coremltools package missing")
     def test_count_nodes(self):
 
         coreml_model = coremltools.models.model.MLModel(model_file)

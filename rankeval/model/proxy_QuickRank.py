@@ -106,7 +106,7 @@ class ProxyQuickRank(object):
             for child in elem:
                 ProxyQuickRank._xmlprettyprint(child, level + 1, indent_str)
             # last child needs to have 1 indentation less in the following line
-            elem.getchildren()[-1].tail = i
+            list(elem)[-1].tail = i
             if not elem.tail or not elem.tail.strip():
                 elem.tail = i
         else:
