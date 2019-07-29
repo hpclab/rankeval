@@ -10,6 +10,7 @@ import numpy as np
 import io
 import os
 from contextlib import closing
+from six import string_types
 
 
 def _open(f, mode='r'):
@@ -21,7 +22,7 @@ def _open(f, mode='r'):
         mode = 'wt'
     if isinstance(f, int):  # file descriptor
         return io.open(f, mode, closefd=False)
-    elif not isinstance(f, str):
+    elif not isinstance(f, string_types):
         raise TypeError("expected {str, int, file-like}, got %s" % type(f))
 
     _, ext = os.path.splitext(f)
