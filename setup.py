@@ -101,7 +101,7 @@ setup(
                   sources=[dataset_dir + '/_svmlight_format.cpp'],
                   include_dirs=[dataset_dir],
                   language='c++',
-                  extra_compile_args=['-O3']),
+                  extra_compile_args=['-O3', "-std=c++11"]),
         Extension('rankeval.scoring._efficient_scoring',
                   sources=[scoring_dir + '/_efficient_scoring.pyx'],
                   include_dirs=[scoring_dir],
