@@ -23,11 +23,22 @@ from distutils import log as _log
 from distutils.dir_util import mkpath as _mkpath
 import tempfile as _tempfile
 from distutils.errors import CCompilerError as _CCompilerError
+from distutils.version import LooseVersion
+from distutils import log
 
 
 if (sys.version_info[:1] == 2 and sys.version_info[:2] < (2, 7)) or \
     (sys.version_info[:1] == 3 and sys.version_info[:2] < (3, 5)):
     raise Exception('This version of rankeval needs Python 2.7, 3.5 or later.')
+
+
+min_cython_ver = '0.25.2'
+try:
+    import Cython
+    ver = Cython.__version__
+    _CYTHON_INSTALLED = ver >= LooseVersion(min_cython_ver)
+except ImportError:
+    _CYTHON_INSTALLED = False
 
 
 @contextlib.contextmanager
@@ -70,10 +81,10 @@ class custom_build_ext(build_ext):
         import numpy as np
         self.include_dirs.append(np.get_include())
 
+
     def _check_openmp_support(self):
         # Compile a test program to determine if compiler supports OpenMP.
         _mkpath(self.build_temp)
-        _log.set_threshold(-1)
         with stdchannel_redirected(sys.stderr, os.devnull):
             with _tempfile.NamedTemporaryFile(mode='w',
                                               dir=self.build_temp,
@@ -118,6 +129,21 @@ class custom_build_ext(build_ext):
 
         # Chain to method in parent class.
         build_ext.build_extensions(self)
+        if not _CYTHON_INSTALLED:
+            log.info('No supported version of Cython installed. '
+                     'Installing from compiled files.')
+            for extension in self.extensions:
+                sources = []
+                for sfile in extension.sources:
+                    path, ext = os.path.splitext(sfile)
+                    if ext in ('.pyx', '.py'):
+                        if extension.language == 'c++':
+                            ext = '.cpp'
+                        else:
+                            ext = '.c'
+                        sfile = path + ext
+                    sources.append(sfile)
+                extension.sources[:] = sources
 
 
 # Custom clean command to remove build artifacts
@@ -236,10 +262,10 @@ setup(
 
     test_suite="rankeval.test",
     setup_requires=[
+        'cython >= {}'.format(min_cython_ver),
         'setuptools >= 18.0',
         'numpy >= 1.13',
-        'scipy >= 0.7.0',
-        'cython >= 0.25.2'
+        'scipy >= 0.7.0'
     ],
     install_requires=[
         # Use 1.13: https://github.com/quantopian/zipline/issues/1808
