@@ -37,7 +37,7 @@ before_install:
   - export BUILD_DIRECTORY="$TRAVIS_BUILD_DIR"
   - if [[ $TRAVIS_OS_NAME == "osx" ]]; then
         export OS_NAME="macos";
-        if test -z "$COMPILER" then
+        if test -z "$COMPILER"; then
             export COMPILER="clang";
         fi
     else
