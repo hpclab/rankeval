@@ -44,8 +44,8 @@ if [[ $OS_NAME == "macos" ]]; then
     brew install ccache
     export PATH="/usr/local/opt/ccache/libexec:$PATH"
 
-    export CC=ccache $(which CC)
-    export CXX=ccache $(which CXX)
+    export CC=ccache $(which $CC)
+    export CXX=ccache $(which $CXX)
 fi
 
 # debug: show stats of ccache
