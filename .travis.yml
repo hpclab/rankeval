@@ -1,0 +1,62 @@
+sudo: false
+
+cache:
+  pip: true
+  ccache: true
+  directories:
+    - $HOME/.ccache
+
+os:
+  - linux
+  - osx
+
+dist: xenial
+
+language: generic
+
+env:
+  - TASK=sdist
+  - TASK=bdist
+
+  - PYTHON_VERSION="2.7"
+  - PYTHON_VERSION="3.5"
+  - PYTHON_VERSION="3.6"
+  - PYTHON_VERSION="3.7"
+
+matrix:
+  include:
+    - os: osx
+      env:
+        COMPILER=gcc
+        PYTHON_VERSION="3.7"
+
+before_install:
+  - export HOME_DIRECTORY="$HOME"
+  - export BUILD_DIRECTORY="$TRAVIS_BUILD_DIR"
+  - if [[ $TRAVIS_OS_NAME == "osx" ]]; then
+        export OS_NAME="macos";
+        if [ -z ${COMPILER+x} ]; then
+            export COMPILER="clang";
+        fi
+    else
+        export OS_NAME="linux";
+        export COMPILER="gcc";
+    fi
+  - export CONDA="$HOME/miniconda"
+  - export PATH="$CONDA/bin:$PATH"
+  - export CONDA_ENV="test-env"
+  - export RANKEVAL_VER=$(head -n 1 rankeval/VERSION)
+
+install:
+  - source build_tools/travis/setup.sh
+
+script:
+  - bash build_tools/travis/test.sh
+
+notifications:
+  slack:
+    rooms:
+      secure: c/EHDX29rbX9Dyjhuoeotq0o80FSCRweywiYWm38tQAlrprG8lgroCoAFLHzWv3LxgZ+lrcvZLvGcUv+AbnOd+R3dtUjUFvBgMbzMnjctXBs0WBweUr4bdqfblMkYEWGjGt53UQc2vEKSfMPxeNLwZ35GJVWYHKzK3Xhh5NhcuBUHXBzy7ZxlLinHGQVlzKhpo1txQoh/8O8gmR0cBIrrdXE/T1gAkWKzpU4wtQVW1k97H+WEV7LUXptuVGLsUlLeVFO+2j3j4U6XfwLVlzRaP/2mpjGAcoaK5mdUN0tTTZY3Gf+4HIsHh/mPyj8VBz+S4fD7IXE2YH5o07eVPPLMjJmlrjbBpCWbRu/naS8U9Va3XayJaeP0lDAUn8jdwr+aEzHhAuuE8ozWEUbi+CLQoAywhbeXC4dvIs7VbcXRbnaOOBsfb9OpoD9iwl6HblxBTPFp+k0pv0eHeTlmCKwAeFVXffDV5ehhoyxGFZCUoqXbapg/vM4ghLfVcfIZ/WKW/APdzGumR/X/IQsIGqGRZ/XF7pPmSQkaVOmeOsEQEFnld4xeuYvVSfVZyLCBM9Ufmiq43YlfpnnifXLXCPYvaQ67v2IvPe8rIf1duX8BCatJT8VAqgoVAfE2kC0WPJq79izKoPd7wU8kfWy2ucCpLk5iA/RKiwaeB3PDiZAFvc=
+    on_success: change
+    on_failure: always
+    on_start: never
