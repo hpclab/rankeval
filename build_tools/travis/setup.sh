@@ -64,6 +64,8 @@ conda update -q -y conda
 # Useful for debugging any issues with conda
 conda info -a
 
-conda create -q -y -n ${CONDA_ENV} python=${PYTHON_VERSION} numpy scipy cython coremltools
+conda create -q -y -n ${CONDA_ENV} python=${PYTHON_VERSION} numpy scipy cython
+
+pip install coremltools
 
 source activate ${CONDA_ENV}
