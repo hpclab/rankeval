@@ -15,13 +15,15 @@ dist: xenial
 language: generic
 
 env:
-  - TASK=sdist
-  - TASK=bdist
+  - TASK=sdist PYTHON_VERSION="2.7"
+  - TASK=sdist PYTHON_VERSION="3.5"
+  - TASK=sdist PYTHON_VERSION="3.6"
+  - TASK=sdist PYTHON_VERSION="3.7"
 
-  - PYTHON_VERSION="2.7"
-  - PYTHON_VERSION="3.5"
-  - PYTHON_VERSION="3.6"
-  - PYTHON_VERSION="3.7"
+  - TASK=bdist PYTHON_VERSION="2.7"
+  - TASK=bdist PYTHON_VERSION="3.5"
+  - TASK=bdist PYTHON_VERSION="3.6"
+  - TASK=bdist PYTHON_VERSION="3.7"
 
 matrix:
   include:
