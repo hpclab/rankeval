@@ -6,7 +6,7 @@
 # in the .travis.yml in the top level folder of the project and by the setup.sh
 # script which configure the environment.
 
-set -x
+set -x -e
 
 cd $BUILD_DIRECTORY
 

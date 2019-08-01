@@ -5,7 +5,7 @@
 # The behavior of the script is controlled by environment variabled defined
 # in the .travis.yml in the top level folder of the project.
 
-set -x
+set -x -e
 
 # install the right compiler
 if [[ $OS_NAME == "macos" ]]; then
@@ -44,8 +44,8 @@ if [[ $OS_NAME == "macos" ]]; then
     brew install ccache
     export PATH="/usr/local/opt/ccache/libexec:$PATH"
 
-    export CC=ccache $(which $CC)
-    export CXX=ccache $(which $CXX)
+    export CC="ccache $(which $CC)"
+    export CXX="ccache $(which $CXX)"
 fi
 
 # debug: show stats of ccache
