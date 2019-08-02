@@ -1,3 +1,11 @@
+[![Build Status](https://travis-ci.org/hpclab/rankeval.svg?branch=master)](https://travis-ci.org/hpclab/rankeval)
+[![Python version](https://img.shields.io/pypi/pyversions/rankeval.svg)](https://badge.fury.io/py/rankeval)
+[![PyPI version](https://img.shields.io/pypi/v/rankeval.svg)](https://badge.fury.io/py/rankeval)
+[![Wheel](https://img.shields.io/badge/wheel-yes-brightgreen)](https://badge.fury.io/py/rankeval)
+[![CPython Implementation](https://img.shields.io/pypi/implementation/rankeval.svg)](https://badge.fury.io/py/rankeval)
+[![License](https://img.shields.io/badge/license-MPL%202.0-blue.svg)](https://badge.fury.io/py/rankeval)
+[![DOI](https://img.shields.io/badge/DOI-10.1145%2F3077136.3084140-blue)](https://doi.org/10.1145/3077136.3084140)
+
 <img src="https://github.com/hpclab/rankeval/blob/master/doc/banner.png?raw=true">
 
 # RankEval: An Evaluation and Analysis Framework for Learning-to-Rank Solutions
