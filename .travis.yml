@@ -5,12 +5,6 @@ cache:
   ccache: true
   directories:
     - $HOME/.ccache
-    - $HOME/Library/Caches/Homebrew
-    - /usr/local/Homebrew
-before_cache:
-  - if [[ $TRAVIS_OS_NAME == "osx" ]]; then
-      brew cleanup
-    fi
 
 os:
   - linux
