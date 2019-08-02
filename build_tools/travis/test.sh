@@ -6,7 +6,7 @@
 # in the .travis.yml in the top level folder of the project and by the setup.sh
 # script which configure the environment.
 
-set -e
+set -x -e
 
 cd $BUILD_DIRECTORY
 
@@ -16,11 +16,7 @@ if [[ $TASK == "sdist" ]]; then
     python setup.py test || exit -1
     exit 0
 elif [[ $TASK == "bdist" ]]; then
-    if [[ $OS_NAME == "macos" ]]; then
-        python setup.py bdist_wheel --plat-name=macosx --universal || exit -1
-    else
-        python setup.py bdist_wheel --plat-name=manylinux1_x86_64 --universal || exit -1
-    fi
+    python setup.py bdist_wheel || exit -1
     pip install --user $BUILD_DIRECTORY/dist/*.whl || exit -1
     python setup.py test || exit -1
     exit 0
