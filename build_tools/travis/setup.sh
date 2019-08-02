@@ -11,15 +11,14 @@ set -x -e
 if [[ $OS_NAME == "macos" ]]; then
     OS_CONDA="MacOSX"
 
+    brew update
     # Conda export 10.6 osx version and this results in the usage
     # of libc++ in place of libstdc++, casuing the failure of the compilation
     # https://github.com/conda/conda-build/issues/1269
     export MACOSX_DEPLOYMENT_TARGET=10.9
 
     if [[ $COMPILER == "gcc" ]]; then
-        brew update
         brew install gcc@8
-        brew link --overwrite gcc
     fi
 else    # Linux
     OS_CONDA="Linux"
@@ -40,7 +39,6 @@ fi
 # Fix ccache with osx
 if [[ $OS_NAME == "macos" ]]; then
 
-    brew update
     brew install ccache
     export PATH="/usr/local/opt/ccache/libexec:$PATH"
 
@@ -64,6 +62,7 @@ conda info -a
 
 conda create -q -y -n $CONDA_ENV python=$PYTHON_VERSION numpy scipy cython
 
+pip install -U pip
 pip install --user coremltools scikit-learn
 
 source activate $CONDA_ENV
