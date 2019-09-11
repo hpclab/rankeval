@@ -81,7 +81,6 @@ class custom_build_ext(build_ext):
         import numpy as np
         self.include_dirs.append(np.get_include())
 
-
     def _check_openmp_support(self):
         # Compile a test program to determine if compiler supports OpenMP.
         _mkpath(self.build_temp)
@@ -126,6 +125,10 @@ class custom_build_ext(build_ext):
                 if not ext.extra_link_args:
                     ext.extra_link_args = []
                 ext.extra_link_args.append('-fopenmp')
+
+        # Add language level directive (for the cython compiler)
+        for ext in self.extensions:
+            ext.compiler_directives = {'language_level' : sys.version_info[0]}
 
         # Chain to method in parent class.
         build_ext.build_extensions(self)

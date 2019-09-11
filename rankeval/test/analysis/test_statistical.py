@@ -3,7 +3,7 @@ import os
 import unittest
 
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_allclose
 
 from rankeval.analysis.statistical import _randomization
 from rankeval.analysis.statistical import statistical_significance
@@ -41,10 +41,10 @@ class StatisticalSignificanceTestCase(unittest.TestCase):
     def test_randomization(self):
         A = np.array([1, 1, 1, 1, 1, 1, 1, 0, 0, 0])
         B = np.array([0, 0, 0, 0, 0, 0, 0, 1, 1, 1])
-        n_perm = 10000
-        p1,p2 = _randomization( A, B, n_perm)
+        n_perm = 20000
+        p1, p2 = _randomization( A, B, n_perm)
         # compute with https://github.com/searchivarius/PermTest
-        assert_almost_equal(p2, .34195, decimal=2)
+        assert_allclose(p2, .34, atol=0.02)
 
 
 if __name__ == '__main__':
