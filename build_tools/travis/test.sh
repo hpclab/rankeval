@@ -6,7 +6,7 @@
 # in the .travis.yml in the top level folder of the project and by the setup.sh
 # script which configure the environment.
 
-set -x -e
+set -x
 
 cd $BUILD_DIRECTORY
 
@@ -21,5 +21,3 @@ elif [[ $TASK == "bdist" ]]; then
     python setup.py test || exit -1
     exit 0
 fi
-
-ccache --show-stats

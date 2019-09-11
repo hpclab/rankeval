@@ -5,7 +5,7 @@
 # The behavior of the script is controlled by environment variabled defined
 # in the .travis.yml in the top level folder of the project.
 
-set -x -e
+set -x
 
 # install the right compiler
 if [[ $OS_NAME == "macos" ]]; then
@@ -35,19 +35,6 @@ elif [[ $COMPILER == "clang" ]]; then
     export CXX=clang++
     export CC=clang
 fi
-
-# Fix ccache with osx
-if [[ $OS_NAME == "macos" ]]; then
-
-    brew install ccache
-    export PATH="/usr/local/opt/ccache/libexec:$PATH"
-
-    export CC="ccache $(which $CC)"
-    export CXX="ccache $(which $CXX)"
-fi
-
-# debug: show stats of ccache
-ccache -s
 
 # install conda and setup test environment
 wget -q -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda${PYTHON_VERSION:0:1}-latest-$OS_CONDA-x86_64.sh
