@@ -50,6 +50,6 @@ conda info -a
 conda create -q -y -n $CONDA_ENV python=$PYTHON_VERSION numpy scipy cython
 
 pip install -U pip
-pip install --user coremltools scikit-learn
+pip install --user -U coremltools scikit-learn
 
 source activate $CONDA_ENV
