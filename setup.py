@@ -267,7 +267,7 @@ setup(
 
     test_suite="rankeval.test",
     setup_requires=[
-        'cython >= {}'.format(min_cython_ver),
+        'Cython >= {}'.format(min_cython_ver),
         'setuptools >= 18.0',
         'numpy >= 1.13',
         'scipy >= 0.7.0'
