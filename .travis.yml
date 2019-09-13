@@ -49,7 +49,7 @@ jobs:
         PYTHON_VERSION="3.7"
 
     - stage: deploy
-      if: tag IS present AND branch = master
+      if: tag IS present
       os: osx
       env:
         TASK=bdist
@@ -58,7 +58,7 @@ jobs:
         - /io/build_tools/travis/deploy.sh
 
     - stage: deploy
-      if: tag IS present AND branch = master
+      if: tag IS present
       os: osx
       env:
         TASK=bdist
@@ -67,7 +67,7 @@ jobs:
         - /io/build_tools/travis/deploy.sh
 
     - stage: deploy
-      if: tag IS present AND branch = master
+      if: tag IS present
       os: osx
       env:
         TASK=bdist
@@ -81,7 +81,7 @@ jobs:
         PYTHON_VERSION="3.7"
 
     - stage: deploy
-      if: tag IS present AND branch = master
+      if: tag IS present
       sudo: required
       services:
         - docker
@@ -96,7 +96,7 @@ jobs:
         - ls wheelhouse/
 
     - stage: deploy
-      if: tag IS present AND branch = master
+      if: tag IS present
       sudo: required
       services:
         - docker
@@ -112,7 +112,7 @@ jobs:
         - ls wheelhouse/
 
     - stage: deploy
-      if: tag IS present AND branch = master
+      if: tag IS present
       sudo: required
       services:
         - docker
