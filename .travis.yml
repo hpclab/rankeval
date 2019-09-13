@@ -22,15 +22,7 @@ env:
   - TASK=bdist PYTHON_VERSION="3.6"
   - TASK=bdist PYTHON_VERSION="3.7"
 
-matrix:
-  include:
-    - os: osx
-      env:
-        COMPILER=gcc
-        PYTHON_VERSION="3.7"
-
 before_install:
-  - export HOME_DIRECTORY="$HOME"
   - export BUILD_DIRECTORY="$TRAVIS_BUILD_DIR"
   - if [[ $TRAVIS_OS_NAME == "osx" ]]; then
         export OS_NAME="macos";
@@ -41,10 +33,6 @@ before_install:
         export OS_NAME="linux";
         export COMPILER="gcc";
     fi
-  - export CONDA="$HOME/miniconda"
-  - export PATH="$CONDA/bin:$PATH"
-  - export CONDA_ENV="test-env"
-  - export RANKEVAL_VER=$(head -n 1 rankeval/VERSION)
 
 install:
   - source build_tools/travis/setup.sh
@@ -52,20 +40,94 @@ install:
 script:
   - bash build_tools/travis/test.sh
 
-deploy:
-  provider: pypi
-  user: $PYPI_USER
-  password: $PYPI_PASS
-  distributions: "sdist bdist_wheel"
-  skip_existing: true
-  repo: hpclab/rankeval
-  on:
-    tags: true
-    branch: master
+jobs:
+  include:
+    - stage: test
+      os: osx
+      env:
+        COMPILER=gcc
+        PYTHON_VERSION="3.7"
+
+    - stage: deploy
+      if: tag IS present AND branch = master
+      os: osx
+      env:
+        TASK=bdist
+        PYTHON_VERSION="2.7"
+      script:
+        - /io/build_tools/travis/deploy.sh
+
+    - stage: deploy
+      if: tag IS present AND branch = master
+      os: osx
+      env:
+        TASK=bdist
+        PYTHON_VERSION="3.5"
+      script:
+        - /io/build_tools/travis/deploy.sh
+
+    - stage: deploy
+      if: tag IS present AND branch = master
+      os: osx
+      env:
+        TASK=bdist
+        PYTHON_VERSION="3.6"
+
+    - stage: deploy
+      if: tag IS present
+      os: osx
+      env:
+        TASK=bdist
+        PYTHON_VERSION="3.7"
+
+    - stage: deploy
+      if: tag IS present AND branch = master
+      sudo: required
+      services:
+        - docker
+      env:
+        DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
+        PLAT=manylinux1_x86_64
+      before_install: skip
+      install:
+        - docker pull $DOCKER_IMAGE
+      script:
+        - docker run --rm -e PLAT=$PLAT -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD /io/build_tools/build-wheels.sh
+        - ls wheelhouse/
+
+    - stage: deploy
+      if: tag IS present AND branch = master
+      sudo: required
+      services:
+        - docker
+      env:
+        DOCKER_IMAGE=quay.io/pypa/manylinux1_i686
+        PRE_CMD=linux32
+        PLAT=manylinux1_i686
+      before_install: skip
+      install:
+        - docker pull $DOCKER_IMAGE
+      script:
+        - docker run --rm -e PLAT=$PLAT -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD /io/build_tools/build-wheels.sh
+        - ls wheelhouse/
+
+    - stage: deploy
+      if: tag IS present AND branch = master
+      sudo: required
+      services:
+        - docker
+      env:
+        DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
+        PLAT=manylinux2010_x86_64
+      before_install: skip
+      install:
+        - docker pull $DOCKER_IMAGE
+      script:
+        - docker run --rm -e PLAT=$PLAT -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD /io/build_tools/build-wheels.sh
+        - ls wheelhouse/
 
 notifications:
   slack:
     rooms: $SLACK_TOKEN
     on_success: change
     on_failure: always
-    on_start: never

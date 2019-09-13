@@ -7,6 +7,12 @@
 
 set -x
 
+# Export environment variables
+export CONDA="$HOME/miniconda"
+export PATH="$CONDA/bin:$PATH"
+export CONDA_ENV="test-env"
+export RANKEVAL_VER=$(head -n 1 rankeval/VERSION)
+
 # install the right compiler
 if [[ $OS_NAME == "macos" ]]; then
     OS_CONDA="MacOSX"
