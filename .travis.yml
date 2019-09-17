@@ -72,6 +72,8 @@ jobs:
       env:
         TASK=bdist
         PYTHON_VERSION="3.6"
+      script:
+        - build_tools/travis/deploy.sh
 
     - stage: deploy
       if: tag IS present
@@ -79,6 +81,8 @@ jobs:
       env:
         TASK=bdist
         PYTHON_VERSION="3.7"
+      script:
+        - build_tools/travis/deploy.sh
 
     - stage: deploy
       if: tag IS present

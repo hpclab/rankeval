@@ -9,8 +9,14 @@ ${BASE_PYTHON}/pip install -U twine
 
 # Compile wheels
 for PYBIN in /opt/python/*/bin; do
-    "${PYBIN}/pip" install -U pip cython numpy scipy matplotlib
-    "${PYBIN}/python" /io/setup.py sdist -d /io/wheelhouse/
+
+    "${PYBIN}/pip" install -U pip
+
+    # install requirement sequentially
+    cat /io/build_tools/requirements.txt | xargs -L 1 "${PYBIN}/pip" install
+
+    (cd /io/; "${PYBIN}/python" setup.py clean)
+    "${PYBIN}/python" /io/setup.py sdist -d /io/wheelhouse/ -v
     "${PYBIN}/pip" wheel /io/ -w wheelhouse/
 done
 
@@ -20,9 +26,10 @@ for whl in wheelhouse/*.whl; do
 done
 
 # Test
-for PYBIN in /opt/python/*/bin/; do
+for PYBIN in /opt/python/*/bin; do
+
     "${PYBIN}/pip" install --no-index -f /io/wheelhouse ${PACKAGE}
-    (cd /io/; "${PYBIN}/nosetests" ${PACKAGE})
+    (cd "$HOME"; "${PYBIN}/nosetests" ${PACKAGE})
 done
 
 #  Upload

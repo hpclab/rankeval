@@ -1,0 +1,8 @@
+cython
+numpy
+scipy
+pandas
+matplotlib
+seaborn
+xarray
+nose

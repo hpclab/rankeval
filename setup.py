@@ -26,12 +26,6 @@ from distutils.errors import CCompilerError as _CCompilerError
 from distutils.version import LooseVersion
 from distutils import log
 
-
-if (sys.version_info[:1] == 2 and sys.version_info[:2] < (2, 7)) or \
-    (sys.version_info[:1] == 3 and sys.version_info[:2] < (3, 5)):
-    raise Exception('This version of rankeval needs Python 2.7, 3.5 or later.')
-
-
 min_cython_ver = '0.25.2'
 try:
     import Cython
@@ -266,9 +260,10 @@ setup(
     # py_modules=['svmlight_loader',],
 
     test_suite="rankeval.test",
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4',
     setup_requires=[
         'Cython >= {}'.format(min_cython_ver),
-        'setuptools >= 18.0',
+        'setuptools >= 24.2.0',
         'numpy >= 1.13',
         'scipy >= 0.7.0'
     ],
@@ -278,7 +273,7 @@ setup(
         'scipy >= 0.14.0',
         'six >= 1.9.0',
         'pandas >= 0.19.1',
-        'xarray >= 0.9.5',
+        'xarray >= 0.10.9',
         'seaborn >= 0.8',
         'matplotlib >= 2.0.2',
     ],

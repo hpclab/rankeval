@@ -26,7 +26,7 @@ fi
 python setup.py test
 
 #  Upload
-for WHEEL in /dist/${PACKAGE}*; do
+for WHEEL in dist/${PACKAGE}*; do
     "twine" upload \
         --skip-existing \
         -u "${PYPI_USER}" -p "${PYPI_PASS}" \
