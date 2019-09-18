@@ -2,6 +2,9 @@
 
 set -e -x
 
+# Install compilation requirements
+yum -y install freetype-devel pkg-config libpng-devel
+
 PACKAGE=rankeval
 BASE_PYTHON=/opt/python/cp37-cp37m/bin/
 
