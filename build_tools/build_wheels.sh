@@ -31,7 +31,7 @@ done
 for PYBIN in /opt/python/*/bin; do
 
     ${PYBIN}/pip install --no-index -f dist/ ${PACKAGE}
-    ${PYBIN}/nosetests ${PACKAGE}
+    (cd $HOME; ${PYBIN}/nosetests ${PACKAGE})
 done
 
 #  Upload
