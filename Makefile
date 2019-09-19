@@ -6,6 +6,8 @@ clean:
 	rm -rf dist
 	rm -rf rankeval.egg-info
 	rm -rf build
+	rm -rf .ipynb_checkpoints
+	rm -rf .eggs
 	find . -name "*.so" -delete
 	find . -name "*.pyc" -delete
 	find . -name "*.egg" -delete

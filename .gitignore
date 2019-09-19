@@ -11,7 +11,12 @@
 # ignored dirs
 build
 dist
-rankeval.egg-info
+*.egg-info
+.out-of-repo/
+
+# ignored files
+distribute-*
+*eggs
 
 # ipython files
 .ipynb_checkpoints
@@ -21,14 +26,8 @@ rankeval.egg-info
 .pydevproject
 .idea
 
-# ignored files
-distribute-*
-*eggs
-
 # doc dirs and auto generated files
 doc/src/_build
-#doc/src/conf.py
-
 
 # auto compiled files
 rankeval/scoring/_efficient_scoring.c
