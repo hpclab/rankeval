@@ -26,9 +26,6 @@ class DCG(Metric):
             DCG
         cutoff: int
             The top k results to be considered at per query level (e.g. 10).
-        no_relevant_results: float
-            Float indicating how to treat the cases where then are no relevant
-            results (e.g. 0.5).
         implementation: string
             Indicates whether to consider the flat or the exponential DCG
             formula (e.g.  {"flat", "exp"}).
@@ -91,7 +88,7 @@ class DCG(Metric):
         if self.cutoff is not None:
             idx_y_pred_sorted = idx_y_pred_sorted[:self.cutoff]
 
-        discount = np.log2(np.arange(idx_y_pred_sorted.size) + 2)
+        discount = np.log2(np.arange(2, idx_y_pred_sorted.size + 2))
 
         if self.implementation == "flat":
             gain = y[idx_y_pred_sorted]
