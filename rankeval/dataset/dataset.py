@@ -81,6 +81,7 @@ class Dataset(object):
         self.n_instances = self.y.size
         self.n_features = self.X.shape[1]
         self.n_queries = self.query_ids.size
+        self._hash_cached = None
 
     @staticmethod
     def load(f, name=None, format="svmlight"):
@@ -403,12 +404,16 @@ class Dataset(object):
 
     def __hash__(self):
 
-        h = hashlib.md5()
+        # Cache the hash given the computational cost to compute it
+        # ASSUMPTION: the object is unmodifiable!
+        if self._hash_cached is None:
 
-        for arr in [self.X, self.y, self.query_ids]:
-            h.update(arr)
+            h = hashlib.md5()
+            for arr in [self.X, self.y, self.query_ids]:
+                h.update(arr)
+            self._hash_cached = int(h.hexdigest(), 16)
 
-        return int(h.hexdigest(), 16)
+        return self._hash_cached
 
     def __eq__(self, other):
         # use != instead of == because it is more efficient for sparse matrices:
