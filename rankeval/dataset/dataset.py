@@ -57,7 +57,9 @@ class Dataset(object):
             The vector with the query_id for each sample.
         """
         if query_ids.size != X.shape[0]:
-            raise Exception("query_ids has wrong size. Expected %s but got %s" % (X.shape[0], query_ids.size))
+            raise Exception(
+                "query_ids has wrong size. Expected %s but got %s" % (
+                X.shape[0], query_ids.size))
 
         # convert from query_ids per sample to query offset
         self.query_ids, self.query_offsets = \
@@ -186,7 +188,8 @@ class Dataset(object):
         -------
         (train, vali, test) datasets : tuple of rankeval.dataset.Dataset
             The resulting datasets with the given fraction of query ids in each
-            partition.
+            partition. If qids_only=True, the methods yields only the query ids
+            of each fold, without creating the dataset.
         """
 
         if train_size < 0 or train_size > 1 or (train_size + vali_size) > 1:
@@ -206,7 +209,7 @@ class Dataset(object):
         qids_permutation = rng.permutation(self.query_ids)
 
         train_qid = qids_permutation[:train_qn]
-        vali_qid = qids_permutation[train_qn:train_qn+vali_qn]
+        vali_qid = qids_permutation[train_qn:train_qn + vali_qn]
         test_qid = qids_permutation[-test_qn:]
 
         train_mask = np.in1d(qid_map, train_qid)
@@ -251,7 +254,7 @@ class Dataset(object):
 
     def query_iterator(self):
         """
-        This method implements and iterator over the offsets of the query_ids
+        This method implements an iterator over the offsets of the query_ids
         in the dataset.
 
         Returns
@@ -263,7 +266,7 @@ class Dataset(object):
         """
         for i in np.arange(self.n_queries):
             yield self.query_ids[i], \
-                  self.query_offsets[i], self.query_offsets[i+1]
+                  self.query_offsets[i], self.query_offsets[i + 1]
 
     def get_query_sizes(self):
         """
@@ -291,6 +294,87 @@ class Dataset(object):
         for qid, start_offset, end_offset in self.query_iterator():
             query_ids[start_offset:end_offset] = qid
         return query_ids
+
+    def get_query_offsets(self, query_id):
+        """
+        This method return the offsets (start, end) of a given query_id in the
+        dataset. Useful for debugging/analyzing in details the behaviours of a
+        given model on specific set of queries.
+
+        Parameters
+        ----------
+        query_id: int
+            The query to search in the dataset
+
+        Returns
+        -------
+        offsets : tuple of (int, int)
+            The query index of instances belonging to the query.
+            The two indices represent (start, end) offsets.
+
+        """
+        idx = np.where(self.query_ids == query_id)[0]
+        if idx.size == 0:
+            raise LookupError("query_id {:d} is missing from the dataset") \
+                .format(query_id)
+        # Take first element
+        idx = idx[0]
+        return self.query_offsets[idx], self.query_offsets[idx + 1]
+
+    def kfold(self, n_folds=5, qids_only=False, shuffle=True):
+        """
+        This method generates a k-fold splitting of the dataset, i.e., it splits
+        the dataset in n_folds and provide train/vali/test splitting of data
+        for each iteration (fold). Folds are rotated avoiding overlapping.
+        Shuffle the queries by default before splitting.
+
+        Parameters
+        ----------
+        n_folds: int
+            The number of folds. Must be at least 2
+        qids_only : bool
+            Whether to yield only the query ids of each split in place of the
+            Dataset
+        shuffle : bool
+            Whether to shuffle the queries before splitting the folds
+
+        Yields:
+        -------
+        (train, vali, test) datasets : tuple of rankeval.dataset.Dataset
+            The datasets for that split. If qids_only=True, the methods yields
+            only the query ids of each fold, without creating the dataset.
+        """
+        fold_size = int(np.floor(self.n_queries / n_folds))
+        qids = np.copy(self.query_ids)
+        if shuffle:
+            np.random.shuffle(qids)
+
+        split_points = [fold_size * i for i in np.arange(n_folds)]
+
+        for cur_fold in np.arange(n_folds):
+            idx_train = split_points[cur_fold]
+            idx_vali = split_points[(cur_fold - 2) % n_folds]
+            idx_test = split_points[(cur_fold - 1) % n_folds]
+
+            qids_train = qids[np.arange(
+                idx_train,
+                idx_vali + qids.size if idx_vali < idx_train else idx_vali
+            ) % qids.size]
+            qids_vali = qids[np.arange(
+                idx_vali,
+                idx_test + qids.size if idx_test < idx_vali else idx_test
+            ) % qids.size]
+            qids_test = qids[np.arange(
+                idx_test,
+                idx_train + qids.size if idx_train < idx_test else idx_train
+            ) % qids.size]
+
+            if qids_only:
+                yield qids_train, qids_vali, qids_test
+            else:
+                yield self.subset(qids_train), \
+                      self.subset(qids_vali), \
+                      self.subset(qids_test)
 
     @staticmethod
     def _check_random_state(seed):
