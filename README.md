@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/travis/hpclab/rankeval/master.svg?logo=travis)](https://travis-ci.org/hpclab/rankeval)
+[![Build Status](https://img.shields.io/travis/com/hpclab/rankeval/master.svg?logo=travis)](https://travis-ci.com/hpclab/rankeval)
 [![Python version](https://img.shields.io/pypi/pyversions/rankeval.svg)](https://badge.fury.io/py/rankeval)
 [![PyPI version](https://img.shields.io/pypi/v/rankeval.svg)](https://badge.fury.io/py/rankeval)
 [![Wheel](https://img.shields.io/badge/wheels-%E2%9C%93-4c1.svg?longCache=true&logo=python&logoColor=white)](https://badge.fury.io/py/rankeval)
@@ -42,8 +42,12 @@ The main functionalities of RankEval can be summarized along five dimensions:
 - structural analysis
 - topological analysis
 - interoperability among GBRT libraries
-    - support the model format of the most popular learning tools such as 
-    QuickRank, RankLib, XGBoost, LightGBM, Scikit-Learn, etc
+
+Regarding the interoperability, Rankeval is able to read and process ranking ensembles learned with learning-to-rank 
+libraries such as QuickRank, RankLib, XGBoost, LightGBM, Scikit-Learn, CatBoost, JForest. This advanced 
+interoperability is implemented through proxy classes that make possible to interpret and understand the specific 
+format used to represent the ranking ensemble without using the codebase of the learning-to-rank library. Thus RankEval 
+does not have any dependency from the learning-to-rank library of choice of the user.
 
 These functionalities can be applied to several models at the same time, so to 
 have a direct comparison of the analysis performed. The tool has been written 
@@ -66,29 +70,33 @@ export CXX=g++-5
 ```
 
 Moreover, RankEval needs the following libraries to be installed before the 
-installation process begin:
+installation process begin (used for compiling the low-level code by the installation process):
   - numpy >= 1.13
   - scipy >= 0.14
   - cython >= 0.25
   - matplotlib >= 2.0.2
-  
-RankEval can be easily installed from Python Package Index (PyPI). 
+
+Additional dependencies will be installed automatically by setuptools.
+RankEval can be installed from the source by running:
+
+```python setup.py install```
+
+RankEval can also be easily installed from Python Package Index (PyPI). In this case, most probably you don't even need 
+cython locally to compile low level code since the binaries should already been available for your platform.  
 You may download and install it by running:
 
 ```pip install rankeval```
 
-Alternatively, you can build the library from source.
+Alternatively, you can build the library from the latest commit on the master branch of the repository.
 Below an example of installation.
 
-```python setup.py install```
-
-or
-
-```pip install -e .```
+```pip install git+https://github.com/hpclab/rankeval```
 
 ## Development
 
-Installation of libraries required for development (documentation generation and unittests):
+If you would like to install the library in development mode, i.e., you can edit the source code and see the changes 
+directly without having to reinstall every time that you make a little change, than you have to run the following 
+command which will install as well the libraries required for development (documentation generation and unittests):
 
 ```pip install -e .[develop]```
 

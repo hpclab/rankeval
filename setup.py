@@ -98,7 +98,7 @@ class custom_build_ext(build_ext):
                 try:
                     objects = self.compiler.compile([srcfile.name],
                                                     extra_postargs=["-fopenmp"],
-                                                    output_dir="/")
+                                                    output_dir=self.build_temp)
                 except _CCompilerError:
                     _log.info("compiler does not support OpenMP")
                     use_openmp = False
@@ -285,7 +285,7 @@ setup(
         'develop': [
             'sphinx >= 1.5.0',
             'sphinx_rtd_theme >= 0.2.0',
-            'numpydoc > 0.5.0',
+            'numpydoc > 0.5.0'
         ],
     },
 
